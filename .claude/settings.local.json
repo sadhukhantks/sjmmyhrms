@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(C:/Users/LENOVO/AppData/Local/Android/Sdk/platform-tools/adb.exe shell *)"
+    ]
+  }
+}

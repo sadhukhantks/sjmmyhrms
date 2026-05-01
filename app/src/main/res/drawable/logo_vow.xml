@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- Top-left green blob -->
+    <path
+        android:pathData="M56,32 C56,24 48,16 40,16 C32,16 24,24 24,32 C24,40 32,48 40,48 C48,48 56,40 56,32 Z
+                          M40,48 C40,40 32,32 24,32 C16,32 8,40 8,48 C8,56 16,64 24,64 C32,64 40,56 40,48 Z"
+        android:fillColor="#8DC63F" />
+
+    <!-- Top-right blue blob -->
+    <path
+        android:pathData="M104,16 C96,16 88,24 88,32 C88,40 96,48 104,48 C112,48 120,40 120,32 C120,24 112,16 104,16 Z
+                          M120,32 C120,24 128,16 136,16 C144,16 152,24 152,32 C152,40 144,48 136,48 C128,48 120,40 120,32 Z"
+        android:fillColor="#00AEEF" />
+
+    <!-- Center dark blob -->
+    <path
+        android:pathData="M80,40 C72,40 64,48 64,56 C64,64 72,72 80,72 C88,72 96,64 96,56 C96,48 88,40 80,40 Z"
+        android:fillColor="#003B5C" />
+
+    <!-- Bottom connector blobs -->
+    <path
+        android:pathData="M56,56 C56,48 48,40 40,48 C32,56 40,72 48,72 C56,72 56,64 56,56 Z"
+        android:fillColor="#8DC63F" />
+    <path
+        android:pathData="M104,56 C104,48 112,40 120,48 C128,56 120,72 112,72 C104,72 104,64 104,56 Z"
+        android:fillColor="#00AEEF" />
+
+    <!-- Shadow ellipse -->
+    <path
+        android:pathData="M50,80 Q80,88 110,80 Q80,84 50,80 Z"
+        android:fillColor="#DDDDDD"
+        android:fillAlpha="0.4" />
+
+    <!-- "V" letter -->
+    <path
+        android:pathData="M38,92 L52,120 L58,120 L44,92 Z"
+        android:fillColor="#003B5C" />
+    <path
+        android:pathData="M66,92 L52,120 L58,120 L72,92 Z"
+        android:fillColor="#003B5C" />
+
+    <!-- "O" letter -->
+    <path
+        android:pathData="M80,92 C72,92 66,98 66,106 C66,114 72,120 80,120 C88,120 94,114 94,106 C94,98 88,92 80,92 Z
+                          M80,98 C85,98 88,101 88,106 C88,111 85,114 80,114 C75,114 72,111 72,106 C72,101 75,98 80,98 Z"
+        android:fillColor="#003B5C" />
+
+    <!-- "W" letter -->
+    <path
+        android:pathData="M98,92 L106,120 L110,120 L116,100 L122,120 L126,120 L134,92 L128,92 L122,112 L116,92 L112,92 L106,112 L100,92 Z"
+        android:fillColor="#003B5C" />
+
+    <!-- Tagline "... it's that simple" -->
+    <path
+        android:pathData="M20,134 L22,134 L22,136 L20,136 Z M24,134 L26,134 L26,136 L24,136 Z M28,134 L30,134 L30,136 L28,136 Z"
+        android:fillColor="#8DC63F" />
+
+    <!-- "it's that simple" text approximation -->
+    <path
+        android:pathData="M36,130 L38,130 L38,138 L36,138 Z M36,127 L38,127 L38,129 L36,129 Z"
+        android:fillColor="#8DC63F" />
+    <path
+        android:pathData="M41,130 L43,130 L43,132 L45,132 L45,130 L47,130 L47,138 L45,138 L45,134 L43,134 L43,138 L41,138 Z"
+        android:fillColor="#003B5C" />
+
+</vector>
+

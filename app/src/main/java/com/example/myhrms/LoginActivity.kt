@@ -1,0 +1,180 @@
+package com.example.myhrms
+
+import android.content.Intent
+import android.os.Bundle
+import android.view.View
+import android.widget.EditText
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import com.example.myhrms.api.ApiConfig
+import com.example.myhrms.api.LoginRequest
+import com.example.myhrms.api.LoginResponse
+import com.example.myhrms.api.RetrofitClient
+import com.example.myhrms.databinding.ActivityLoginBinding
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+
+class LoginActivity : AppCompatActivity() {
+
+    private lateinit var binding: ActivityLoginBinding
+    private val PREFS_NAME = "LoginPrefs"
+    private val KEY_LAST_USERNAME = "last_username"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityLoginBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        setupToolbar()
+        setupLoginButton()
+        setupSettingsButton()
+        loadPreviousUsername()
+    }
+
+    private fun setupToolbar() {
+        setSupportActionBar(binding.toolbar)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+        binding.toolbar.setNavigationOnClickListener {
+            finish()
+        }
+    }
+
+    private fun loadPreviousUsername() {
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val lastUsername = sharedPreferences.getString(KEY_LAST_USERNAME, "")
+        if (!lastUsername.isNullOrEmpty()) {
+            binding.etUsername.setText(lastUsername)
+            binding.etPassword.requestFocus()
+        }
+    }
+
+    private fun setupSettingsButton() {
+        binding.btnSettings.setOnClickListener {
+            showApiConfigDialog()
+        }
+    }
+
+    private fun showApiConfigDialog() {
+        val currentUrl = ApiConfig.getBaseUrl(this)
+
+        val input = EditText(this).apply {
+            setText(currentUrl)
+            hint = "e.g. http://192.168.1.100:5051"
+            setPadding(60, 40, 60, 40)
+            setTextColor(android.graphics.Color.BLACK)
+            setSelection(text.length)
+        }
+
+        AlertDialog.Builder(this)
+            .setTitle("Configure API URL")
+            .setMessage("Enter your server base URL:")
+            .setView(input)
+            .setPositiveButton("Save") { _, _ ->
+                val url = input.text.toString().trim()
+                if (url.isNotEmpty()) {
+                    ApiConfig.saveBaseUrl(this, url)
+                    Toast.makeText(this, "API URL saved!", Toast.LENGTH_SHORT).show()
+                } else {
+                    Toast.makeText(this, "URL cannot be empty", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun setupLoginButton() {
+        binding.btnLogin.setOnClickListener {
+            val username = binding.etUsername.text.toString().trim()
+            val password = binding.etPassword.text.toString().trim()
+
+            if (validateInputs(username, password)) {
+                performLogin(username, password)
+            }
+        }
+    }
+
+    private fun validateInputs(username: String, password: String): Boolean {
+        if (username.isEmpty()) {
+            binding.etUsername.error = "Please enter username"
+            binding.etUsername.requestFocus()
+            return false
+        }
+        if (password.isEmpty()) {
+            binding.etPassword.error = "Please enter password"
+            binding.etPassword.requestFocus()
+            return false
+        }
+        return true
+    }
+
+    private fun performLogin(username: String, password: String) {
+        showLoading(true)
+
+        val loginRequest = LoginRequest(username, password)
+
+        RetrofitClient.getApiService(this).login(loginRequest).enqueue(object : Callback<LoginResponse> {
+            override fun onResponse(call: Call<LoginResponse>, response: Response<LoginResponse>) {
+                showLoading(false)
+
+                if (response.isSuccessful) {
+                    val loginResponse = response.body()
+                    if (loginResponse != null && loginResponse.isSuccess) {
+                        // Save username and user_id to SharedPreferences
+                        saveUsername(username)
+                        loginResponse.user?.id?.let { userId ->
+                            getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+                                .edit().putInt("user_id", userId).apply()
+                        }
+
+                        Toast.makeText(
+                            this@LoginActivity,
+                            "Login successful! Welcome ${loginResponse.user?.fullName ?: username}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Navigate to Dashboard screen
+                        val dashboardIntent = Intent(this@LoginActivity, DashboardActivity::class.java)
+                        dashboardIntent.putExtra("USER_NAME", loginResponse.user?.fullName ?: username)
+                        startActivity(dashboardIntent)
+                        finish()
+                    } else {
+                        Toast.makeText(
+                            this@LoginActivity,
+                            loginResponse?.message ?: "Login failed",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                } else {
+                    Toast.makeText(
+                        this@LoginActivity,
+                        "Login failed: ${response.message()}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+
+            override fun onFailure(call: Call<LoginResponse>, t: Throwable) {
+                showLoading(false)
+                Toast.makeText(
+                    this@LoginActivity,
+                    "Network error: ${t.localizedMessage}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        })
+    }
+
+    private fun saveUsername(username: String) {
+        val sharedPreferences = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        sharedPreferences.edit().putString(KEY_LAST_USERNAME, username).apply()
+    }
+
+    private fun showLoading(isLoading: Boolean) {
+        binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.btnLogin.isEnabled = !isLoading
+        binding.btnLogin.alpha = if (isLoading) 0.6f else 1.0f
+    }
+}
