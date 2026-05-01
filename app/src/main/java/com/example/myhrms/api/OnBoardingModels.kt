@@ -17,7 +17,8 @@ data class OnBoardingEmployeeResponse(
 
 data class OnBoardingRegisterRequest(
     @SerializedName("emp_code") val empCode: String,
-    @SerializedName("face_image") val faceImage: String
+    @SerializedName("face_image") val faceImage: String,
+    @SerializedName("branch_id") val branchId: Int? = null
 )
 
 data class OnBoardingRegisterResponse(

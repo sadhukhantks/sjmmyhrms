@@ -25,6 +25,7 @@ class OnBoardingActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOnBoardingBinding
     private var currentEmpCode: String = ""
     private var currentEbId: Int = 0
+    private var branchId: Int = 0
     private var photoFile: File? = null
     private var photoUri: Uri? = null
     private var capturedBase64: String? = null
@@ -56,6 +57,8 @@ class OnBoardingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityOnBoardingBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        branchId = intent.getIntExtra("BRANCH_ID", 0)
 
         setupToolbar()
         setupSearchButton()
@@ -90,7 +93,7 @@ class OnBoardingActivity : AppCompatActivity() {
         capturedBase64 = null
         binding.btnRegisterFace.isEnabled = false
 
-        RetrofitClient.getApiService(this).getOnBoardingEmployee(empCode)
+        RetrofitClient.getApiService(this).getOnBoardingEmployee(empCode, if (branchId > 0) branchId else null)
             .enqueue(object : Callback<OnBoardingEmployeeResponse> {
                 override fun onResponse(call: Call<OnBoardingEmployeeResponse>, response: Response<OnBoardingEmployeeResponse>) {
                     binding.progressBar.visibility = View.GONE
@@ -173,7 +176,11 @@ class OnBoardingActivity : AppCompatActivity() {
         binding.progressBar.visibility = View.VISIBLE
         binding.btnRegisterFace.isEnabled = false
 
-        val request = OnBoardingRegisterRequest(empCode = empCode, faceImage = base64)
+        val request = OnBoardingRegisterRequest(
+            empCode = empCode,
+            faceImage = base64,
+            branchId = if (branchId > 0) branchId else null
+        )
         RetrofitClient.getApiService(this).registerOnBoardingFace(request)
             .enqueue(object : Callback<OnBoardingRegisterResponse> {
                 override fun onResponse(call: Call<OnBoardingRegisterResponse>, response: Response<OnBoardingRegisterResponse>) {

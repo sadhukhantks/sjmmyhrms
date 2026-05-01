@@ -240,13 +240,16 @@ class AttendanceReportAdapter(
     }
 
     private fun bindPhoto(holder: ViewHolder, record: AttendanceRecord) {
-        if (!record.photoAtt.isNullOrBlank()) {
+        val base64 = extractBase64(record.photoAtt)
+        if (!base64.isNullOrBlank()) {
             try {
-                val bytes = Base64.decode(record.photoAtt, Base64.DEFAULT)
+                val bytes = Base64.decode(base64, Base64.DEFAULT)
                 val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                holder.ivPhoto.setImageBitmap(bitmap)
-                holder.ivPhoto.clearColorFilter()
-                return
+                if (bitmap != null) {
+                    holder.ivPhoto.setImageBitmap(bitmap)
+                    holder.ivPhoto.clearColorFilter()
+                    return
+                }
             } catch (_: Exception) { /* fall through */ }
         }
         when (record.status) {
@@ -258,6 +261,23 @@ class AttendanceReportAdapter(
                 holder.ivPhoto.setImageResource(R.drawable.ic_person)
                 holder.ivPhoto.setColorFilter(Color.parseColor("#F57C00"))
             }
+        }
+    }
+
+    /**
+     * Accepts either:
+     *  - raw base64 string (e.g. "/9j/4AAQSk...")
+     *  - HTML wrapper: <img src="data:image/jpeg;base64,XXXX" />
+     * Returns the raw base64 portion, or null if not extractable.
+     */
+    private fun extractBase64(photoHtml: String?): String? {
+        if (photoHtml.isNullOrBlank()) return null
+        val trimmed = photoHtml.trim()
+        return when {
+            trimmed.contains("base64,") ->
+                Regex("""base64,([A-Za-z0-9+/=]+)""").find(trimmed)?.groupValues?.get(1)?.trim()
+            !trimmed.contains('<') -> trimmed.replace("\\s".toRegex(), "")
+            else -> null
         }
     }
 
@@ -405,12 +425,13 @@ class AttendanceReportAdapter(
     } catch (_: Exception) { apiDate }
 
     private fun showPhotoPreview(itemView: View, record: AttendanceRecord) {
-        if (record.photoAtt.isNullOrBlank()) {
+        val base64 = extractBase64(record.photoAtt)
+        if (base64.isNullOrBlank()) {
             Toast.makeText(itemView.context, "No captured photo available", Toast.LENGTH_SHORT).show()
             return
         }
         try {
-            val bytes = Base64.decode(record.photoAtt, Base64.DEFAULT)
+            val bytes = Base64.decode(base64, Base64.DEFAULT)
             val bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.size) ?: return
             val dialog = Dialog(itemView.context)
             dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)

@@ -231,7 +231,10 @@ interface ApiService {
 
     // ── On Boarding ───────────────────────────────────────────────
     @GET(ApiRoutes.ONBOARDING_EMPLOYEE)
-    fun getOnBoardingEmployee(@Path("emp_code") empCode: String): Call<OnBoardingEmployeeResponse>
+    fun getOnBoardingEmployee(
+        @Path("emp_code") empCode: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<OnBoardingEmployeeResponse>
 
     @POST(ApiRoutes.ONBOARDING_REGISTER_FACE)
     fun registerOnBoardingFace(@Body request: OnBoardingRegisterRequest): Call<OnBoardingRegisterResponse>

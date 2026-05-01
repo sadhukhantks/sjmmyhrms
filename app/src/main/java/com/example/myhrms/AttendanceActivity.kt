@@ -60,6 +60,10 @@ class AttendanceActivity : AppCompatActivity() {
     private var machines = mutableListOf<com.example.myhrms.api.Machine>()
     private var selectedMachineIds = mutableSetOf<Int>()
 
+    // Pending defaults from face match (auto-fill after spinners load)
+    private var pendingDesignationId: Int? = null
+    private var pendingMachineIds: List<Int>? = null
+
     // ── Camera launcher ──────────────────────────────────────────
     private val cameraLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
@@ -327,6 +331,17 @@ class AttendanceActivity : AppCompatActivity() {
                     )
                     adapter.setDropDownViewResource(R.layout.spinner_dropdown_item_black)
                     binding.spinnerOccupation.adapter = adapter
+
+                    // ── Apply pending designation default from face-match ──
+                    pendingDesignationId?.let { desigId ->
+                        val idx = occupations.indexOfFirst { it.id == desigId }
+                        if (idx >= 0) {
+                            binding.spinnerOccupation.setSelection(idx + 1)
+                            // Now load machines for that designation and auto-pick the saved ones
+                            applyPendingMachines(desigId)
+                        }
+                        pendingDesignationId = null
+                    }
                 } else {
                     Toast.makeText(this@AttendanceActivity, "Failed to load designations", Toast.LENGTH_SHORT).show()
                 }
@@ -589,6 +604,9 @@ class AttendanceActivity : AppCompatActivity() {
                             // Decode photo from photo_html and show in ImageView
                             showEmployeePhoto(result.photoHtml)
 
+                            // Auto-fill department / designation / machines from last attendance
+                            applyFaceMatchDefaults(result)
+
                             Toast.makeText(
                                 this@AttendanceActivity,
                                 "Face matched: ${result.empName}. Press Submit to mark attendance.",
@@ -644,14 +662,23 @@ class AttendanceActivity : AppCompatActivity() {
         }
 
         try {
-            // Extract base64 data from HTML: <img src="data:image/jpeg;base64,..." />
-            val regex = Regex("""base64,([^"<\s]+)""")
-            val match = regex.find(photoHtml)
-            val base64Data = match?.groupValues?.get(1)?.trim()
+            // photo_html may be either:
+            //   1) HTML wrapper: <img src="data:image/jpeg;base64,XXXX" />
+            //   2) Raw base64 string: /9j/4AAQSk...
+            val trimmed = photoHtml.trim()
+            val base64Data: String? = when {
+                trimmed.contains("base64,") -> {
+                    val regex = Regex("""base64,([A-Za-z0-9+/=]+)""")
+                    regex.find(trimmed)?.groupValues?.get(1)?.trim()
+                }
+                // looks like a raw base64 (no HTML tags)
+                !trimmed.contains('<') -> trimmed.replace("\\s".toRegex(), "")
+                else -> null
+            }
 
-            android.util.Log.d("PHOTO_DEBUG", "Regex match: ${match != null}, base64Data length: ${base64Data?.length ?: 0}")
+            android.util.Log.d("PHOTO_DEBUG", "base64Data length: ${base64Data?.length ?: 0}")
 
-            if (base64Data != null) {
+            if (!base64Data.isNullOrEmpty()) {
                 val imageBytes = AndroidBase64.decode(base64Data, AndroidBase64.DEFAULT)
                 android.util.Log.d("PHOTO_DEBUG", "Decoded bytes: ${imageBytes.size}")
                 val bitmap = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.size)
@@ -1072,5 +1099,73 @@ class AttendanceActivity : AppCompatActivity() {
             binding.tvMachineCount.text = "${selectedMachineIds.size} machine(s) selected"
             binding.tvMachineCount.visibility = View.VISIBLE
         }
+    }
+
+    // ── Auto-fill defaults after face match ──────────────────────
+    // Backend's /check-face response now carries default_department_id,
+    // default_designation_id and default_machine_ids derived from the
+    // employee's last daily_attendance + daily_ebmc_attendance rows.
+    private fun applyFaceMatchDefaults(result: FaceRecognitionResponse) {
+        // Reset any previous machine selection
+        selectedMachineIds.clear()
+        machines.clear()
+        updateMachineDisplay()
+
+        pendingDesignationId = result.defaultDesignationId
+        pendingMachineIds    = result.defaultMachineIds
+
+        val defaultDeptId = result.defaultDepartmentId
+        if (defaultDeptId != null && defaultDeptId > 0 && departments.isNotEmpty()) {
+            val deptIdx = departments.indexOfFirst { it.id == defaultDeptId }
+            if (deptIdx >= 0) {
+                // Triggers onItemSelected -> loadDesignations(...) -> applies pendingDesignationId
+                binding.spinnerDepartment.setSelection(deptIdx + 1)
+            } else if (selectedBranchId > 0) {
+                // Department not in current list -> still try to load designations directly
+                loadDesignations(selectedBranchId, defaultDeptId)
+            }
+        } else if (pendingDesignationId != null && selectedBranchId > 0) {
+            // No dept, but we have a designation default -> reload all designations
+            loadDesignations(selectedBranchId, null)
+        }
+    }
+
+    // Called from loadDesignations() once the designations list is ready
+    // and we have a pending designationId to preselect.
+    private fun applyPendingMachines(designationId: Int) {
+        val pending = pendingMachineIds ?: emptyList()
+        pendingMachineIds = null
+        RetrofitClient.getApiService(this).getMachines(designationId).enqueue(
+            object : Callback<com.example.myhrms.api.MachineResponse> {
+                override fun onResponse(
+                    call: Call<com.example.myhrms.api.MachineResponse>,
+                    response: Response<com.example.myhrms.api.MachineResponse>
+                ) {
+                    if (response.isSuccessful && response.body()?.status == "success") {
+                        val data = response.body()?.data ?: emptyList()
+                        val valid = data.filter { (it.id ?: 0) > 0 }
+                        machines.clear()
+                        machines.addAll(valid)
+
+                        if (pending.isNotEmpty()) {
+                            selectedMachineIds.clear()
+                            valid.forEach { m ->
+                                val mid = m.id ?: 0
+                                if (mid > 0 && pending.contains(mid)) {
+                                    selectedMachineIds.add(mid)
+                                }
+                            }
+                        }
+                        updateMachineDisplay()
+                    }
+                }
+                override fun onFailure(
+                    call: Call<com.example.myhrms.api.MachineResponse>,
+                    t: Throwable
+                ) {
+                    android.util.Log.e("MACHINE_DEBUG", "applyPendingMachines failed", t)
+                }
+            }
+        )
     }
 }
