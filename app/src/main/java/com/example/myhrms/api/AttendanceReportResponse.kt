@@ -30,6 +30,9 @@ data class AttendanceRecord(
     @SerializedName("attendance_time")
     val attendanceTime: String,
 
+    @SerializedName("exit_time")
+    val exitTime: String?,
+
     @SerializedName("status")
     val status: String?,
 

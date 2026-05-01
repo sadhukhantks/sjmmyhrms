@@ -1,7 +1,6 @@
 package com.example.myhrms
 
 import android.app.DatePickerDialog
-import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -37,8 +36,6 @@ class WeightEntryActivity : AppCompatActivity() {
     private lateinit var tvEntryDate: TextView
     private lateinit var tvListDate:  TextView
     private lateinit var spSpell:     Spinner
-    private lateinit var etEmpCode:   EditText
-    private lateinit var etEmpName:   EditText
     private lateinit var etGross:     EditText
     private lateinit var etTare:      EditText
     private lateinit var etNet:       EditText
@@ -63,8 +60,6 @@ class WeightEntryActivity : AppCompatActivity() {
         tvEntryDate = findViewById(R.id.tvWtDate)
         tvListDate  = findViewById(R.id.tvListDate)
         spSpell     = findViewById(R.id.spWtSpell)
-        etEmpCode   = findViewById(R.id.etWtEmpCode)
-        etEmpName   = findViewById(R.id.etWtEmpName)
         etGross     = findViewById(R.id.etWtGross)
         etTare      = findViewById(R.id.etWtTare)
         etNet       = findViewById(R.id.etWtNet)
@@ -90,21 +85,6 @@ class WeightEntryActivity : AppCompatActivity() {
         rvList.layoutManager = LinearLayoutManager(this)
         rvList.adapter = wtAdapter
         rvList.isNestedScrollingEnabled = false
-
-        // Emp lookup on focus lost
-        etEmpCode.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) lookupEmp(etEmpCode.text.toString().trim())
-        }
-        etEmpCode.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
-            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
-            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {
-                if (s.isNullOrBlank()) {
-                    etEmpName.setText("")
-                    etEmpName.setTextColor(Color.BLACK)
-                }
-            }
-        })
 
         // Auto-compute net weight
         val weightWatcher = object : TextWatcher {
@@ -146,28 +126,6 @@ class WeightEntryActivity : AppCompatActivity() {
             })
     }
 
-    private fun lookupEmp(code: String) {
-        if (code.isBlank()) return
-        RetrofitClient.getApiService(this)
-            .getEmployeeByCode(code, branchId.takeIf { it > 0 })
-            .enqueue(object : Callback<FaceRecognitionResponse> {
-                override fun onResponse(call: Call<FaceRecognitionResponse>, response: Response<FaceRecognitionResponse>) {
-                    val body = response.body()
-                    if (response.isSuccessful && body?.status == "success" && !body.empName.isNullOrBlank()) {
-                        etEmpName.setText(body.empName)
-                        etEmpName.setTextColor(Color.BLACK)
-                    } else {
-                        etEmpName.setText("Not Found")
-                        etEmpName.setTextColor(Color.RED)
-                    }
-                }
-                override fun onFailure(call: Call<FaceRecognitionResponse>, t: Throwable) {
-                    etEmpName.setText("Not Found")
-                    etEmpName.setTextColor(Color.RED)
-                }
-            })
-    }
-
     private fun computeNet() {
         val gross = etGross.text.toString().toDoubleOrNull() ?: 0.0
         val tare  = etTare.text.toString().toDoubleOrNull()  ?: 0.0
@@ -175,10 +133,6 @@ class WeightEntryActivity : AppCompatActivity() {
     }
 
     private fun saveEntry() {
-        val empCode = etEmpCode.text.toString().trim()
-        val empName = etEmpName.text.toString().trim().let {
-            if (it == "Not Found") null else it.ifBlank { null }
-        }
         val gross   = etGross.text.toString().toDoubleOrNull() ?: 0.0
         val tare    = etTare.text.toString().toDoubleOrNull()  ?: 0.0
         val net     = etNet.text.toString().toDoubleOrNull()   ?: (gross - tare)
@@ -193,8 +147,6 @@ class WeightEntryActivity : AppCompatActivity() {
             tranDate    = entryDate,
             branchId    = branchId,
             spellId     = spellId,
-            empCode     = empCode.ifBlank { null },
-            empName     = empName,
             grossWeight = gross,
             tareWeight  = tare,
             netWeight   = net,
@@ -208,7 +160,6 @@ class WeightEntryActivity : AppCompatActivity() {
                     btnSave.isEnabled = true
                     if (response.isSuccessful && response.body()?.status == "success") {
                         Toast.makeText(this@WeightEntryActivity, "Saved successfully", Toast.LENGTH_SHORT).show()
-                        // Clear weight fields only
                         etGross.setText("")
                         etTare.setText("")
                         etNet.setText("")
@@ -270,4 +221,3 @@ class WeightEntryActivity : AppCompatActivity() {
             .show()
     }
 }
-

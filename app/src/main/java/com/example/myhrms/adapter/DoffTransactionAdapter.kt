@@ -44,7 +44,7 @@ class DoffTransactionAdapter(
             .joinToString(" ")
             .ifBlank { "MC ${tx.mcId ?: ""}" }
         h.tvDateSpell.text = "${tx.doffDate ?: "-"}   •   ${tx.spellName ?: "-"}"
-        h.tvQuality.text   = "Qty: ${tx.qualityName ?: "-"}"
+        h.tvQuality.text   = "Qual: ${tx.qualityName ?: "-"}"
         h.tvTrolly.text    = "Trolly: ${tx.trollyName ?: "-"}"
         h.tvGross.text     = "G: ${fmt(tx.grossWeight)}"
         h.tvTare.text      = "T: ${fmt(tx.tareWeight)}"

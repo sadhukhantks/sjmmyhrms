@@ -18,8 +18,6 @@ class WeightTransactionAdapter(
         val tvSrNo:    TextView    = v.findViewById(R.id.tvWtSrNo)
         val tvDate:    TextView    = v.findViewById(R.id.tvWtDate)
         val tvSpell:   TextView    = v.findViewById(R.id.tvWtSpell)
-        val tvEmpCode: TextView    = v.findViewById(R.id.tvWtEmpCode)
-        val tvEmpName: TextView    = v.findViewById(R.id.tvWtEmpName)
         val tvGross:   TextView    = v.findViewById(R.id.tvWtGross)
         val tvTare:    TextView    = v.findViewById(R.id.tvWtTare)
         val tvNet:     TextView    = v.findViewById(R.id.tvWtNet)
@@ -34,14 +32,12 @@ class WeightTransactionAdapter(
 
     override fun onBindViewHolder(h: VH, pos: Int) {
         val item = list[pos]
-        h.tvSrNo.text    = (pos + 1).toString()
-        h.tvDate.text    = item.tranDate ?: ""
-        h.tvSpell.text   = item.spellName ?: "-"
-        h.tvEmpCode.text = item.empCode ?: "-"
-        h.tvEmpName.text = item.empName ?: "-"
-        h.tvGross.text   = String.format("%.3f", item.grossWeight ?: 0.0)
-        h.tvTare.text    = String.format("%.3f", item.tareWeight  ?: 0.0)
-        h.tvNet.text     = String.format("%.3f", item.netWeight   ?: 0.0)
+        h.tvSrNo.text  = (pos + 1).toString()
+        h.tvDate.text  = item.tranDate ?: ""
+        h.tvSpell.text = item.spellName ?: "-"
+        h.tvGross.text = String.format("%.3f", item.grossWeight ?: 0.0)
+        h.tvTare.text  = String.format("%.3f", item.tareWeight  ?: 0.0)
+        h.tvNet.text   = String.format("%.3f", item.netWeight   ?: 0.0)
         h.btnDelete.setOnClickListener { onDelete(item) }
     }
 
@@ -50,4 +46,3 @@ class WeightTransactionAdapter(
         notifyDataSetChanged()
     }
 }
-

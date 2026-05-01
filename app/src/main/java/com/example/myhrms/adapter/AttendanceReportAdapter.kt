@@ -188,7 +188,7 @@ class AttendanceReportAdapter(
         holder.tvDate.text = formatDisplayDate(record.attendanceDate)
         holder.tvSpell.text = record.shiftName ?: "-"
         holder.tvInTime.text = if (record.attendanceTime.isBlank()) "-" else record.attendanceTime
-        holder.tvExitTime.text = "-"
+        holder.tvExitTime.text = if (record.exitTime.isNullOrBlank()) "-" else record.exitTime
 
         // ── Row 4: Att Source (READ-ONLY, colored) ──
         val source = record.status ?: "-"

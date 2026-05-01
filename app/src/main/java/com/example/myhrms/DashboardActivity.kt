@@ -627,8 +627,8 @@ class DashboardActivity : AppCompatActivity() {
         }
         binding.menuSpinningDoffEntry.setOnClickListener {
             val i = Intent(this, SpinningDoffActivity::class.java)
-            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
-            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
         binding.menuWindingEntry.setOnClickListener {

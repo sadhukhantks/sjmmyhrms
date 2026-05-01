@@ -8,8 +8,6 @@ data class WeightTransaction(
     @SerializedName("branch_id")    val branchId: Int?,
     @SerializedName("spell_id")     val spellId: Int?,
     @SerializedName("spell_name")   val spellName: String?,
-    @SerializedName("emp_code")     val empCode: String?,
-    @SerializedName("emp_name")     val empName: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("tare_weight")  val tareWeight: Double?,
     @SerializedName("net_weight")   val netWeight: Double?,
@@ -27,8 +25,6 @@ data class WeightSaveRequest(
     @SerializedName("tran_date")    val tranDate: String,
     @SerializedName("branch_id")    val branchId: Int,
     @SerializedName("spell_id")     val spellId: Int?,
-    @SerializedName("emp_code")     val empCode: String?,
-    @SerializedName("emp_name")     val empName: String?,
     @SerializedName("gross_weight") val grossWeight: Double,
     @SerializedName("tare_weight")  val tareWeight: Double,
     @SerializedName("net_weight")   val netWeight: Double,
@@ -40,4 +36,3 @@ data class WeightSaveResponse(
     @SerializedName("message") val message: String?,
     @SerializedName("id")      val id: Int?
 )
-
