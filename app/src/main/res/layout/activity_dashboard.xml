@@ -231,7 +231,7 @@
     </LinearLayout>
 
     <!-- Main content card -->
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -556,7 +556,7 @@
                     android:id="@+id/tvDeptWiseTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Department Wise Attendance"
+                    android:text="Departments with Present Attendance"
                     android:textColor="@color/label_text"
                     android:textSize="16sp"
                     android:textStyle="bold"
@@ -1191,7 +1191,7 @@
             </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>
 

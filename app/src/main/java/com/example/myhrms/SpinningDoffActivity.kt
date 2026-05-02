@@ -4,7 +4,9 @@ import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.widget.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -217,6 +219,9 @@ class SpinningDoffActivity : AppCompatActivity() {
                         this@SpinningDoffActivity,
                         R.layout.spinner_item_black, entryNames
                     ).also { it.setDropDownViewResource(R.layout.spinner_dropdown_item_black) }
+                    // Default entry spell = first fetched spell (position 1,
+                    // because position 0 is the "-- Select Spell --" placeholder).
+                    if (spellList.isNotEmpty()) spEntrySpell.setSelection(1)
                     onDone()
                 }
                 override fun onFailure(call: Call<SpellResponse>, t: Throwable) { onDone() }
@@ -231,6 +236,10 @@ class SpinningDoffActivity : AppCompatActivity() {
                 this, R.layout.spinner_item_black,
                 listOf("-- Machine --") + machineList.map { it.toString() }
             ).also { it.setDropDownViewResource(R.layout.spinner_dropdown_item_black) }
+
+            // Make machine spinner searchable: intercept its touch and show
+            // a custom dialog with a search field + filtered list.
+            attachSearchableMachinePicker()
 
             spEntryQuality.adapter = ArrayAdapter(
                 this, R.layout.spinner_item_black,
@@ -406,6 +415,85 @@ class SpinningDoffActivity : AppCompatActivity() {
                         "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             })
+    }
+
+    // ── Searchable machine picker ──────────────────────────────────
+    @Suppress("ClickableViewAccessibility")
+    private fun attachSearchableMachinePicker() {
+        spEntryMachine.setOnTouchListener { v, ev ->
+            if (ev.action == MotionEvent.ACTION_UP) {
+                v.performClick()
+                showMachineSearchDialog()
+            }
+            true // consume so the native dropdown never opens
+        }
+    }
+
+    private fun showMachineSearchDialog() {
+        if (machineList.isEmpty()) {
+            Toast.makeText(this, "No machines available", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, 0)
+        }
+        val etSearch = EditText(this).apply {
+            hint = "Search machine"
+            isSingleLine = true
+        }
+        val listView = ListView(this).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+            )
+        }
+        container.addView(etSearch)
+        container.addView(listView)
+
+        // Keep a parallel list of original indices so we can map back to
+        // machineList after filtering.
+        var filtered: List<Pair<Int, DoffMachine>> =
+            machineList.mapIndexed { i, m -> i to m }
+
+        val listAdapter = ArrayAdapter(
+            this,
+            R.layout.spinner_dropdown_item_black,
+            filtered.map { it.second.toString() }.toMutableList()
+        )
+        listView.adapter = listAdapter
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Select Machine")
+            .setView(container)
+            .setNegativeButton("Cancel", null)
+            .create()
+
+        etSearch.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val q = s?.toString()?.trim().orEmpty()
+                filtered = if (q.isEmpty()) machineList.mapIndexed { i, m -> i to m }
+                else machineList.mapIndexedNotNull { i, m ->
+                    if (m.toString().contains(q, ignoreCase = true)) i to m else null
+                }
+                listAdapter.clear()
+                listAdapter.addAll(filtered.map { it.second.toString() })
+                listAdapter.notifyDataSetChanged()
+            }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+
+        listView.setOnItemClickListener { _, _, pos, _ ->
+            val origIndex = filtered.getOrNull(pos)?.first ?: return@setOnItemClickListener
+            // +1 because spinner has the "-- Machine --" placeholder at 0
+            spEntryMachine.setSelection(origIndex + 1)
+            dialog.dismiss()
+        }
+
+        dialog.show()
     }
 
     private fun safeReformat(apiDateStr: String): String =

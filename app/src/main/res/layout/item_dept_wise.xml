@@ -36,6 +36,7 @@
 
         <!-- Total employees badge -->
         <LinearLayout
+            android:id="@+id/badgeTotal"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -44,7 +45,8 @@
             android:paddingStart="10dp"
             android:paddingEnd="10dp"
             android:paddingTop="4dp"
-            android:paddingBottom="4dp">
+            android:paddingBottom="4dp"
+            android:visibility="gone">
 
             <TextView
                 android:layout_width="wrap_content"

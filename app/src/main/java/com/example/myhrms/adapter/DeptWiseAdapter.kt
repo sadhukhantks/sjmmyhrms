@@ -17,6 +17,7 @@ class DeptWiseAdapter(
         val tvDeptName: TextView      = view.findViewById(R.id.tvDeptName)
         val tvTotalEmployees: TextView = view.findViewById(R.id.tvDeptTotal)
         val tvPresent: TextView       = view.findViewById(R.id.tvDeptPresent)
+        val badgeTotal: View          = view.findViewById(R.id.badgeTotal)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,6 +31,7 @@ class DeptWiseAdapter(
         holder.tvDeptName.text = item.departmentName
         holder.tvTotalEmployees.text = item.totalEmployees.toString()
         holder.tvPresent.text = item.present.toString()
+        holder.badgeTotal.visibility = if (item.totalEmployees > 0) View.VISIBLE else View.GONE
 
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(item)

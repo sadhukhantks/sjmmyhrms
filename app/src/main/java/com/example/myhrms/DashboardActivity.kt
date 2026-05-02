@@ -400,9 +400,9 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Present card → Toggle department-wise attendance section
+        // Present card → Show department-wise attendance (departments where employees are present)
         binding.cardPresent.setOnClickListener {
-            toggleDepartmentWiseSection()
+            showDepartmentsWithPresent()
         }
 
         // Absent card → Attendance Report for that date
@@ -424,35 +424,37 @@ class DashboardActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    // ── Toggle Department-Wise Section ──────────────────────────
+    // ── Show / Hide Departments Where Employees Are Present (toggle) ──
 
-    private fun toggleDepartmentWiseSection() {
-        android.util.Log.d("DashboardActivity", "toggleDepartmentWiseSection called")
-        android.util.Log.d("DashboardActivity", "allDepartments size: ${allDepartments.size}")
-        android.util.Log.d("DashboardActivity", "allDepartments: $allDepartments")
-        
+    private fun showDepartmentsWithPresent() {
+        // Toggle: if section is already visible, hide it
         if (binding.layoutDeptWise.visibility == View.VISIBLE) {
             binding.layoutDeptWise.visibility = View.GONE
-            android.util.Log.d("DashboardActivity", "Section hidden")
+            return
+        }
+
+        val filteredDepts = allDepartments.filter { it.present > 0 }
+        android.util.Log.d("DashboardActivity",
+            "showDepartmentsWithPresent: total=${allDepartments.size}, withPresent=${filteredDepts.size}")
+
+        binding.layoutDeptWise.visibility = View.VISIBLE
+
+        if (filteredDepts.isNotEmpty()) {
+            binding.tvDeptWiseTitle.text =
+                "Departments with Present Attendance (${filteredDepts.size})"
+            deptWiseAdapter.updateList(filteredDepts)
+            binding.rvDeptWise.visibility = View.VISIBLE
+            binding.tvDeptWiseEmpty.visibility = View.GONE
         } else {
-            // When showing, filter to only departments with present > 0
-            val filteredDepts = allDepartments.filter { it.present > 0 }
-            android.util.Log.d("DashboardActivity", "filteredDepts size: ${filteredDepts.size}")
-            android.util.Log.d("DashboardActivity", "filteredDepts: $filteredDepts")
-            
-            if (filteredDepts.isNotEmpty()) {
-                deptWiseAdapter.updateList(filteredDepts)
-                binding.rvDeptWise.visibility = View.VISIBLE
-                binding.tvDeptWiseEmpty.visibility = View.GONE
-                android.util.Log.d("DashboardActivity", "Showing department list")
-            } else {
-                binding.rvDeptWise.visibility = View.GONE
-                binding.tvDeptWiseEmpty.visibility = View.VISIBLE
-                android.util.Log.d("DashboardActivity", "Showing empty state")
-                Toast.makeText(this, "No departments with present attendance", Toast.LENGTH_SHORT).show()
-            }
-            
-            binding.layoutDeptWise.visibility = View.VISIBLE
+            binding.tvDeptWiseTitle.text = "Departments with Present Attendance"
+            binding.rvDeptWise.visibility = View.GONE
+            binding.tvDeptWiseEmpty.visibility = View.VISIBLE
+            Toast.makeText(this, "No departments with present attendance", Toast.LENGTH_SHORT).show()
+        }
+
+        // Scroll the section into view
+        binding.layoutDeptWise.post {
+            binding.layoutDeptWise.parent?.requestChildFocus(binding.layoutDeptWise, binding.layoutDeptWise)
         }
     }
 
