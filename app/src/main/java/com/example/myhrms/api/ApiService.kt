@@ -229,6 +229,41 @@ interface ApiService {
     @DELETE(ApiRoutes.DOFF_TRANSACTION_DETAIL)
     fun deleteDoffTransaction(@Path("id") id: Int): Call<DoffSaveResponse>
 
+    @GET(ApiRoutes.DOFF_VALIDATE_MACHINE)
+    fun validateDoffMachine(
+        @Query("mc_no")     mcNo: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DoffMachineValidateResponse>
+
+    @GET(ApiRoutes.DOFF_VALIDATE_TROLLY)
+    fun validateDoffTrolly(
+        @Query("trolly_no") trollyNo: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DoffTrollyValidateResponse>
+
+    @GET(ApiRoutes.DOFF_SUMMARY)
+    fun getDoffSummary(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int? = null,
+        @Query("branch_id") branchId: Int? = null,
+        @Query("mc_id")     mcId: Int? = null
+    ): Call<DoffSummaryResponse>
+
+    @GET(ApiRoutes.DOFF_FRAME_MACHINES)
+    fun getFrameMachines(
+        @Query("branch_id") branchId: Int
+    ): Call<DoffMachineResponse>
+
+    @GET(ApiRoutes.DOFF_FRAME_ENTRIES)
+    fun getFrameEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<FrameEntriesResponse>
+
+    @POST(ApiRoutes.DOFF_FRAME_ENTRIES)
+    fun saveFrameEntries(@Body request: FrameEntriesSaveRequest): Call<FrameEntriesSaveResponse>
+
     // ── On Boarding ───────────────────────────────────────────────
     @GET(ApiRoutes.ONBOARDING_EMPLOYEE)
     fun getOnBoardingEmployee(

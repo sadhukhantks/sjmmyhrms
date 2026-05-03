@@ -128,3 +128,66 @@ data class DoffSaveResponse(
     @SerializedName("id")      val id: Int?
 )
 
+// ── Validation / summary for "New Doff Entry" ────────────────────────────────
+
+data class DoffMachineValidateResponse(
+    @SerializedName("status")              val status: String?,
+    @SerializedName("message")             val message: String?,
+    @SerializedName("mc_id")               val mcId: Int?,
+    @SerializedName("mc_no")               val mcNo: String?,
+    @SerializedName("mc_name")             val mcName: String?,
+    @SerializedName("mc_code")             val mcCode: String?,
+    @SerializedName("mech_posting_code")   val mechPostingCode: Int?,
+    @SerializedName("trolly_id")           val trollyId: Int?,
+    @SerializedName("trolly_name")         val trollyName: String?,
+    @SerializedName("trolly_posting_code") val trollyPostingCode: Int?,
+    @SerializedName("trolly_weight")       val trollyWeight: Double?,
+    @SerializedName("bucket_weight")       val bucketWeight: Double?
+)
+
+data class DoffTrollyValidateResponse(
+    @SerializedName("status")        val status: String?,
+    @SerializedName("message")       val message: String?,
+    @SerializedName("trolly_id")     val trollyId: Int?,
+    @SerializedName("trolly_no")     val trollyNo: String?,
+    @SerializedName("trolly_name")   val trollyName: String?,
+    @SerializedName("trolly_weight") val trollyWeight: Double?,
+    @SerializedName("bucket_weight") val bucketWeight: Double?
+)
+
+data class DoffSummaryRow(
+    @SerializedName("mc_id")      val mcId: Int?,
+    @SerializedName("mc_no")      val mcNo: String?,
+    @SerializedName("mc_name")    val mcName: String?,
+    @SerializedName("no_of_doff") val noOfDoff: Int?,
+    @SerializedName("total_wt")   val totalWt: Double?
+)
+
+data class DoffSummaryResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("summary") val summary: List<DoffSummaryRow>?
+)
+
+// ── Spell-wise Frame Entry ───────────────────────────────────────────────────
+
+data class FrameEntriesResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("mc_ids")  val mcIds: List<Int>?
+)
+
+data class FrameEntriesSaveRequest(
+    @SerializedName("date")      val date: String,
+    @SerializedName("spell_id")  val spellId: Int,
+    @SerializedName("branch_id") val branchId: Int,
+    @SerializedName("user_id")   val userId: Int,
+    @SerializedName("mc_ids")    val mcIds: List<Int>
+)
+
+data class FrameEntriesSaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("count")   val count: Int?
+)
+

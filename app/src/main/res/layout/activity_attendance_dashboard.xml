@@ -489,6 +489,58 @@
                     android:focusable="true" />
 
                 <TextView
+                    android:id="@+id/headerDoffEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:gravity="center_vertical"
+                    android:background="@drawable/bg_submenu_item"
+                    android:paddingStart="32dp"
+                    android:paddingEnd="16dp"
+                    android:text="  Doff Entry  ▾"
+                    android:textColor="@color/label_text"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="1dp"
+                    android:clickable="true"
+                    android:focusable="true" />
+
+                <LinearLayout
+                    android:id="@+id/subMenuDoffEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/menuSpellWiseFrameEntry"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Spell wise Frame entry"
+                        android:textColor="@color/label_text"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="1dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/menuSpgDoffEntry"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Spg Doff Entry"
+                        android:textColor="@color/label_text"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="1dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
+
+                <TextView
                     android:id="@+id/menuWindingEntry"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"

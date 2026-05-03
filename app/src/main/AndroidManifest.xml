@@ -88,6 +88,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".NewDoffEntryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SpellWiseFrameEntryActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".LeaveEntryActivity"
             android:exported="false" />
 

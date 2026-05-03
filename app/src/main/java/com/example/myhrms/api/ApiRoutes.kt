@@ -43,6 +43,11 @@ object ApiRoutes {
     const val DOFF_TRANSACTION_DETAIL = "doff-transactions/{id}"
     const val DOFF_LAST_BY_MACHINE    = "doff/last-by-machine"
     const val DOFF_LAST_EMP           = "doff/last-emp"
+    const val DOFF_VALIDATE_MACHINE   = "doff/validate-machine"
+    const val DOFF_VALIDATE_TROLLY    = "doff/validate-trolly"
+    const val DOFF_SUMMARY            = "doff/summary"
+    const val DOFF_FRAME_MACHINES     = "doff/frame-machines"
+    const val DOFF_FRAME_ENTRIES      = "doff/frame-entries"
 
     const val ONBOARDING_EMPLOYEE = "onboarding/employee/{emp_code}"
     const val ONBOARDING_REGISTER_FACE = "onboarding/register-face"

@@ -204,6 +204,24 @@ class AttendanceDashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
             startActivity(i)
         }
+
+        // Doff Entry expandable group
+        findViewById<View>(R.id.headerDoffEntry).setOnClickListener {
+            val subMenu = findViewById<View>(R.id.subMenuDoffEntry)
+            subMenu.visibility = if (subMenu.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+        findViewById<View>(R.id.menuSpellWiseFrameEntry).setOnClickListener {
+            val i = Intent(this, SpellWiseFrameEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
+        }
+        findViewById<View>(R.id.menuSpgDoffEntry).setOnClickListener {
+            val i = Intent(this, NewDoffEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
+        }
         findViewById<View>(R.id.menuWindingEntry).setOnClickListener {
             openProductionScreen("Winding Entry")
         }

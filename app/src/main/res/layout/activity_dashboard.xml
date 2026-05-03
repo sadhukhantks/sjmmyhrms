@@ -1050,6 +1050,129 @@
                     </LinearLayout>
 
                     <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="4dp">
+
+                        <!-- Doff Entry Header (expandable) -->
+                        <LinearLayout
+                            android:id="@+id/headerDoffEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Doff Entry" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Doff Entry"
+                                android:textColor="#90CAF9"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/arrowDoffEntry"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_expand_more"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Expand" />
+                        </LinearLayout>
+
+                        <!-- Doff Entry sub-items -->
+                        <LinearLayout
+                            android:id="@+id/subMenuDoffEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:paddingStart="16dp"
+                            android:paddingTop="2dp">
+
+                            <LinearLayout
+                                android:id="@+id/menuSpellWiseFrameEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Spell wise Frame entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Spell wise Frame entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/menuSpgDoffEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Spg Doff Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Spg Doff Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <LinearLayout
                         android:id="@+id/menuWindingEntry"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"

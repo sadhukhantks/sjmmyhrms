@@ -633,6 +633,23 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+
+        // Doff Entry expandable group
+        binding.headerDoffEntry.setOnClickListener {
+            toggleSubMenu(binding.subMenuDoffEntry, binding.arrowDoffEntry)
+        }
+        binding.menuSpellWiseFrameEntry.setOnClickListener {
+            val i = Intent(this, SpellWiseFrameEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuSpgDoffEntry.setOnClickListener {
+            val i = Intent(this, NewDoffEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
         binding.menuWindingEntry.setOnClickListener {
             openProductionScreen("Winding Entry")
         }
