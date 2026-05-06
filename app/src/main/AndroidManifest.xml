@@ -92,6 +92,14 @@
             android:exported="false" />
 
         <activity
+            android:name=".SpgDoffEntry1Activity"
+            android:exported="false" />
+
+        <activity
+            android:name=".WindingEntryActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".SpellWiseFrameEntryActivity"
             android:exported="false" />
 

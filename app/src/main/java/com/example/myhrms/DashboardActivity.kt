@@ -650,8 +650,17 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+        binding.menuSpgDoffEntry1.setOnClickListener {
+            val i = Intent(this, SpgDoffEntry1Activity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
         binding.menuWindingEntry.setOnClickListener {
-            openProductionScreen("Winding Entry")
+            val i = Intent(this, WindingEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
         }
         binding.menuWeavingEntry.setOnClickListener {
             openProductionScreen("Weaving Entry")

@@ -264,6 +264,68 @@ interface ApiService {
     @POST(ApiRoutes.DOFF_FRAME_ENTRIES)
     fun saveFrameEntries(@Body request: FrameEntriesSaveRequest): Call<FrameEntriesSaveResponse>
 
+    @GET(ApiRoutes.DOFF_FRAME_MACHINE_DEFAULTS)
+    fun getFrameMachineDefaults(
+        @Query("branch_id") branchId: Int
+    ): Call<FrameMachineDefaultsResponse>
+
+    // ── Winding Frame Entry ────────────────────────────────────────
+    @GET(ApiRoutes.DOFF_WINDING_FRAME_MACHINES)
+    fun getWindingFrameMachines(
+        @Query("branch_id") branchId: Int
+    ): Call<DoffMachineResponse>
+
+    @GET(ApiRoutes.DOFF_WINDING_FRAME_ENTRIES)
+    fun getWindingFrameEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<FrameEntriesResponse>
+
+    @POST(ApiRoutes.DOFF_WINDING_FRAME_ENTRIES)
+    fun saveWindingFrameEntries(@Body request: FrameEntriesSaveRequest): Call<FrameEntriesSaveResponse>
+
+    @GET(ApiRoutes.DOFF_WINDING_FRAME_DEFAULTS)
+    fun getWindingFrameMachineDefaults(
+        @Query("branch_id") branchId: Int
+    ): Call<FrameMachineDefaultsResponse>
+
+    @GET(ApiRoutes.DOFF_WINDING_QUALITIES)
+    fun getWindingQualities(
+        @Query("branch_id") branchId: Int? = null
+    ): Call<WindingQualityResponse>
+
+    @GET(ApiRoutes.DOFF_LAST_QUALITY_BY_MC)
+    fun getLastQualityByMc(
+        @Query("branch_id") branchId: Int,
+        @Query("type") type: String = "S"
+    ): Call<LastQualityByMcResponse>
+
+    @GET(ApiRoutes.DOFF_WINDING_EB_LOOKUP)
+    fun windingEbLookup(
+        @Query("eb_no")     ebNo: Long,
+        @Query("branch_id") branchId: Int
+    ): Call<WindingEbLookupResponse>
+
+    @GET(ApiRoutes.DOFF_WINDING_ENTRIES_LIST)
+    fun getWindingEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<WindingEntriesResponse>
+
+    @POST(ApiRoutes.DOFF_WINDING_ENTRY)
+    fun saveWindingEntry(@Body request: WindingEntrySaveRequest): Call<WindingEntrySaveResponse>
+
+    @PUT(ApiRoutes.DOFF_WINDING_ENTRY_DETAIL)
+    fun updateWindingEntry(
+        @Path("id") id: Int,
+        @Body request: WindingEntryUpdateRequest
+    ): Call<WindingEntrySaveResponse>
+
+    @DELETE(ApiRoutes.DOFF_WINDING_ENTRY_DETAIL)
+    fun deleteWindingEntry(@Path("id") id: Int): Call<WindingEntrySaveResponse>
+
     // ── On Boarding ───────────────────────────────────────────────
     @GET(ApiRoutes.ONBOARDING_EMPLOYEE)
     fun getOnBoardingEmployee(
@@ -286,4 +348,67 @@ interface ApiService {
 
     @DELETE(ApiRoutes.WEIGHT_TRANSACTION_DETAIL)
     fun deleteWeightTransaction(@Path("id") id: Int): Call<WeightSaveResponse>
+
+    // ── Spg Doff Entry (1) ────────────────────────────────────────────────────
+    @GET(ApiRoutes.DOFF_SPG1_MECH_CODES)
+    fun getSpg1MechCodes(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<Spg1MechCodesResponse>
+
+    @GET(ApiRoutes.DOFF_SPG1_SUMMARY)
+    fun getSpg1Summary(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<Spg1SummaryResponse>
+
+    // ── Winding Entry (2) ──────────────────────────────────────────────────
+    @GET(ApiRoutes.DOFF_WE2_EMP_LOOKUP)
+    fun we2EmpLookup(
+        @Query("emp_code")  empCode: String,
+        @Query("branch_id") branchId: Int
+    ): Call<We2EmpLookupResponse>
+
+    @GET(ApiRoutes.DOFF_WE2_EMPLOYEES)
+    fun getWe2Employees(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<We2EmployeesResponse>
+
+    @GET(ApiRoutes.DOFF_WE2)
+    fun getWe2Summary(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<We2SummaryResponse>
+
+    @GET(ApiRoutes.DOFF_WE2_DETAIL_BY_EMP)
+    fun getWe2Details(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int,
+        @Query("eb_id")     ebId: Long
+    ): Call<We2SummaryResponse>
+
+    @GET(ApiRoutes.DOFF_WE2_SUMMARY)
+    fun getWe2GroupedSummary(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<We2GroupedResponse>
+
+    @POST(ApiRoutes.DOFF_WE2)
+    fun saveWe2(@Body req: We2SaveRequest): Call<We2SaveResponse>
+
+    @DELETE(ApiRoutes.DOFF_WE2_DETAIL)
+    fun deleteWe2(@Path("id") id: Int): Call<We2SaveResponse>
+
+    @GET(ApiRoutes.DOFF_WE2_QUALITY_SHIFT_REPORT)
+    fun getWe2QualityShiftReport(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<QualityShiftReportResponse>
 }

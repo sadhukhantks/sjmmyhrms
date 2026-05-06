@@ -46,8 +46,31 @@ object ApiRoutes {
     const val DOFF_VALIDATE_MACHINE   = "doff/validate-machine"
     const val DOFF_VALIDATE_TROLLY    = "doff/validate-trolly"
     const val DOFF_SUMMARY            = "doff/summary"
-    const val DOFF_FRAME_MACHINES     = "doff/frame-machines"
-    const val DOFF_FRAME_ENTRIES      = "doff/frame-entries"
+    const val DOFF_FRAME_MACHINES             = "doff/frame-machines"
+    const val DOFF_FRAME_ENTRIES              = "doff/frame-entries"
+    const val DOFF_FRAME_MACHINE_DEFAULTS     = "doff/frame-machine-defaults"
+    const val DOFF_WINDING_FRAME_MACHINES     = "doff/winding-frame-machines"
+    const val DOFF_WINDING_FRAME_ENTRIES      = "doff/winding-frame-entries"
+    const val DOFF_WINDING_FRAME_DEFAULTS     = "doff/winding-frame-machine-defaults"
+    const val DOFF_WINDING_QUALITIES          = "doff/winding-qualities"
+    const val DOFF_LAST_QUALITY_BY_MC         = "doff/last-quality-by-mc"
+    const val DOFF_WINDING_EB_LOOKUP          = "doff/winding-eb-lookup"
+    const val DOFF_WINDING_ENTRIES_LIST       = "doff/winding-entries"
+    const val DOFF_WINDING_ENTRY              = "doff/winding-entry"
+    const val DOFF_WINDING_ENTRY_DETAIL       = "doff/winding-entry/{id}"
+
+    // ── Spg Doff Entry (1) ──────────────────────────────────────────────────
+    const val DOFF_SPG1_MECH_CODES = "doff/spg1-mech-codes"
+    const val DOFF_SPG1_SUMMARY    = "doff/spg1-summary"
+
+    // ── Winding Entry (2) — S/C + trolly + weight ────────────────────────────
+    const val DOFF_WE2_EMP_LOOKUP = "doff/winding-entry-2-emp-lookup"
+    const val DOFF_WE2_EMPLOYEES  = "doff/winding-entry-2-employees"
+    const val DOFF_WE2            = "doff/winding-entry-2"
+    const val DOFF_WE2_SUMMARY       = "doff/winding-entry-2-summary"
+    const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail"
+    const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
+    const val DOFF_WE2_QUALITY_SHIFT_REPORT = "doff/winding-entry-2-quality-shift-report"
 
     const val ONBOARDING_EMPLOYEE = "onboarding/employee/{emp_code}"
     const val ONBOARDING_REGISTER_FACE = "onboarding/register-face"
@@ -56,4 +79,3 @@ object ApiRoutes {
     const val WEIGHT_TRANSACTIONS       = "weight-transactions"
     const val WEIGHT_TRANSACTION_DETAIL = "weight-transactions/{id}"
 }
-

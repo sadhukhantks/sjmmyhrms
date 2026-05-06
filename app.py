@@ -2603,6 +2603,81 @@ def emp_wise_attendance():
 
 
 # ══════════════════════════════════════════════════════════════════
+# WINDING ENTRY 2 - QUALITY-WISE SHIFT-WISE REPORT
+# ══════════════════════════════════════════════════════════════════
+
+@app.route('/doff/winding-entry-2-quality-shift-report', methods=['GET'])
+def get_winding_entry_2_quality_shift_report():
+    """
+    Get quality-wise shift-wise production report for Winding Entry 2
+    Query params:
+      ?date=2024-01-15  → required (filter by date)
+      ?branch_id=1      → required
+    Returns:
+      - report: List of quality rows with shift A/B/C totals
+      - grand_total: Overall totals for each shift
+    """
+    try:
+        date_str = request.args.get('date')
+        branch_id = request.args.get('branch_id', type=int)
+
+        if not date_str:
+            return jsonify({'status': 'error', 'message': 'date is required'}), 400
+        if not branch_id:
+            return jsonify({'status': 'error', 'message': 'branch_id is required'}), 400
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+
+        # Main query: Get quality-wise shift-wise totals
+        # Assuming we have quality info in spinning_quality_mst and spell_mst for shifts
+        # We'll group by quality and spell to get the breakdown
+        query = """
+            SELECT 
+                COALESCE(q.quality_name, 'Unknown') AS quality_name,
+                COALESCE(SUM(CASE WHEN s.spell_name LIKE '%A%' THEN we.net_weight ELSE 0 END), 0) AS shift_a,
+                COALESCE(SUM(CASE WHEN s.spell_name LIKE '%B%' THEN we.net_weight ELSE 0 END), 0) AS shift_b,
+                COALESCE(SUM(CASE WHEN s.spell_name LIKE '%C%' THEN we.net_weight ELSE 0 END), 0) AS shift_c,
+                COALESCE(SUM(we.net_weight), 0) AS total
+            FROM winding_entry_2 we
+            LEFT JOIN spell_mst s ON we.spell_id = s.spell_id
+            LEFT JOIN spinning_quality_mst q ON we.quality_id = q.quality_id
+            WHERE we.winding_date = %s
+              AND we.branch_id = %s
+              AND (we.is_active IS NULL OR we.is_active = 1)
+            GROUP BY q.quality_name
+            ORDER BY q.quality_name
+        """
+        
+        cursor.execute(query, (date_str, branch_id))
+        report_rows = cursor.fetchall()
+
+        # Calculate grand totals
+        grand_total_a = sum(row['shift_a'] for row in report_rows)
+        grand_total_b = sum(row['shift_b'] for row in report_rows)
+        grand_total_c = sum(row['shift_c'] for row in report_rows)
+        grand_total = sum(row['total'] for row in report_rows)
+
+        cursor.close()
+        db.close()
+
+        return jsonify({
+            'status': 'success',
+            'message': 'Quality-wise shift-wise report generated',
+            'report': report_rows,
+            'grand_total': {
+                'shift_a': grand_total_a,
+                'shift_b': grand_total_b,
+                'shift_c': grand_total_c,
+                'total': grand_total
+            }
+        })
+
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# ══════════════════════════════════════════════════════════════════
 # RUN SERVER
 # ══════════════════════════════════════════════════════════════════
 

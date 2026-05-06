@@ -222,8 +222,17 @@ class AttendanceDashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
             startActivity(i)
         }
+        findViewById<View>(R.id.menuSpgDoffEntry1).setOnClickListener {
+            val i = Intent(this, SpgDoffEntry1Activity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
+        }
         findViewById<View>(R.id.menuWindingEntry).setOnClickListener {
-            openProductionScreen("Winding Entry")
+            val i = Intent(this, WindingEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
         }
         findViewById<View>(R.id.menuWeavingEntry).setOnClickListener {
             openProductionScreen("Weaving Entry")

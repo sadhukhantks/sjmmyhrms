@@ -171,10 +171,24 @@ data class DoffSummaryResponse(
 
 // ── Spell-wise Frame Entry ───────────────────────────────────────────────────
 
+data class FrameEntry(
+    @SerializedName("mc_id")      val mcId: Int,
+    @SerializedName("quality_id") val qualityId: Int?
+)
+
 data class FrameEntriesResponse(
-    @SerializedName("status")  val status: String?,
-    @SerializedName("message") val message: String?,
-    @SerializedName("mc_ids")  val mcIds: List<Int>?
+    @SerializedName("status")        val status: String?,
+    @SerializedName("message")       val message: String?,
+    @SerializedName("mc_ids")        val mcIds: List<Int>?,
+    @SerializedName("entries")       val entries: List<FrameEntry>?,
+    @SerializedName("is_fallback")   val isFallback: Boolean?,
+    @SerializedName("fallback_date") val fallbackDate: String?
+)
+
+data class FrameMachineDefaultsResponse(
+    @SerializedName("status")   val status: String?,
+    @SerializedName("message")  val message: String?,
+    @SerializedName("defaults") val defaults: List<FrameEntry>?
 )
 
 data class FrameEntriesSaveRequest(
@@ -182,7 +196,7 @@ data class FrameEntriesSaveRequest(
     @SerializedName("spell_id")  val spellId: Int,
     @SerializedName("branch_id") val branchId: Int,
     @SerializedName("user_id")   val userId: Int,
-    @SerializedName("mc_ids")    val mcIds: List<Int>
+    @SerializedName("entries")   val entries: List<FrameEntry>
 )
 
 data class FrameEntriesSaveResponse(
@@ -191,3 +205,192 @@ data class FrameEntriesSaveResponse(
     @SerializedName("count")   val count: Int?
 )
 
+data class WindingQualityResponse(
+    @SerializedName("status")    val status: String?,
+    @SerializedName("qualities") val qualities: List<SpinningQuality>?
+)
+
+data class LastQualityByMcResponse(
+    @SerializedName("success") val success: Boolean?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("data")    val data: Map<String, Int>?
+)
+
+// ── Winding Entry (individual rows) ─────────────────────────────────────────
+
+data class WindingEbLookupResponse(
+    @SerializedName("status")   val status: String?,
+    @SerializedName("message")  val message: String?,
+    @SerializedName("eb_id")    val ebId: Long?,
+    @SerializedName("emp_code") val empCode: String?,
+    @SerializedName("emp_name") val empName: String?
+)
+
+data class WindingEntry(
+    @SerializedName("id")           val id: Int?,
+    @SerializedName("tran_date")    val tranDate: String?,
+    @SerializedName("eb_id")        val ebId: Long?,
+    @SerializedName("emp_code")     val empCode: String?,
+    @SerializedName("emp_name")     val empName: String?,
+    @SerializedName("quality_id")   val qualityId: Int?,
+    @SerializedName("quality_name") val qualityName: String?
+)
+
+data class WindingEntriesResponse(
+    @SerializedName("status")        val status: String?,
+    @SerializedName("entries")       val entries: List<WindingEntry>?,
+    @SerializedName("is_fallback")   val isFallback: Boolean?,
+    @SerializedName("fallback_date") val fallbackDate: String?
+)
+
+data class WindingEntrySaveRequest(
+    @SerializedName("date")       val date: String,
+    @SerializedName("spell_id")   val spellId: Int,
+    @SerializedName("branch_id")  val branchId: Int,
+    @SerializedName("eb_id")      val ebId: Long,
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("user_id")    val userId: Int
+)
+
+data class WindingEntryUpdateRequest(
+    @SerializedName("eb_id")      val ebId: Long?,
+    @SerializedName("quality_id") val qualityId: Int?
+)
+
+data class WindingEntrySaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
+// ── Spg Doff Entry (1) – mech posting codes ──────────────────────────────────
+
+data class Spg1MechCode(
+    @SerializedName("mc_id")             val mcId: Int,
+    @SerializedName("mc_name")           val mcName: String?,
+    @SerializedName("mc_code")           val mcCode: String?,
+    @SerializedName("mech_posting_code") val mechPostingCode: Int?
+)
+
+data class Spg1MechCodesResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("codes")   val codes: List<Spg1MechCode>?
+)
+
+// ── Spg Doff Entry (1) – summary list ────────────────────────────────────────
+
+data class Spg1SummaryRow(
+    @SerializedName("mc_id")             val mcId: Int,
+    @SerializedName("mc_code")           val mcCode: String?,
+    @SerializedName("mc_name")           val mcName: String?,
+    @SerializedName("mech_posting_code") val mechPostingCode: Int?,
+    @SerializedName("weights")           val weights: List<Double>?,
+    @SerializedName("no_of_doff")        val noOfDoff: Int,
+    @SerializedName("total_wt")          val totalWt: Double
+)
+
+data class Spg1SummaryResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("summary") val summary: List<Spg1SummaryRow>?
+)
+
+// ── Winding Entry (2) — S/C + trolly + weight ────────────────────────────────
+
+data class We2Employee(
+    @SerializedName("eb_id")    val ebId: Long?,
+    @SerializedName("emp_code") val empCode: String?,
+    @SerializedName("emp_name") val empName: String?
+)
+
+data class We2EmployeesResponse(
+    @SerializedName("status")    val status: String?,
+    @SerializedName("message")   val message: String?,
+    @SerializedName("employees") val employees: List<We2Employee>?
+)
+
+data class We2EmpLookupResponse(
+    @SerializedName("status")   val status: String?,
+    @SerializedName("message")  val message: String?,
+    @SerializedName("eb_id")    val ebId: Long?,
+    @SerializedName("emp_code") val empCode: String?,
+    @SerializedName("emp_name") val empName: String?
+)
+
+data class We2SummaryRow(
+    @SerializedName("id")           val id: Int?,
+    @SerializedName("eb_id")        val ebId: Long?,
+    @SerializedName("emp_code")     val empCode: String?,
+    @SerializedName("emp_name")     val empName: String?,
+    @SerializedName("sc_type")      val scType: String?,
+    @SerializedName("trolly_id")    val trollyId: Int?,
+    @SerializedName("trolly_name")  val trollyName: String?,
+    @SerializedName("gross_weight") val grossWeight: Double?,
+    @SerializedName("tare_weight")  val tareWeight: Double?,
+    @SerializedName("net_weight")   val netWeight: Double?
+)
+
+data class We2SummaryResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("summary") val summary: List<We2SummaryRow>?
+)
+
+data class We2SaveRequest(
+    @SerializedName("date")         val date: String,
+    @SerializedName("spell_id")     val spellId: Int,
+    @SerializedName("branch_id")    val branchId: Int,
+    @SerializedName("eb_id")        val ebId: Long,
+    @SerializedName("sc_type")      val scType: String,
+    @SerializedName("trolly_id")    val trollyId: Int?,
+    @SerializedName("gross_weight") val grossWeight: Double,
+    @SerializedName("tare_weight")  val tareWeight: Double,
+    @SerializedName("net_weight")   val netWeight: Double,
+    @SerializedName("user_id")      val userId: Int
+)
+
+data class We2SaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
+data class We2GroupedRow(
+    @SerializedName("eb_id")      val ebId: Long?,
+    @SerializedName("emp_code")   val empCode: String?,
+    @SerializedName("emp_name")   val empName: String?,
+    @SerializedName("weights")    val weights: List<Double>?,
+    @SerializedName("no_of_doff") val noOfDoff: Int,
+    @SerializedName("total_wt")   val totalWt: Double
+)
+
+data class We2GroupedResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("summary") val summary: List<We2GroupedRow>?
+)
+
+// ── Quality-wise Shift-wise Report ──────────────────────────────────────────
+
+data class QualityShiftReportRow(
+    @SerializedName("quality_name") val qualityName: String?,
+    @SerializedName("shift_a")      val shiftA: Double?,
+    @SerializedName("shift_b")      val shiftB: Double?,
+    @SerializedName("shift_c")      val shiftC: Double?,
+    @SerializedName("total")        val total: Double?
+)
+
+data class GrandTotalRow(
+    @SerializedName("shift_a") val shiftA: Double?,
+    @SerializedName("shift_b") val shiftB: Double?,
+    @SerializedName("shift_c") val shiftC: Double?,
+    @SerializedName("total")   val total: Double?
+)
+
+data class QualityShiftReportResponse(
+    @SerializedName("status")      val status: String?,
+    @SerializedName("message")     val message: String?,
+    @SerializedName("report")      val report: List<QualityShiftReportRow>?,
+    @SerializedName("grand_total") val grandTotal: GrandTotalRow?
+)

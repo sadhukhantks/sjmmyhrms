@@ -38,6 +38,16 @@
             android:layout_marginStart="10dp"
             android:textColor="#000000"
             android:textSize="13sp" />
+
+        <Spinner
+            android:id="@+id/spQuality"
+            android:layout_width="0dp"
+            android:layout_weight="1.2"
+            android:layout_height="40dp"
+            android:layout_marginStart="6dp"
+            android:background="@drawable/bg_input_rounded_light"
+            android:paddingStart="6dp"
+            android:paddingEnd="2dp" />
     </LinearLayout>
 </androidx.cardview.widget.CardView>
 
