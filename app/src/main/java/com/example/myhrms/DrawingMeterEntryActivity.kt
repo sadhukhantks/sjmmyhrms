@@ -381,11 +381,9 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
                     val msg = response.body()?.message ?: "Entry saved"
                     Toast.makeText(this@DrawingMeterEntryActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
-                        // Preserve hours value before clearing form
-                        val currentHours = etHours.text.toString()
-                        clearForm()
-                        // Restore hours after clearing
-                        etHours.setText(currentHours)
+                        // Keep shed selection + machine buttons + hours.
+                        // Only reset per-entry fields so user can pick the next machine.
+                        clearEntryFieldsKeepShedAndMachines()
                         loadSummary()
                     }
                 }
@@ -422,16 +420,20 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
             })
     }
 
+    /**
+     * Full reset – wipes shed/machine selection and entry fields.
+     * Used on spell change and date change.
+     */
     private fun clearForm() {
         selectedMachine = null
         selectedShed = null
-        
+
         // Reset shed button colors
         for (i in 0 until llShedButtons.childCount) {
             val btn = llShedButtons.getChildAt(i) as? Button ?: continue
             btn.setBackgroundColor(Color.parseColor("#1565C0"))
         }
-        
+
         llMachineButtons.removeAllViews()
         tvMeter.text = "—"
         etOpening.setText("")
@@ -439,6 +441,28 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         // Don't clear hours - keep value from selected spell
         tvUnit.text = "0"
         tvEff.text = "0.0"
+    }
+
+    /**
+     * After-save reset – keeps shed selection, the machine button list and hours.
+     * Only deselects the current machine and clears the meter / opening / closing / unit / eff
+     * so the user can immediately tap the next machine in the same shed.
+     */
+    private fun clearEntryFieldsKeepShedAndMachines() {
+        selectedMachine = null
+
+        // Reset only the machine button colors (do NOT remove buttons)
+        for (i in 0 until llMachineButtons.childCount) {
+            val btn = llMachineButtons.getChildAt(i) as? Button ?: continue
+            btn.setBackgroundColor(Color.parseColor("#1565C0"))
+        }
+
+        tvMeter.text = "—"
+        etOpening.setText("")
+        etClosing.setText("")
+        tvUnit.text = "0"
+        tvEff.text = "0.0"
+        // selectedShed, shed button colors, machine buttons and etHours are kept as-is.
     }
 
     private fun selectedSpellId(): Int? = spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellId
