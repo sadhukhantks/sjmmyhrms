@@ -6,7 +6,8 @@ import com.google.gson.annotations.SerializedName
 
 data class Spell(
     @SerializedName("spell_id")   val spellId: Int,
-    @SerializedName("spell_name") val spellName: String?
+    @SerializedName("spell_name") val spellName: String?,
+    @SerializedName("working_hours") val workingHours: Double? = 8.0
 ) {
     override fun toString() = spellName ?: ""
 }

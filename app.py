@@ -321,7 +321,7 @@ def get_departments():
         data = cursor.fetchall()
         cursor.close()
         db.close()
-        return jsonify({'status': 'success', 'data': data, 'total': len(data)})
+        return jsonify({'status': 'success', 'shifts': data, 'total': len(data)})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -362,7 +362,8 @@ def get_shifts():
         if branch_id:
             cursor.execute("""
                 SELECT sm.spell_id AS id, sm.spell_name AS name,
-                       sm.starting_time AS start_time, sm.end_time
+                       sm.starting_time AS start_time, sm.end_time,
+                       COALESCE(sm.working_hours, 8.0) AS working_hours
                 FROM spell_mst sm
                 JOIN shift_mst sh ON sm.shift_id = sh.shift_id
                 WHERE sh.branch_id = %s
@@ -371,14 +372,15 @@ def get_shifts():
         else:
             cursor.execute("""
                 SELECT spell_id AS id, spell_name AS name,
-                       starting_time AS start_time, end_time
+                       starting_time AS start_time, end_time,
+                       COALESCE(working_hours, 8.0) AS working_hours
                 FROM spell_mst ORDER BY spell_name
             """)
 
         data = cursor.fetchall()
         cursor.close()
         db.close()
-        return jsonify({'status': 'success', 'data': data, 'total': len(data)})
+        return jsonify({'status': 'success', 'shifts': data, 'total': len(data)})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
@@ -953,7 +955,7 @@ def check_face():
             return jsonify({
                 'status': 'error',
                 'message': 'Face not recognized. No matching employee found.'
-            }), 404
+            }, 404)
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
@@ -2260,8 +2262,8 @@ def get_leave_transactions():
 
         sql = """
             SELECT lt.id, lt.eb_id, lt.leave_type,
-                   DATE_FORMAT(lt.from_date, '%%Y-%%m-%%d') AS from_date,
-                   DATE_FORMAT(lt.to_date,   '%%Y-%%m-%%d') AS to_date,
+                   DATE_FORMAT(lt.from_date, '%%Y-%%m-%%d') AS `from`,
+                   DATE_FORMAT(lt.to_date,   '%%Y-%%m-%%d') AS `to`,
                    lt.no_of_days, lt.reason, lt.status,
                    lt.branch_id, lt.co_id,
                    DATE_FORMAT(lt.created_at, '%%Y-%%m-%%d %%H:%%i') AS created_at,
@@ -2602,6 +2604,7 @@ def emp_wise_attendance():
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+
 # ══════════════════════════════════════════════════════════════════
 # WINDING ENTRY 2 - QUALITY-WISE SHIFT-WISE REPORT
 # ══════════════════════════════════════════════════════════════════
@@ -2678,17 +2681,242 @@ def get_winding_entry_2_quality_shift_report():
 
 
 # ══════════════════════════════════════════════════════════════════
-# RUN SERVER
+# DRAWING METER ENTRY ENDPOINTS
 # ══════════════════════════════════════════════════════════════════
 
-if __name__ == '__main__':
-    print("🚀 Starting MyHrms Flask Server...")
-    print(f"📊 Database: {DB_CONFIG['database']} @ {DB_CONFIG['host']}")
-    init_db()  # Run database migrations on startup
-    
-    port = int(os.getenv('FLASK_PORT', 5051))
-    debug = os.getenv('FLASK_DEBUG', 'True').lower() == 'true'
-    
-    print(f"✅ Server ready at http://0.0.0.0:{port}")
-    app.run(host='0.0.0.0', port=port, debug=debug)
+@app.route('/drawing/sheds', methods=['GET'])
+def get_drawing_sheds():
+    """Get unique shed types from tbl_drawing_mst"""
+    try:
+        branch_id = request.args.get('branch_id', type=int)
+        
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        
+        query = """
+            SELECT DISTINCT shed_type
+            FROM tbl_drawing_mst
+            WHERE 1=1
+        """
+        params = []
+        
+        if branch_id:
+            query += " AND branch_id = %s"
+            params.append(branch_id)
+        
+        query += " ORDER BY shed_type"
+        
+        cursor.execute(query, params if params else None)
+        sheds = cursor.fetchall()
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'status': 'success',
+            'sheds': [s['shed_type'] for s in sheds]
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/drawing/machines', methods=['GET'])
+def get_drawing_machines():
+    """Get machines for a specific shed type"""
+    try:
+        shed_type = request.args.get('shed_type')
+        branch_id = request.args.get('branch_id', type=int)
+        
+        if not shed_type:
+            return jsonify({'status': 'error', 'message': 'shed_type required'}), 400
+        
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        
+        query = """
+            SELECT mc_id, mc_short_name, cont_meter
+            FROM tbl_drawing_mst
+            WHERE shed_type = %s
+        """
+        params = [shed_type]
+        
+        if branch_id:
+            query += " AND branch_id = %s"
+            params.append(branch_id)
+        
+        query += " ORDER BY mc_short_name"
+        
+        cursor.execute(query, params)
+        machines = cursor.fetchall()
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'status': 'success',
+            'machines': machines
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/drawing/opening-meter', methods=['GET'])
+def get_drawing_opening_meter():
+    """Get opening meter (previous closing meter) for a machine"""
+    try:
+        date_str = request.args.get('date')
+        spell_id = request.args.get('spell_id', type=int)
+        mc_id = request.args.get('mc_id', type=int)
+        
+        if not all([date_str, spell_id, mc_id]):
+            return jsonify({'status': 'error', 'message': 'date, spell_id, mc_id required'}), 400
+        
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        
+        # Get the most recent closing meter for this machine before the current date+spell
+        query = """
+            SELECT closing_meter
+            FROM tbl_daily_drawing
+            WHERE mc_id = %s
+              AND (date < %s OR (date = %s AND spell_id < %s))
+            ORDER BY date DESC, spell_id DESC
+            LIMIT 1
+        """
+        
+        cursor.execute(query, (mc_id, date_str, date_str, spell_id))
+        result = cursor.fetchone()
+        
+        cursor.close()
+        db.close()
+        
+        opening_meter = result['closing_meter'] if result else 0.0
+        
+        return jsonify({
+            'status': 'success',
+            'opening_meter': opening_meter
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/drawing/entry', methods=['POST'])
+def save_drawing_entry():
+    """Save drawing meter entry"""
+    try:
+        data = request.get_json()
+        
+        date_str = data.get('date')
+        spell_id = data.get('spell_id')
+        shed_type = data.get('shed_type')
+        mc_id = data.get('mc_id')
+        opening_meter = data.get('opening_meter', 0.0)
+        closing_meter = data.get('closing_meter', 0.0)
+        hours = data.get('hours', 0.0)
+        const_value = data.get('const_value', 1.0)  # Efficiency constant
+        branch_id = data.get('branch_id')
+        user_id = data.get('user_id', 0)
+        
+        if not all([date_str, spell_id, shed_type, mc_id]):
+            return jsonify({'status': 'error', 'message': 'Required fields missing'}), 400
+        
+        # Calculate unit and efficiency
+        unit = closing_meter - opening_meter
+        if hours > 0 and const_value > 0:
+            eff = round(((unit / hours * 8) / const_value * 100), 2)
+        else:
+            eff = 0.0
+        
+        db = get_db()
+        cursor = db.cursor()
+        
+        # Check if entry exists for this date+spell+mc
+        cursor.execute("""
+            SELECT id FROM tbl_daily_drawing
+            WHERE date = %s AND spell_id = %s AND mc_id = %s
+        """, (date_str, spell_id, mc_id))
+        
+        existing = cursor.fetchone()
+        
+        if existing:
+            # Update existing entry
+            cursor.execute("""
+                UPDATE tbl_daily_drawing
+                SET shed_type = %s, opening_meter = %s, closing_meter = %s,
+                    unit = %s, hours = %s, eff = %s, branch_id = %s,
+                    user_id = %s, updated_at = NOW()
+                WHERE id = %s
+            """, (shed_type, opening_meter, closing_meter, unit, hours, eff,
+                  branch_id, user_id, existing[0]))
+            entry_id = existing[0]
+        else:
+            # Insert new entry
+            cursor.execute("""
+                INSERT INTO tbl_daily_drawing
+                (date, spell_id, shed_type, mc_id, opening_meter, closing_meter,
+                 unit, hours, eff, branch_id, user_id, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW())
+            """, (date_str, spell_id, shed_type, mc_id, opening_meter, closing_meter,
+                  unit, hours, eff, branch_id, user_id))
+            entry_id = cursor.lastrowid
+        
+        db.commit()
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Entry saved successfully',
+            'id': entry_id,
+            'unit': unit,
+            'eff': eff
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/drawing/summary', methods=['GET'])
+def get_drawing_summary():
+    """Get drawing meter entry summary for date+spell"""
+    try:
+        date_str = request.args.get('date')
+        spell_id = request.args.get('spell_id', type=int)
+        branch_id = request.args.get('branch_id', type=int)
+        
+        if not all([date_str, spell_id]):
+            return jsonify({'status': 'error', 'message': 'date and spell_id required'}), 400
+        
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        
+        query = """
+            SELECT 
+                d.mc_id,
+                m.mc_short_name,
+                d.unit,
+                d.eff
+            FROM tbl_daily_drawing d
+            JOIN tbl_drawing_mst m ON d.mc_id = m.mc_id
+            WHERE d.date = %s AND d.spell_id = %s
+        """
+        params = [date_str, spell_id]
+        
+        if branch_id:
+            query += " AND d.branch_id = %s"
+            params.append(branch_id)
+        
+        query += " ORDER BY m.mc_short_name"
+        
+        cursor.execute(query, params)
+        summary = cursor.fetchall()
+        
+        cursor.close()
+        db.close()
+        
+        return jsonify({
+            'status': 'success',
+            'summary': summary
+        })
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 

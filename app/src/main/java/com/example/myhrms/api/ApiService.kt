@@ -364,6 +364,12 @@ interface ApiService {
         @Query("branch_id") branchId: Int
     ): Call<Spg1SummaryResponse>
 
+    @GET(ApiRoutes.DOFF_SPG1_QUALITY_SHIFT_REPORT)
+    fun getSpg1QualityShiftReport(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<QualityShiftReportResponse>
+
     // ── Winding Entry (2) ──────────────────────────────────────────────────
     @GET(ApiRoutes.DOFF_WE2_EMP_LOOKUP)
     fun we2EmpLookup(
@@ -411,4 +417,38 @@ interface ApiService {
         @Query("date")      date: String,
         @Query("branch_id") branchId: Int
     ): Call<QualityShiftReportResponse>
+
+    // ── Drawing Meter Entry ────────────────────────────────────────
+    @GET(ApiRoutes.DRAWING_SHEDS)
+    fun getDrawingSheds(
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DrawingShedsResponse>
+
+    @GET(ApiRoutes.DRAWING_MACHINES)
+    fun getDrawingMachines(
+        @Query("shed_type") shedType: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DrawingMachinesResponse>
+
+    @GET(ApiRoutes.DRAWING_OPENING_METER)
+    fun getDrawingOpeningMeter(
+        @Query("date")     date: String,
+        @Query("spell_id") spellId: Int,
+        @Query("mc_id")    mcId: Int
+    ): Call<DrawingOpeningMeterResponse>
+
+    @POST(ApiRoutes.DRAWING_ENTRY)
+    fun saveDrawingEntry(@Body request: DrawingEntrySaveRequest): Call<DrawingEntrySaveResponse>
+
+    @GET(ApiRoutes.DRAWING_SUMMARY)
+    fun getDrawingSummary(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DrawingSummaryResponse>
+
+    @GET(ApiRoutes.DRAWING_SPELLS)
+    fun getDrawingSpells(
+        @Query("branch_id") branchId: Int? = null
+    ): Call<SpellResponse>
 }

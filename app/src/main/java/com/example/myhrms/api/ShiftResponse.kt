@@ -19,7 +19,10 @@ data class Shift(
     val endTime: String? = null,
 
     @SerializedName("shift_hours")
-    val shiftHours: Double? = null
+    val shiftHours: Double? = null,
+
+    @SerializedName("working_hours")
+    val workingHours: Double? = 8.0
 ) {
     override fun toString(): String = name
 }

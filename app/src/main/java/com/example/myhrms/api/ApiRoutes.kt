@@ -62,20 +62,35 @@ object ApiRoutes {
     // ── Spg Doff Entry (1) ──────────────────────────────────────────────────
     const val DOFF_SPG1_MECH_CODES = "doff/spg1-mech-codes"
     const val DOFF_SPG1_SUMMARY    = "doff/spg1-summary"
+    const val DOFF_SPG1_QUALITY_SHIFT_REPORT = "doff/spg1-quality-shift-report"
 
     // ── Winding Entry (2) — S/C + trolly + weight ────────────────────────────
     const val DOFF_WE2_EMP_LOOKUP = "doff/winding-entry-2-emp-lookup"
     const val DOFF_WE2_EMPLOYEES  = "doff/winding-entry-2-employees"
     const val DOFF_WE2            = "doff/winding-entry-2"
-    const val DOFF_WE2_SUMMARY       = "doff/winding-entry-2-summary"
-    const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail"
-    const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
+    const val DOFF_WE2_TROLLY     = "doff/winding-entry-2-trolly"
     const val DOFF_WE2_QUALITY_SHIFT_REPORT = "doff/winding-entry-2-quality-shift-report"
+    const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail-by-emp"
+    const val DOFF_WE2_SUMMARY    = "doff/winding-entry-2-summary"
+    const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
 
-    const val ONBOARDING_EMPLOYEE = "onboarding/employee/{emp_code}"
-    const val ONBOARDING_REGISTER_FACE = "onboarding/register-face"
-
-    // ── Weight Entry ────────────────────────────────────────────────────
-    const val WEIGHT_TRANSACTIONS       = "weight-transactions"
+    // ── Weight Entry ─────────────────────────────────────────────────────────
+    const val WEIGHT_TRANSACTIONS = "weight-transactions"
     const val WEIGHT_TRANSACTION_DETAIL = "weight-transactions/{id}"
+
+    // ── Drawing Meter Entry ──────────────────────────────────────────────────
+    const val DRAWING_SHEDS          = "drawing/sheds"
+    const val DRAWING_MACHINES       = "drawing/machines"
+    const val DRAWING_OPENING_METER  = "drawing/opening-meter"
+    const val DRAWING_ENTRY          = "drawing/entry"
+    const val DRAWING_SUMMARY        = "drawing/summary"
+    const val DRAWING_SPELLS         = "drawing/spells"
+
+    // ── Machine Assignment ────────────────────────────────────────────────────
+    const val MACHINES = "machines"
+
+    // ── Onboarding (Face Registration) ────────────────────────────────────────
+    const val ONBOARDING_EMPLOYEE   = "onboarding/employee/{emp_code}"
+    const val ONBOARDING_REGISTER   = "onboarding/register-face"
+    const val ONBOARDING_REGISTER_FACE = "onboarding/register-face"  // Alias
 }

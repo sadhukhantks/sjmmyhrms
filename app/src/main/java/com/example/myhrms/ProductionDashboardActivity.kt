@@ -86,7 +86,10 @@ class ProductionDashboardActivity : AppCompatActivity() {
             openProductionScreen("Spreader Entry")
         }
         findViewById<View>(R.id.menuDrawingMeterEntry).setOnClickListener {
-            openProductionScreen("Drawing Meter Entry")
+            val i = Intent(this, DrawingMeterEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
         }
         findViewById<View>(R.id.menuSpinningDoffEntry).setOnClickListener {
             val i = Intent(this, SpinningDoffActivity::class.java)

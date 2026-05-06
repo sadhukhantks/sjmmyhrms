@@ -47,6 +47,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var rvSummary: RecyclerView
     private lateinit var tvSummaryEmpty: TextView
     private lateinit var pbSummary: ProgressBar
+    private lateinit var ivQualityShiftReport: ImageView
 
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: Spg1SummaryAdapter
@@ -88,11 +89,15 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         rvSummary         = findViewById(R.id.rvSummary)
         tvSummaryEmpty    = findViewById(R.id.tvSummaryEmpty)
         pbSummary         = findViewById(R.id.pbSummary)
+        ivQualityShiftReport = findViewById(R.id.ivQualityShiftReport)
 
         summaryAdapter = Spg1SummaryAdapter { row -> showDetailDialog(row) }
         rvSummary.layoutManager = LinearLayoutManager(this)
         rvSummary.adapter = summaryAdapter
         rvSummary.isNestedScrollingEnabled = false
+
+        // Report icon click listener
+        ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
 
         // Init date
         val cal = Calendar.getInstance()
@@ -465,6 +470,164 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                 tvGross.text  = t.grossWeight?.let { fmt(it) } ?: "-"
                 tvTare.text   = t.tareWeight?.let { fmt(it) } ?: "-"
                 tvNet.text    = t.netWeight?.let { fmt(it) } ?: "-"
+            }
+        }
+    }
+
+    // ── Quality-wise Shift-wise Report ────────────────────────────────────────
+    private fun showQualityShiftReport() {
+        if (branchId <= 0) {
+            Toast.makeText(this, "Invalid branch", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_quality_shift_report, null)
+        val tvReportTitle = dialogView.findViewById<TextView>(R.id.tvReportTitle)
+        val rvReport = dialogView.findViewById<RecyclerView>(R.id.rvQualityShiftReport)
+        val tvGrandTotalA = dialogView.findViewById<TextView>(R.id.tvGrandTotalA)
+        val tvGrandTotalB = dialogView.findViewById<TextView>(R.id.tvGrandTotalB)
+        val tvGrandTotalC = dialogView.findViewById<TextView>(R.id.tvGrandTotalC)
+        val tvGrandTotal = dialogView.findViewById<TextView>(R.id.tvGrandTotal)
+        val pbReport = dialogView.findViewById<ProgressBar>(R.id.pbReport)
+        val tvReportEmpty = dialogView.findViewById<TextView>(R.id.tvReportEmpty)
+
+        tvReportTitle.text = "SPG Doff Entry (1) - Quality Shift Report"
+
+        val adapter = QualityShiftReportAdapter()
+        rvReport.layoutManager = LinearLayoutManager(this)
+        rvReport.adapter = adapter
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setNegativeButton("Close", null)
+            .setPositiveButton("Print PDF") { _, _ ->
+                // Export to PDF will be implemented here
+                exportReportToPdf(adapter.getReportData(), tvGrandTotalA.text.toString(),
+                    tvGrandTotalB.text.toString(), tvGrandTotalC.text.toString(), tvGrandTotal.text.toString())
+            }
+            .create()
+
+        dialog.show()
+
+        // Fetch report data
+        pbReport.visibility = View.VISIBLE
+        rvReport.visibility = View.GONE
+        tvReportEmpty.visibility = View.GONE
+
+        RetrofitClient.getApiService(this).getSpg1QualityShiftReport(
+            date = entryDate,
+            branchId = branchId
+        ).enqueue(object : Callback<QualityShiftReportResponse> {
+            override fun onResponse(call: Call<QualityShiftReportResponse>, response: Response<QualityShiftReportResponse>) {
+                pbReport.visibility = View.GONE
+                if (response.isSuccessful && response.body()?.status == "success") {
+                    val reportData = response.body()?.report.orEmpty()
+                    val grandTotal = response.body()?.grandTotal
+                    
+                    if (reportData.isEmpty()) {
+                        tvReportEmpty.visibility = View.VISIBLE
+                        tvReportEmpty.text = "No data for selected date"
+                    } else {
+                        rvReport.visibility = View.VISIBLE
+                        adapter.update(reportData)
+                        
+                        // Update grand totals
+                        tvGrandTotalA.text = fmt(grandTotal?.shiftA ?: 0.0)
+                        tvGrandTotalB.text = fmt(grandTotal?.shiftB ?: 0.0)
+                        tvGrandTotalC.text = fmt(grandTotal?.shiftC ?: 0.0)
+                        tvGrandTotal.text = fmt(grandTotal?.total ?: 0.0)
+                    }
+                } else {
+                    tvReportEmpty.visibility = View.VISIBLE
+                    tvReportEmpty.text = response.body()?.message ?: "Failed to load report"
+                }
+            }
+
+            override fun onFailure(call: Call<QualityShiftReportResponse>, t: Throwable) {
+                pbReport.visibility = View.GONE
+                tvReportEmpty.visibility = View.VISIBLE
+                tvReportEmpty.text = "Error: ${t.localizedMessage}"
+            }
+        })
+    }
+
+    // ── Export Report to PDF ──────────────────────────────────────────────────
+    private fun exportReportToPdf(reportData: List<QualityShiftReportRow>, 
+                                  totalA: String, totalB: String, totalC: String, grandTotal: String) {
+        try {
+            // Create a simple text file for now (can be enhanced to actual PDF later)
+            val fileName = "SPG1_Report_${entryDate.replace("-", "_")}.txt"
+            val fileContent = buildString {
+                appendLine("SPG DOFF ENTRY (1) - QUALITY SHIFT REPORT")
+                appendLine("Date: $entryDate")
+                appendLine("=" .repeat(60))
+                appendLine()
+                appendLine(String.format("%-20s %10s %10s %10s %10s", 
+                    "Quality", "Shift A", "Shift B", "Shift C", "Total"))
+                appendLine("-".repeat(60))
+                
+                reportData.forEach { row ->
+                    appendLine(String.format("%-20s %10s %10s %10s %10s",
+                        row.qualityName ?: "Unknown",
+                        fmt(row.shiftA ?: 0.0),
+                        fmt(row.shiftB ?: 0.0),
+                        fmt(row.shiftC ?: 0.0),
+                        fmt(row.total ?: 0.0)
+                    ))
+                }
+                
+                appendLine("-".repeat(60))
+                appendLine(String.format("%-20s %10s %10s %10s %10s",
+                    "GRAND TOTAL", totalA, totalB, totalC, grandTotal))
+                appendLine("=" .repeat(60))
+            }
+
+            // Save to Downloads folder
+            val downloadsDir = android.os.Environment.getExternalStoragePublicDirectory(
+                android.os.Environment.DIRECTORY_DOWNLOADS
+            )
+            val file = java.io.File(downloadsDir, fileName)
+            file.writeText(fileContent)
+
+            Toast.makeText(this, "Report saved to Downloads/$fileName", Toast.LENGTH_LONG).show()
+            
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error exporting: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // ── Inner adapter for quality-shift report ────────────────────────────────
+    inner class QualityShiftReportAdapter : RecyclerView.Adapter<QualityShiftReportAdapter.QSRVH>() {
+        private val items = mutableListOf<QualityShiftReportRow>()
+        
+        fun update(list: List<QualityShiftReportRow>) {
+            items.clear()
+            items.addAll(list)
+            notifyDataSetChanged()
+        }
+        
+        fun getReportData(): List<QualityShiftReportRow> = items.toList()
+        
+        override fun getItemCount() = items.size
+        
+        override fun onCreateViewHolder(parent: ViewGroup, vt: Int) =
+            QSRVH(LayoutInflater.from(parent.context).inflate(R.layout.item_quality_shift_report, parent, false))
+        
+        override fun onBindViewHolder(h: QSRVH, pos: Int) = h.bind(items[pos])
+
+        inner class QSRVH(v: View) : RecyclerView.ViewHolder(v) {
+            private val tvQuality = v.findViewById<TextView>(R.id.tvQuality)
+            private val tvShiftA  = v.findViewById<TextView>(R.id.tvShiftA)
+            private val tvShiftB  = v.findViewById<TextView>(R.id.tvShiftB)
+            private val tvShiftC  = v.findViewById<TextView>(R.id.tvShiftC)
+            private val tvTotal   = v.findViewById<TextView>(R.id.tvTotal)
+            
+            fun bind(row: QualityShiftReportRow) {
+                tvQuality.text = row.qualityName ?: "Unknown"
+                tvShiftA.text  = fmt(row.shiftA ?: 0.0)
+                tvShiftB.text  = fmt(row.shiftB ?: 0.0)
+                tvShiftC.text  = fmt(row.shiftC ?: 0.0)
+                tvTotal.text   = fmt(row.total ?: 0.0)
             }
         }
     }

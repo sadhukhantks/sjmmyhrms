@@ -625,7 +625,10 @@ class DashboardActivity : AppCompatActivity() {
             openProductionScreen("Spreader Entry")
         }
         binding.menuDrawingMeterEntry.setOnClickListener {
-            openProductionScreen("Drawing Meter Entry")
+            val i = Intent(this, DrawingMeterEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
         }
         binding.menuSpinningDoffEntry.setOnClickListener {
             val i = Intent(this, SpinningDoffActivity::class.java)
