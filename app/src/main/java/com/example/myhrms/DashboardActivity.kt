@@ -621,9 +621,17 @@ class DashboardActivity : AppCompatActivity() {
             toggleSubMenu(binding.subMenuProduction, binding.arrowProduction)
         }
 
-        binding.menuSpreaderEntry.setOnClickListener {
-            openProductionScreen("Spreader Entry")
+        // Spreader Entry expandable group
+        binding.headerSpreaderEntry.setOnClickListener {
+            toggleSubMenu(binding.subMenuSpreaderEntry, binding.arrowSpreaderEntry)
         }
+        binding.menuProductionEntry.setOnClickListener {
+            openProductionScreen("Production Entry")
+        }
+        binding.menuIssueEntry.setOnClickListener {
+            openProductionScreen("Issue Entry")
+        }
+
         binding.menuDrawingMeterEntry.setOnClickListener {
             val i = Intent(this, DrawingMeterEntryActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)

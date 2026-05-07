@@ -192,9 +192,19 @@ class AttendanceDashboardActivity : AppCompatActivity() {
             startActivity(Intent(this, ProductionDashboardActivity::class.java).putExtra("USER_NAME", findViewById<android.widget.TextView>(R.id.tvUserName).text))
         }
 
-        findViewById<View>(R.id.menuSpreaderEntry).setOnClickListener {
-            openProductionScreen("Spreader Entry")
+        // Spreader Entry expandable group
+        findViewById<View>(R.id.headerSpreaderEntry).setOnClickListener {
+            val subMenu = findViewById<View>(R.id.subMenuSpreaderEntry)
+            val arrow = findViewById<ImageView>(R.id.arrowSpreaderEntry)
+            toggleSubMenu(subMenu, arrow)
         }
+        findViewById<View>(R.id.menuProductionEntry).setOnClickListener {
+            openProductionScreen("Production Entry")
+        }
+        findViewById<View>(R.id.menuIssueEntry).setOnClickListener {
+            openProductionScreen("Issue Entry")
+        }
+
         findViewById<View>(R.id.menuDrawingMeterEntry).setOnClickListener {
             val i = Intent(this, DrawingMeterEntryActivity::class.java)
             i.putExtra("CO_ID", getIntent().getIntExtra("CO_ID", 0))

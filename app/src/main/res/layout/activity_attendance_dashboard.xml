@@ -447,18 +447,56 @@
                     android:focusable="true" />
 
                 <TextView
-                    android:id="@+id/menuSpreaderEntry"
+                    android:id="@+id/headerSpreaderEntry"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:gravity="center_vertical"
                     android:background="@drawable/bg_submenu_item"
                     android:paddingStart="32dp"
-                    android:text="  Spreader Entry"
+                    android:paddingEnd="16dp"
+                    android:text="  Spreader Entry  ▾"
                     android:textColor="@color/label_text"
                     android:textSize="14sp"
                     android:layout_marginBottom="1dp"
                     android:clickable="true"
                     android:focusable="true" />
+
+                <LinearLayout
+                    android:id="@+id/subMenuSpreaderEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/menuProductionEntry"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Production Entry"
+                        android:textColor="@color/label_text"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="1dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/menuIssueEntry"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Issue Entry"
+                        android:textColor="@color/label_text"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="1dp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
 
                 <TextView
                     android:id="@+id/menuDrawingMeterEntry"
