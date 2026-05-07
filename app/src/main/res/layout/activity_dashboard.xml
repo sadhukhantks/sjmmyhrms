@@ -1363,8 +1363,9 @@
                             app:tint="#90CAF9" />
                     </LinearLayout>
 
+                    <!-- Finishing Entry Header (expandable) -->
                     <LinearLayout
-                        android:id="@+id/menuFinishingEntry"
+                        android:id="@+id/headerFinishingEntry"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:background="@drawable/bg_submenu_item"
@@ -1372,8 +1373,7 @@
                         android:orientation="horizontal"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="4dp">
+                        android:layout_marginTop="4dp">
 
                         <ImageView
                             android:layout_width="22dp"
@@ -1388,14 +1388,63 @@
                             android:layout_weight="1"
                             android:layout_marginStart="12dp"
                             android:text="Finishing Entry"
-                            android:textColor="#E0E0E0"
-                            android:textSize="15sp" />
+                            android:textColor="#90CAF9"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
 
                         <ImageView
+                            android:id="@+id/arrowFinishingEntry"
                             android:layout_width="20dp"
                             android:layout_height="20dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="#90CAF9" />
+                            android:src="@drawable/ic_expand_more"
+                            app:tint="#90CAF9"
+                            android:contentDescription="Expand" />
+                    </LinearLayout>
+
+                    <!-- Finishing Entry sub-items -->
+                    <LinearLayout
+                        android:id="@+id/subMenuFinishingEntry"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:visibility="gone"
+                        android:paddingStart="16dp"
+                        android:paddingTop="2dp"
+                        android:layout_marginBottom="4dp">
+
+                        <LinearLayout
+                            android:id="@+id/menuOtherEntries"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:layout_marginTop="4dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#80CBC4"
+                                android:contentDescription="Other Entries" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Other Entries"
+                                android:textColor="#E0E0E0"
+                                android:textSize="15sp" />
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#80CBC4" />
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout

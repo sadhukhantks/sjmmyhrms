@@ -199,10 +199,16 @@ class AttendanceDashboardActivity : AppCompatActivity() {
             toggleSubMenu(subMenu, arrow)
         }
         findViewById<View>(R.id.menuProductionEntry).setOnClickListener {
-            openProductionScreen("Production Entry")
+            val i = Intent(this, SpreaderProdEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
         }
         findViewById<View>(R.id.menuIssueEntry).setOnClickListener {
-            openProductionScreen("Issue Entry")
+            val i = Intent(this, SpreaderIssueEntryActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
         }
 
         findViewById<View>(R.id.menuDrawingMeterEntry).setOnClickListener {
@@ -250,8 +256,15 @@ class AttendanceDashboardActivity : AppCompatActivity() {
         findViewById<View>(R.id.menuWeavingEntry).setOnClickListener {
             openProductionScreen("Weaving Entry")
         }
-        findViewById<View>(R.id.menuFinishingEntry).setOnClickListener {
-            openProductionScreen("Finishing Entry")
+        findViewById<View>(R.id.headerFinishingEntry).setOnClickListener {
+            val sub = findViewById<View>(R.id.subMenuFinishingEntry)
+            sub.visibility = if (sub.visibility == View.VISIBLE) View.GONE else View.VISIBLE
+        }
+        findViewById<View>(R.id.menuOtherEntries).setOnClickListener {
+            val i = Intent(this, OtherEntriesActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
         }
     }
 

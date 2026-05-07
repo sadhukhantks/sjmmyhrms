@@ -2920,3 +2920,202 @@ def get_drawing_summary():
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
+
+# ══════════════════════════════════════════════════════════════════
+# SPREADER PRODUCTION ENTRY (Production → Spreader Entry → Production Entry)
+# ══════════════════════════════════════════════════════════════════
+
+def _ensure_spreader_table():
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS spreader_prod_entry (
+                id INT NOT NULL AUTO_INCREMENT,
+                entry_date DATE NOT NULL,
+                spell_id INT NOT NULL,
+                branch_id INT NOT NULL,
+                mc_id INT NOT NULL,
+                quality_id INT NOT NULL,
+                bin_no VARCHAR(50) DEFAULT NULL,
+                production DECIMAL(12,3) NOT NULL DEFAULT 0,
+                user_id INT DEFAULT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (id),
+                KEY idx_sp_date_spell_branch (entry_date, spell_id, branch_id)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """)
+        db.commit()
+        cursor.close()
+        db.close()
+    except Exception as e:
+        print(f"⚠️  spreader_prod_entry create error (non-fatal): {e}")
+
+
+@app.route('/spreader/machines', methods=['GET'])
+def get_spreader_machines():
+    """
+    Spreader machines for Production Entry screen.
+    Source: machine_mst (machine_type_id=8) joined with dept_mst, filtered by branch_id.
+    Query params: ?branch_id=<id> (required)
+    """
+    try:
+        branch_id = request.args.get('branch_id', type=int)
+        if not branch_id:
+            return jsonify({'status': 'error', 'message': 'branch_id is required'}), 400
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT mm.machine_id     AS mc_id,
+                   mm.machine_name   AS mc_name,
+                   mm.mech_code      AS mc_code,
+                   mm.mech_shr_code  AS mc_short,
+                   mm.dept_id        AS dept_id,
+                   dm.dept_name      AS dept_name
+            FROM machine_mst mm
+            LEFT JOIN dept_mst dm ON mm.dept_id = dm.dept_id
+            WHERE mm.machine_type_id = 8
+              AND mm.branch_id = %s
+              AND (mm.active IS NULL OR mm.active = 1)
+            ORDER BY mm.mech_code, mm.machine_name
+        """, (branch_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return jsonify({'status': 'success', 'machines': rows, 'total': len(rows)})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/spreader/qualities', methods=['GET'])
+def get_spreader_qualities():
+    """
+    Jute qualities for Spreader Production Entry.
+    Source: jute_quality_mst — shr_name (short name) shown as button label, filtered by branch.
+    Query params: ?branch_id=<id> (required)
+    """
+    try:
+        branch_id = request.args.get('branch_id', type=int)
+        if not branch_id:
+            return jsonify({'status': 'error', 'message': 'branch_id is required'}), 400
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT quality_id,
+                   COALESCE(shr_name, quality_name) AS shr_name,
+                   quality_name
+            FROM jute_quality_mst
+            WHERE branch_id = %s
+              AND (active IS NULL OR active = 1)
+            ORDER BY shr_name, quality_name
+        """, (branch_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return jsonify({'status': 'success', 'qualities': rows, 'total': len(rows)})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/spreader/prod-entry', methods=['POST'])
+def save_spreader_prod_entry():
+    """
+    Save a Spreader Production Entry row.
+    Body JSON: { date, spell_id, branch_id, mc_id, quality_id, bin_no, production, user_id }
+    """
+    try:
+        _ensure_spreader_table()
+        data = request.get_json() or {}
+        date_str   = data.get('date')
+        spell_id   = data.get('spell_id')
+        branch_id  = data.get('branch_id')
+        mc_id      = data.get('mc_id')
+        quality_id = data.get('quality_id')
+        bin_no     = (data.get('bin_no') or '').strip() or None
+        production = data.get('production')
+        user_id    = data.get('user_id')
+
+        if not all([date_str, spell_id, branch_id, mc_id, quality_id]):
+            return jsonify({'status': 'error',
+                            'message': 'date, spell_id, branch_id, mc_id, quality_id are required'}), 400
+        try:
+            production = float(production) if production is not None else 0.0
+        except Exception:
+            return jsonify({'status': 'error', 'message': 'production must be numeric'}), 400
+
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("""
+            INSERT INTO spreader_prod_entry
+                (entry_date, spell_id, branch_id, mc_id, quality_id,
+                 bin_no, production, user_id)
+            VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+        """, (date_str, spell_id, branch_id, mc_id, quality_id,
+              bin_no, production, user_id))
+        db.commit()
+        new_id = cursor.lastrowid
+        cursor.close()
+        db.close()
+        return jsonify({'status': 'success', 'message': 'Saved', 'id': new_id})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/spreader/prod-entry', methods=['GET'])
+def list_spreader_prod_entries():
+    """
+    List spreader production entries for date+spell+branch.
+    Query params: ?date=YYYY-MM-DD&spell_id=<>&branch_id=<>
+    Returns rows with mc_no, quality (shr_name), production.
+    """
+    try:
+        _ensure_spreader_table()
+        date_str  = request.args.get('date')
+        spell_id  = request.args.get('spell_id', type=int)
+        branch_id = request.args.get('branch_id', type=int)
+        if not all([date_str, spell_id, branch_id]):
+            return jsonify({'status': 'error',
+                            'message': 'date, spell_id, branch_id are required'}), 400
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT s.id,
+                   s.entry_date,
+                   s.spell_id,
+                   s.mc_id,
+                   COALESCE(mm.mech_code, mm.machine_name, CONCAT('MC', s.mc_id)) AS mc_no,
+                   s.quality_id,
+                   COALESCE(jq.shr_name, jq.quality_name, '')                     AS quality,
+                   s.bin_no,
+                   s.production
+            FROM spreader_prod_entry s
+            LEFT JOIN machine_mst      mm ON s.mc_id = mm.machine_id
+            LEFT JOIN jute_quality_mst jq ON s.quality_id = jq.quality_id
+            WHERE s.entry_date = %s
+              AND s.spell_id   = %s
+              AND s.branch_id  = %s
+            ORDER BY s.id DESC
+        """, (date_str, spell_id, branch_id))
+        rows = cursor.fetchall()
+        cursor.close()
+        db.close()
+        return jsonify({'status': 'success', 'entries': rows, 'total': len(rows)})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+@app.route('/spreader/prod-entry/<int:entry_id>', methods=['DELETE'])
+def delete_spreader_prod_entry(entry_id):
+    try:
+        db = get_db()
+        cursor = db.cursor()
+        cursor.execute("DELETE FROM spreader_prod_entry WHERE id = %s", (entry_id,))
+        db.commit()
+        cursor.close()
+        db.close()
+        return jsonify({'status': 'success', 'message': 'Deleted'})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500

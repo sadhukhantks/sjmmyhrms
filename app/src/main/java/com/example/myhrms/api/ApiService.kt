@@ -451,4 +451,77 @@ interface ApiService {
     fun getDrawingSpells(
         @Query("branch_id") branchId: Int? = null
     ): Call<SpellResponse>
+
+    // ── Spreader Production Entry ─────────────────────────────────────────────
+    @GET(ApiRoutes.SPREADER_MACHINES)
+    fun getSpreaderMachines(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderMachineResponse>
+
+    @GET(ApiRoutes.SPREADER_QUALITIES)
+    fun getSpreaderQualities(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderQualityResponse>
+
+    @GET(ApiRoutes.SPREADER_PROD_ENTRY)
+    fun getSpreaderProdEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderProdEntryListResponse>
+
+    @POST(ApiRoutes.SPREADER_PROD_ENTRY)
+    fun saveSpreaderProdEntry(@Body req: SpreaderProdSaveRequest): Call<SpreaderProdSaveResponse>
+
+    @PUT(ApiRoutes.SPREADER_PROD_ENTRY_ID)
+    fun updateSpreaderProdEntry(
+        @Path("id") id: Int,
+        @Body req: SpreaderProdUpdateRequest
+    ): Call<SpreaderProdSaveResponse>
+
+    @DELETE(ApiRoutes.SPREADER_PROD_ENTRY_ID)
+    fun deleteSpreaderProdEntry(@Path("id") id: Int): Call<SpreaderProdSaveResponse>
+
+    @GET(ApiRoutes.SPREADER_ISSUE_ENTRY)
+    fun getSpreaderIssueEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderIssueEntryListResponse>
+
+    @POST(ApiRoutes.SPREADER_ISSUE_ENTRY)
+    fun saveSpreaderIssueEntry(@Body req: SpreaderIssueSaveRequest): Call<SpreaderIssueSaveResponse>
+
+    @PUT(ApiRoutes.SPREADER_ISSUE_ENTRY_ID)
+    fun updateSpreaderIssueEntry(
+        @Path("id") id: Int,
+        @Body req: SpreaderIssueUpdateRequest
+    ): Call<SpreaderIssueSaveResponse>
+
+    @DELETE(ApiRoutes.SPREADER_ISSUE_ENTRY_ID)
+    fun deleteSpreaderIssueEntry(@Path("id") id: Int): Call<SpreaderIssueSaveResponse>
+
+    @GET(ApiRoutes.SPREADER_QUALITY_STOCK)
+    fun getSpreaderQualityStock(
+        @Query("quality_id") qualityId: Int
+    ): Call<SpreaderQualityStockResponse>
+
+    // ── Finishing → Other Entries ─────────────────────────────────────────────
+    @GET(ApiRoutes.FINISHING_ENTRY)
+    fun getFinishingEntries(
+        @Query("date")     date: String,
+        @Query("spell_id") spellId: Int? = null
+    ): Call<FinishingEntryListResponse>
+
+    @POST(ApiRoutes.FINISHING_ENTRY)
+    fun saveFinishingEntry(@Body req: FinishingSaveRequest): Call<FinishingSaveResponse>
+
+    @PUT(ApiRoutes.FINISHING_ENTRY_ID)
+    fun updateFinishingEntry(
+        @Path("id") id: Int,
+        @Body req: FinishingUpdateRequest
+    ): Call<FinishingSaveResponse>
+
+    @DELETE(ApiRoutes.FINISHING_ENTRY_ID)
+    fun deleteFinishingEntry(@Path("id") id: Int): Call<FinishingSaveResponse>
 }

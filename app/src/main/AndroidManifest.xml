@@ -123,6 +123,18 @@
             android:name=".WeightEntryActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".SpreaderProdEntryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".SpreaderIssueEntryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".OtherEntriesActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

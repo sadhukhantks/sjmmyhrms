@@ -78,6 +78,19 @@ object ApiRoutes {
     const val WEIGHT_TRANSACTIONS = "weight-transactions"
     const val WEIGHT_TRANSACTION_DETAIL = "weight-transactions/{id}"
 
+    // ── Spreader Production / Issue Entry ────────────────────────────────────
+    const val SPREADER_MACHINES        = "spreader/machines"
+    const val SPREADER_QUALITIES       = "spreader/qualities"
+    const val SPREADER_PROD_ENTRY      = "spreader/prod-entry"
+    const val SPREADER_PROD_ENTRY_ID   = "spreader/prod-entry/{id}"
+    const val SPREADER_ISSUE_ENTRY     = "spreader/issue-entry"
+    const val SPREADER_ISSUE_ENTRY_ID  = "spreader/issue-entry/{id}"
+    const val SPREADER_QUALITY_STOCK   = "spreader/quality-stock"
+
+    // ── Finishing → Other Entries ─────────────────────────────────────────────
+    const val FINISHING_ENTRY     = "otherentries/entry"
+    const val FINISHING_ENTRY_ID  = "otherentries/entry/{id}"
+
     // ── Drawing Meter Entry ──────────────────────────────────────────────────
     const val DRAWING_SHEDS          = "drawing/sheds"
     const val DRAWING_MACHINES       = "drawing/machines"

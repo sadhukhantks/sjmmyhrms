@@ -626,10 +626,16 @@ class DashboardActivity : AppCompatActivity() {
             toggleSubMenu(binding.subMenuSpreaderEntry, binding.arrowSpreaderEntry)
         }
         binding.menuProductionEntry.setOnClickListener {
-            openProductionScreen("Production Entry")
+            val i = Intent(this, SpreaderProdEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
         }
         binding.menuIssueEntry.setOnClickListener {
-            openProductionScreen("Issue Entry")
+            val i = Intent(this, SpreaderIssueEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
         }
 
         binding.menuDrawingMeterEntry.setOnClickListener {
@@ -676,8 +682,14 @@ class DashboardActivity : AppCompatActivity() {
         binding.menuWeavingEntry.setOnClickListener {
             openProductionScreen("Weaving Entry")
         }
-        binding.menuFinishingEntry.setOnClickListener {
-            openProductionScreen("Finishing Entry")
+        binding.headerFinishingEntry.setOnClickListener {
+            toggleSubMenu(binding.subMenuFinishingEntry, binding.arrowFinishingEntry)
+        }
+        binding.menuOtherEntries.setOnClickListener {
+            val i = Intent(this, OtherEntriesActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
         }
         binding.menuWeightEntry.setOnClickListener {
             val i = Intent(this, WeightEntryActivity::class.java)

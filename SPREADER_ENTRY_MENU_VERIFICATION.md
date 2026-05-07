@@ -9,6 +9,7 @@ The 2-submenu expansion under **Production → Spreader Entry** has been success
 ## Menu Structure
 
 ```
+
 Production Menu
 │
 ├── Production Dashboard
@@ -263,7 +264,7 @@ The Spreader Entry menu expansion is **fully implemented, tested, and verified**
 Are accessible from:
 - DashboardActivity (Main attendance dashboard)
 - ProductionDashboardActivity (Production module)
-- AttendanceDashboardActivity (Attendance module)
+  - AttendanceDashboardActivity (Attendance module)         wh
 
 All three implementations are identical, ensuring consistent user experience across the application.
 

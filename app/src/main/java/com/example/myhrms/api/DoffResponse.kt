@@ -395,3 +395,191 @@ data class QualityShiftReportResponse(
     @SerializedName("report")      val report: List<QualityShiftReportRow>?,
     @SerializedName("grand_total") val grandTotal: GrandTotalRow?
 )
+
+// ── Spreader Production Entry ───────────────────────────────────────────────
+
+data class SpreaderMachine(
+    @SerializedName("mc_id")    val mcId: Int,
+    @SerializedName("mc_name")  val mcName: String?,
+    @SerializedName("mc_code")  val mcCode: String?,
+    @SerializedName("mc_short") val mcShort: String?,
+    @SerializedName("dept_id")  val deptId: Int?,
+    @SerializedName("dept_name") val deptName: String?
+) {
+    fun label(): String =
+        listOfNotNull(
+            mcName?.takeIf { it.isNotBlank() },
+            mcCode?.takeIf { it.isNotBlank() },
+            mcShort?.takeIf { it.isNotBlank() }
+        ).firstOrNull() ?: "MC$mcId"
+}
+
+data class SpreaderMachineResponse(
+    @SerializedName("status")   val status: String?,
+    @SerializedName("message")  val message: String?,
+    @SerializedName("machines") val machines: List<SpreaderMachine>?
+)
+
+data class SpreaderQuality(
+    @SerializedName("quality_id")   val qualityId: Int,
+    @SerializedName("shr_name")     val shrName: String?,
+    @SerializedName("quality_name") val qualityName: String?
+) {
+    fun label(): String =
+        shrName?.takeIf { it.isNotBlank() } ?: qualityName ?: "Q$qualityId"
+}
+
+data class SpreaderQualityResponse(
+    @SerializedName("status")    val status: String?,
+    @SerializedName("message")   val message: String?,
+    @SerializedName("qualities") val qualities: List<SpreaderQuality>?
+)
+
+data class SpreaderProdEntry(
+    @SerializedName("id")         val id: Int?,
+    @SerializedName("entry_date") val entryDate: String?,
+    @SerializedName("spell_id")   val spellId: Int?,
+    @SerializedName("mc_id")      val mcId: Int?,
+    @SerializedName("mc_no")      val mcNo: String?,
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("quality")    val quality: String?,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("production") val production: Double?
+)
+
+data class SpreaderProdEntryListResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("entries") val entries: List<SpreaderProdEntry>?
+)
+
+data class SpreaderProdSaveRequest(
+    @SerializedName("date")       val date: String,
+    @SerializedName("spell_id")   val spellId: Int,
+    @SerializedName("branch_id")  val branchId: Int,
+    @SerializedName("mc_id")      val mcId: Int,
+    @SerializedName("quality_id") val qualityId: Int,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("production") val production: Double,
+    @SerializedName("user_id")    val userId: Int
+)
+
+data class SpreaderProdSaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
+data class SpreaderProdUpdateRequest(
+    @SerializedName("mc_id")      val mcId: Int?,
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("production") val production: Double?,
+    @SerializedName("user_id")    val userId: Int?
+)
+
+// ── Spreader Issue Entry ────────────────────────────────────────────────────
+
+data class SpreaderIssueEntry(
+    @SerializedName("id")         val id: Int?,
+    @SerializedName("entry_date") val entryDate: String?,
+    @SerializedName("spell_id")   val spellId: Int?,
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("quality")    val quality: String?,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("issue")      val issue: Double?
+)
+
+data class SpreaderIssueEntryListResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("entries") val entries: List<SpreaderIssueEntry>?
+)
+
+data class SpreaderIssueSaveRequest(
+    @SerializedName("date")       val date: String,
+    @SerializedName("spell_id")   val spellId: Int,
+    @SerializedName("branch_id")  val branchId: Int,
+    @SerializedName("quality_id") val qualityId: Int,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("issue")      val issue: Double,
+    @SerializedName("user_id")    val userId: Int
+)
+
+data class SpreaderIssueSaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
+data class SpreaderIssueUpdateRequest(
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("bin_no")     val binNo: String?,
+    @SerializedName("issue")      val issue: Double?,
+    @SerializedName("user_id")    val userId: Int?
+)
+
+// ── Finishing → Other Entries ───────────────────────────────────────────────
+
+data class FinishingEntry(
+    @SerializedName("id")         val id: Int?,
+    @SerializedName("entry_date") val entryDate: String?,
+    @SerializedName("spell_id")   val spellId: Int?,
+    @SerializedName("spell_name") val spellName: String?,
+    @SerializedName("looms")      val looms: Int?,
+    @SerializedName("cuts")       val cuts: Int?,
+    @SerializedName("hemming")    val hemming: Int?,
+    @SerializedName("heracle")    val heracle: Int?,
+    @SerializedName("cutting")    val cutting: Int?,
+    @SerializedName("branding")   val branding: Int?,
+    @SerializedName("hand_sewer") val handSewer: Int?,
+    @SerializedName("bales")      val bales: Int?
+)
+
+data class FinishingEntryListResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("entries") val entries: List<FinishingEntry>?
+)
+
+data class FinishingSaveRequest(
+    @SerializedName("date")       val date: String,
+    @SerializedName("spell_id")   val spellId: Int,
+    @SerializedName("looms")      val looms: Int?,
+    @SerializedName("cuts")       val cuts: Int?,
+    @SerializedName("hemming")    val hemming: Int?,
+    @SerializedName("heracle")    val heracle: Int?,
+    @SerializedName("cutting")    val cutting: Int?,
+    @SerializedName("branding")   val branding: Int?,
+    @SerializedName("hand_sewer") val handSewer: Int?,
+    @SerializedName("bales")      val bales: Int?,
+    @SerializedName("user_id")    val userId: Int
+)
+
+data class FinishingSaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
+data class FinishingUpdateRequest(
+    @SerializedName("date")       val date: String?,
+    @SerializedName("spell_id")   val spellId: Int?,
+    @SerializedName("looms")      val looms: Int?,
+    @SerializedName("cuts")       val cuts: Int?,
+    @SerializedName("hemming")    val hemming: Int?,
+    @SerializedName("heracle")    val heracle: Int?,
+    @SerializedName("cutting")    val cutting: Int?,
+    @SerializedName("branding")   val branding: Int?,
+    @SerializedName("hand_sewer") val handSewer: Int?,
+    @SerializedName("bales")      val bales: Int?,
+    @SerializedName("user_id")    val userId: Int?
+)
+
+data class SpreaderQualityStockResponse(
+    @SerializedName("status")     val status: String?,
+    @SerializedName("message")    val message: String?,
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("shr_name")   val shrName: String?,
+    @SerializedName("stock")      val stock: Double?
+)

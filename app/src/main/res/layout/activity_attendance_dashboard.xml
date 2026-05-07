@@ -621,17 +621,41 @@
                     android:focusable="true" />
 
                 <TextView
-                    android:id="@+id/menuFinishingEntry"
+                    android:id="@+id/headerFinishingEntry"
                     android:layout_width="match_parent"
                     android:layout_height="48dp"
                     android:gravity="center_vertical"
                     android:background="@drawable/bg_submenu_item"
                     android:paddingStart="32dp"
-                    android:text="  Finishing Entry"
+                    android:paddingEnd="16dp"
+                    android:text="  Finishing Entry  ▾"
                     android:textColor="@color/label_text"
                     android:textSize="14sp"
+                    android:layout_marginBottom="1dp"
                     android:clickable="true"
                     android:focusable="true" />
+
+                <LinearLayout
+                    android:id="@+id/subMenuFinishingEntry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginBottom="1dp">
+
+                    <TextView
+                        android:id="@+id/menuOtherEntries"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Other Entries"
+                        android:textColor="@color/label_text"
+                        android:textSize="14sp"
+                        android:clickable="true"
+                        android:focusable="true" />
+                </LinearLayout>
             </LinearLayout>
 
         </LinearLayout>
