@@ -522,18 +522,19 @@ data class SpreaderIssueUpdateRequest(
 // ── Finishing → Other Entries ───────────────────────────────────────────────
 
 data class FinishingEntry(
-    @SerializedName("id")         val id: Int?,
-    @SerializedName("entry_date") val entryDate: String?,
-    @SerializedName("spell_id")   val spellId: Int?,
-    @SerializedName("spell_name") val spellName: String?,
-    @SerializedName("looms")      val looms: Int?,
-    @SerializedName("cuts")       val cuts: Int?,
-    @SerializedName("hemming")    val hemming: Int?,
-    @SerializedName("heracle")    val heracle: Int?,
-    @SerializedName("cutting")    val cutting: Int?,
-    @SerializedName("branding")   val branding: Int?,
-    @SerializedName("hand_sewer") val handSewer: Int?,
-    @SerializedName("bales")      val bales: Int?
+    @SerializedName("id")          val id: Int?,
+    @SerializedName("entry_date")  val entryDate: String?,
+    @SerializedName("spell_id")    val spellId: Int?,
+    @SerializedName("spell_name")  val spellName: String?,
+    @SerializedName("looms")       val looms: Int?,
+    @SerializedName("cuts")        val cuts: Int?,
+    @SerializedName("hemming")     val hemming: Int?,
+    @SerializedName("heracle")     val heracle: Int?,
+    @SerializedName("cutting")     val cutting: Int?,
+    @SerializedName("branding")    val branding: Int?,
+    @SerializedName("hand_sewer")  val handSewer: Int?,
+    @SerializedName("bales")       val bales: Int?,
+    @SerializedName("issue_bales") val issueBales: Int?
 )
 
 data class FinishingEntryListResponse(
@@ -543,17 +544,18 @@ data class FinishingEntryListResponse(
 )
 
 data class FinishingSaveRequest(
-    @SerializedName("date")       val date: String,
-    @SerializedName("spell_id")   val spellId: Int,
-    @SerializedName("looms")      val looms: Int?,
-    @SerializedName("cuts")       val cuts: Int?,
-    @SerializedName("hemming")    val hemming: Int?,
-    @SerializedName("heracle")    val heracle: Int?,
-    @SerializedName("cutting")    val cutting: Int?,
-    @SerializedName("branding")   val branding: Int?,
-    @SerializedName("hand_sewer") val handSewer: Int?,
-    @SerializedName("bales")      val bales: Int?,
-    @SerializedName("user_id")    val userId: Int
+    @SerializedName("date")        val date: String,
+    @SerializedName("spell_id")    val spellId: Int,
+    @SerializedName("looms")       val looms: Int?,
+    @SerializedName("cuts")        val cuts: Int?,
+    @SerializedName("hemming")     val hemming: Int?,
+    @SerializedName("heracle")     val heracle: Int?,
+    @SerializedName("cutting")     val cutting: Int?,
+    @SerializedName("branding")    val branding: Int?,
+    @SerializedName("hand_sewer")  val handSewer: Int?,
+    @SerializedName("bales")       val bales: Int?,
+    @SerializedName("issue_bales") val issueBales: Int?,
+    @SerializedName("user_id")     val userId: Int
 )
 
 data class FinishingSaveResponse(
@@ -563,17 +565,18 @@ data class FinishingSaveResponse(
 )
 
 data class FinishingUpdateRequest(
-    @SerializedName("date")       val date: String?,
-    @SerializedName("spell_id")   val spellId: Int?,
-    @SerializedName("looms")      val looms: Int?,
-    @SerializedName("cuts")       val cuts: Int?,
-    @SerializedName("hemming")    val hemming: Int?,
-    @SerializedName("heracle")    val heracle: Int?,
-    @SerializedName("cutting")    val cutting: Int?,
-    @SerializedName("branding")   val branding: Int?,
-    @SerializedName("hand_sewer") val handSewer: Int?,
-    @SerializedName("bales")      val bales: Int?,
-    @SerializedName("user_id")    val userId: Int?
+    @SerializedName("date")        val date: String?,
+    @SerializedName("spell_id")    val spellId: Int?,
+    @SerializedName("looms")       val looms: Int?,
+    @SerializedName("cuts")        val cuts: Int?,
+    @SerializedName("hemming")     val hemming: Int?,
+    @SerializedName("heracle")     val heracle: Int?,
+    @SerializedName("cutting")     val cutting: Int?,
+    @SerializedName("branding")    val branding: Int?,
+    @SerializedName("hand_sewer")  val handSewer: Int?,
+    @SerializedName("bales")       val bales: Int?,
+    @SerializedName("issue_bales") val issueBales: Int?,
+    @SerializedName("user_id")     val userId: Int?
 )
 
 data class SpreaderQualityStockResponse(
