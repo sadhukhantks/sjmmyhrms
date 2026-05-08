@@ -87,6 +87,20 @@ object ApiRoutes {
     const val SPREADER_ISSUE_ENTRY_ID  = "spreader/issue-entry/{id}"
     const val SPREADER_QUALITY_STOCK   = "spreader/quality-stock"
 
+    // ── Assorting Entry (src/assorting blueprint) ────────────────────────────
+    const val ASSORTING_SHEDS           = "assorting/sheds"
+    const val ASSORTING_MACHINES        = "assorting/machines"
+    const val ASSORTING_QUALITIES       = "assorting/qualities"
+    const val ASSORTING_SELECTORS       = "assorting/selectors"
+    const val ASSORTING_VALIDATE_TROLLY = "assorting/validate-trolly"
+    const val ASSORTING_ENTRY           = "assorting/entry"
+    const val ASSORTING_ENTRY_ID        = "assorting/entry/{id}"
+
+    // ── Jute Received (src/jute_received blueprint) ──────────────────────────
+    const val JUTE_RECEIVED_QUALITIES = "jute-received/qualities"
+    const val JUTE_RECEIVED_ENTRY     = "jute-received/entry"
+    const val JUTE_RECEIVED_ENTRY_ID  = "jute-received/entry/{id}"
+
     // ── Finishing → Other Entries ─────────────────────────────────────────────
     const val FINISHING_ENTRY     = "otherentries/entry"
     const val FINISHING_ENTRY_ID  = "otherentries/entry/{id}"

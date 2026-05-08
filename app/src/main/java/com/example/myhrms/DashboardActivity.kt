@@ -621,6 +621,23 @@ class DashboardActivity : AppCompatActivity() {
             toggleSubMenu(binding.subMenuProduction, binding.arrowProduction)
         }
 
+        // Jute expandable group
+        binding.headerJute.setOnClickListener {
+            toggleSubMenu(binding.subMenuJute, binding.arrowJute)
+        }
+        binding.menuJuteReceived.setOnClickListener {
+            val i = Intent(this, JuteReceivedActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuAssortingEntry.setOnClickListener {
+            val i = Intent(this, AssortingEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+
         // Spreader Entry expandable group
         binding.headerSpreaderEntry.setOnClickListener {
             toggleSubMenu(binding.subMenuSpreaderEntry, binding.arrowSpreaderEntry)

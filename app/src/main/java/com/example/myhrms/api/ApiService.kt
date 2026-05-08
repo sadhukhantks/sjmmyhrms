@@ -506,6 +506,77 @@ interface ApiService {
         @Query("quality_id") qualityId: Int
     ): Call<SpreaderQualityStockResponse>
 
+    // ── Assorting Entry ───────────────────────────────────────────────────────
+    @GET(ApiRoutes.ASSORTING_SHEDS)
+    fun getAssortingSheds(
+        @Query("branch_id") branchId: Int
+    ): Call<AssortingShedsResponse>
+
+    @GET(ApiRoutes.ASSORTING_MACHINES)
+    fun getAssortingMachines(
+        @Query("branch_id") branchId: Int,
+        @Query("shed_type") shedType: String? = null
+    ): Call<SpreaderMachineResponse>
+
+    @GET(ApiRoutes.ASSORTING_QUALITIES)
+    fun getAssortingQualities(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderQualityResponse>
+
+    @GET(ApiRoutes.ASSORTING_SELECTORS)
+    fun getAssortingSelectors(
+        @Query("branch_id") branchId: Int
+    ): Call<SelectorResponse>
+
+    @GET(ApiRoutes.ASSORTING_VALIDATE_TROLLY)
+    fun validateAssortingTrolly(
+        @Query("trolly_no") trollyNo: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<AssortingTrollyValidateResponse>
+
+    @POST(ApiRoutes.ASSORTING_ENTRY)
+    fun saveAssortingEntry(@Body req: AssortingSaveRequest): Call<AssortingSaveResponse>
+
+    @GET(ApiRoutes.ASSORTING_ENTRY)
+    fun getAssortingEntries(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int,
+        @Query("mc_id")     mcId: Int? = null
+    ): Call<AssortingEntryListResponse>
+
+    @PUT(ApiRoutes.ASSORTING_ENTRY_ID)
+    fun updateAssortingEntry(
+        @Path("id") id: Int,
+        @Body req: AssortingSaveRequest
+    ): Call<AssortingSaveResponse>
+
+    @DELETE(ApiRoutes.ASSORTING_ENTRY_ID)
+    fun deleteAssortingEntry(@Path("id") id: Int): Call<AssortingSaveResponse>
+
+    // ── Jute Received ─────────────────────────────────────────────────────────
+    @GET(ApiRoutes.JUTE_RECEIVED_QUALITIES)
+    fun getJuteReceivedQualities(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderQualityResponse>
+
+    @POST(ApiRoutes.JUTE_RECEIVED_ENTRY)
+    fun saveJuteReceivedEntry(@Body req: JuteReceivedSaveRequest): Call<JuteReceivedSaveResponse>
+
+    @PUT(ApiRoutes.JUTE_RECEIVED_ENTRY_ID)
+    fun updateJuteReceivedEntry(
+        @Path("id") id: Int,
+        @Body req: JuteReceivedSaveRequest
+    ): Call<JuteReceivedSaveResponse>
+
+    @GET(ApiRoutes.JUTE_RECEIVED_ENTRY)
+    fun getJuteReceivedEntries(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<JuteReceivedEntryListResponse>
+
+    @DELETE(ApiRoutes.JUTE_RECEIVED_ENTRY_ID)
+    fun deleteJuteReceivedEntry(@Path("id") id: Int): Call<JuteReceivedSaveResponse>
+
     // ── Finishing → Other Entries ─────────────────────────────────────────────
     @GET(ApiRoutes.FINISHING_ENTRY)
     fun getFinishingEntries(

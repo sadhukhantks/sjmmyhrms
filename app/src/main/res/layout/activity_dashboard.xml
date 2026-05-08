@@ -947,6 +947,128 @@
                     android:paddingTop="4dp">
 
 
+                    <!-- Jute expandable group -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="4dp">
+
+                        <LinearLayout
+                            android:id="@+id/headerJute"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Jute" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Jute"
+                                android:textColor="#90CAF9"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/arrowJute"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_expand_more"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Expand" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/subMenuJute"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:paddingStart="16dp"
+                            android:paddingTop="2dp">
+
+                            <LinearLayout
+                                android:id="@+id/menuJuteReceived"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Jute Received" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Jute Received"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/menuAssortingEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Assorting Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Assorting Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

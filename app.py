@@ -3119,3 +3119,9 @@ def delete_spreader_prod_entry(entry_id):
         return jsonify({'status': 'success', 'message': 'Deleted'})
     except Exception as e:
         return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
+# ─── Assorting Module Blueprint ───────────────────────────────────────────────
+# Routes mounted under /assorting (see src/assorting/routes.py)
+from src.assorting import assorting_bp  # noqa: E402
+app.register_blueprint(assorting_bp)

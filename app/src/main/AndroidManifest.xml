@@ -135,6 +135,14 @@
             android:name=".OtherEntriesActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".JuteReceivedActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".AssortingEntryActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
