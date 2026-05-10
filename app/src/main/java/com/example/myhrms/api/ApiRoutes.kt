@@ -81,6 +81,7 @@ object ApiRoutes {
     // ── Spreader Production / Issue Entry ────────────────────────────────────
     const val SPREADER_MACHINES        = "spreader/machines"
     const val SPREADER_QUALITIES       = "spreader/qualities"
+    const val SPREADER_SPRD_QUALITIES  = "spreader/sprd-qualities"
     const val SPREADER_PROD_ENTRY      = "spreader/prod-entry"
     const val SPREADER_PROD_ENTRY_ID   = "spreader/prod-entry/{id}"
     const val SPREADER_ISSUE_ENTRY     = "spreader/issue-entry"

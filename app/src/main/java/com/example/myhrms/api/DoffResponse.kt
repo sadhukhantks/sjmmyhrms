@@ -436,15 +436,17 @@ data class SpreaderQualityResponse(
 )
 
 data class SpreaderProdEntry(
-    @SerializedName("id")         val id: Int?,
-    @SerializedName("entry_date") val entryDate: String?,
-    @SerializedName("spell_id")   val spellId: Int?,
-    @SerializedName("mc_id")      val mcId: Int?,
-    @SerializedName("mc_no")      val mcNo: String?,
-    @SerializedName("quality_id") val qualityId: Int?,
-    @SerializedName("quality")    val quality: String?,
-    @SerializedName("bin_no")     val binNo: String?,
-    @SerializedName("production") val production: Double?
+    @SerializedName("id")              val id: Int?,
+    @SerializedName("entry_date")      val entryDate: String?,
+    @SerializedName("spell_id")        val spellId: Int?,
+    @SerializedName("mc_id")           val mcId: Int?,
+    @SerializedName("mc_no")           val mcNo: String?,
+    @SerializedName("quality_id")      val qualityId: Int?,
+    @SerializedName("quality")         val quality: String?,
+    @SerializedName("sprd_quality_id") val sprdQualityId: Int?,
+    @SerializedName("sprd_quality")    val sprdQuality: String?,
+    @SerializedName("bin_no")          val binNo: String?,
+    @SerializedName("production")      val production: Double?
 )
 
 data class SpreaderProdEntryListResponse(
@@ -454,14 +456,15 @@ data class SpreaderProdEntryListResponse(
 )
 
 data class SpreaderProdSaveRequest(
-    @SerializedName("date")       val date: String,
-    @SerializedName("spell_id")   val spellId: Int,
-    @SerializedName("branch_id")  val branchId: Int,
-    @SerializedName("mc_id")      val mcId: Int,
-    @SerializedName("quality_id") val qualityId: Int,
-    @SerializedName("bin_no")     val binNo: String?,
-    @SerializedName("production") val production: Double,
-    @SerializedName("user_id")    val userId: Int
+    @SerializedName("date")            val date: String,
+    @SerializedName("spell_id")        val spellId: Int,
+    @SerializedName("branch_id")       val branchId: Int,
+    @SerializedName("mc_id")           val mcId: Int,
+    @SerializedName("quality_id")      val qualityId: Int,
+    @SerializedName("sprd_quality_id") val sprdQualityId: Int?,
+    @SerializedName("bin_no")          val binNo: String?,
+    @SerializedName("production")      val production: Double,
+    @SerializedName("user_id")         val userId: Int
 )
 
 data class SpreaderProdSaveResponse(
@@ -471,11 +474,12 @@ data class SpreaderProdSaveResponse(
 )
 
 data class SpreaderProdUpdateRequest(
-    @SerializedName("mc_id")      val mcId: Int?,
-    @SerializedName("quality_id") val qualityId: Int?,
-    @SerializedName("bin_no")     val binNo: String?,
-    @SerializedName("production") val production: Double?,
-    @SerializedName("user_id")    val userId: Int?
+    @SerializedName("mc_id")           val mcId: Int?,
+    @SerializedName("quality_id")      val qualityId: Int?,
+    @SerializedName("sprd_quality_id") val sprdQualityId: Int?,
+    @SerializedName("bin_no")          val binNo: String?,
+    @SerializedName("production")      val production: Double?,
+    @SerializedName("user_id")         val userId: Int?
 )
 
 // ── Spreader Issue Entry ────────────────────────────────────────────────────

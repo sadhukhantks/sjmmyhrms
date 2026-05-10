@@ -463,6 +463,11 @@ interface ApiService {
         @Query("branch_id") branchId: Int
     ): Call<SpreaderQualityResponse>
 
+    @GET(ApiRoutes.SPREADER_SPRD_QUALITIES)
+    fun getSpreaderSprdQualities(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderQualityResponse>
+
     @GET(ApiRoutes.SPREADER_PROD_ENTRY)
     fun getSpreaderProdEntries(
         @Query("date")      date: String,

@@ -714,6 +714,17 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+
+        // Stocks expandable group
+        binding.headerStocks.setOnClickListener {
+            toggleSubMenu(binding.subMenuStocks, binding.arrowStocks)
+        }
+        binding.menuRollStock.setOnClickListener {
+            val i = Intent(this, RollStockActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
     }
 
     private fun openProductionScreen(title: String) {
