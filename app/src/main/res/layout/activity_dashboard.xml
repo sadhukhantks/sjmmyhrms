@@ -24,7 +24,7 @@
                 android:id="@+id/ivCompanyLogo"
                 android:layout_width="32dp"
                 android:layout_height="32dp"
-                android:src="@drawable/logo_vow"
+                android:src="@drawable/icon_180"
                 android:contentDescription="Logo"
                 android:layout_marginEnd="10dp" />
 
@@ -1558,6 +1558,74 @@
                                 android:layout_weight="1"
                                 android:layout_marginStart="12dp"
                                 android:text="Other Entries"
+                                android:textColor="#E0E0E0"
+                                android:textSize="15sp" />
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#80CBC4" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/menuBalesProductionEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:layout_marginTop="4dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#80CBC4"
+                                android:contentDescription="Bales Production Entry" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Bales Production Entry"
+                                android:textColor="#E0E0E0"
+                                android:textSize="15sp" />
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="#80CBC4" />
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/menuBalesIssueEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp"
+                            android:layout_marginTop="4dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#80CBC4"
+                                android:contentDescription="Bales Issue Entry" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Bales Issue Entry"
                                 android:textColor="#E0E0E0"
                                 android:textSize="15sp" />
 

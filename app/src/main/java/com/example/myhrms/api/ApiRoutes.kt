@@ -86,7 +86,22 @@ object ApiRoutes {
     const val SPREADER_PROD_ENTRY_ID   = "spreader/prod-entry/{id}"
     const val SPREADER_ISSUE_ENTRY     = "spreader/issue-entry"
     const val SPREADER_ISSUE_ENTRY_ID  = "spreader/issue-entry/{id}"
-    const val SPREADER_QUALITY_STOCK   = "spreader/quality-stock"
+    const val SPREADER_QUALITY_STOCK       = "spreader/quality-stock"
+    const val SPREADER_QUALITY_STOCK_LIST  = "spreader/quality-stock-list"
+
+    // ── Bales Production → Roll Stock (src/balesproduction blueprint) ────────
+    const val BALESPROD_MC_CODES       = "balesproduction/mc-codes"
+    const val BALESPROD_ROLL_STOCK     = "balesproduction/roll-stock"
+    const val BALESPROD_ROLL_STOCK_ID  = "balesproduction/roll-stock/{id}"
+
+    // ── Bales Production / Issue Entry ───────────────────────────────────────
+    const val BALESPROD_FNG_QUALITIES  = "balesproduction/finishing-qualities"
+    const val BALESPROD_CUSTOMERS      = "balesproduction/customers"
+    const val BALESPROD_PROD_ENTRY     = "balesproduction/prod-entry"
+    const val BALESPROD_PROD_ENTRY_ID  = "balesproduction/prod-entry/{id}"
+    const val BALESPROD_ISSUE_ENTRY    = "balesproduction/issue-entry"
+    const val BALESPROD_ISSUE_ENTRY_ID = "balesproduction/issue-entry/{id}"
+    const val BALESPROD_STOCK          = "balesproduction/stock"
 
     // ── Assorting Entry (src/assorting blueprint) ────────────────────────────
     const val ASSORTING_SHEDS           = "assorting/sheds"
@@ -121,4 +136,10 @@ object ApiRoutes {
     const val ONBOARDING_EMPLOYEE   = "onboarding/employee/{emp_code}"
     const val ONBOARDING_REGISTER   = "onboarding/register-face"
     const val ONBOARDING_REGISTER_FACE = "onboarding/register-face"  // Alias
+
+    // ── Dynamic Menu & Permissions ────────────────────────────────────────────
+    const val MENU_PERMISSIONS         = "menu-permissions"
+    const val MENUS_MASTER             = "menus"
+    const val ROLE_MENU_PERMISSIONS    = "role-menu-permissions"
+    const val USER_MENU_PERMISSIONS    = "user-menu-permissions"
 }

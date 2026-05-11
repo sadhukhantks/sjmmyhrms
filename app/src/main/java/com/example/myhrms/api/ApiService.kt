@@ -1,5 +1,6 @@
 package com.example.myhrms.api
 
+import com.example.myhrms.permissions.MenuPermissionResponse
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -10,6 +11,13 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ApiService {
+
+    // ── Dynamic Menu Permissions ──────────────────────────────────
+    @GET(ApiRoutes.MENU_PERMISSIONS)
+    fun getMenuPermissions(
+        @Query("user_id") userId: Int
+    ): Call<MenuPermissionResponse>
+
 
     @POST(ApiRoutes.LOGIN)
     fun login(@Body loginRequest: LoginRequest): Call<LoginResponse>
@@ -511,6 +519,11 @@ interface ApiService {
         @Query("quality_id") qualityId: Int
     ): Call<SpreaderQualityStockResponse>
 
+    @GET(ApiRoutes.SPREADER_QUALITY_STOCK_LIST)
+    fun getSpreaderQualityStockList(
+        @Query("branch_id") branchId: Int
+    ): Call<SpreaderQualityStockListResponse>
+
     // ── Assorting Entry ───────────────────────────────────────────────────────
     @GET(ApiRoutes.ASSORTING_SHEDS)
     fun getAssortingSheds(
@@ -600,4 +613,75 @@ interface ApiService {
 
     @DELETE(ApiRoutes.FINISHING_ENTRY_ID)
     fun deleteFinishingEntry(@Path("id") id: Int): Call<FinishingSaveResponse>
+
+    // ── Bales Production → Roll Stock ─────────────────────────────────────────
+    @GET(ApiRoutes.BALESPROD_MC_CODES)
+    fun getRollStockMcCodes(
+        @Query("branch_id") branchId: Int
+    ): Call<McCodeResponse>
+
+    @GET(ApiRoutes.BALESPROD_ROLL_STOCK)
+    fun getRollStockEntries(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<RollStockListResponse>
+
+    @POST(ApiRoutes.BALESPROD_ROLL_STOCK)
+    fun saveRollStock(@Body req: RollStockSaveRequest): Call<RollStockSaveResponse>
+
+    @PUT(ApiRoutes.BALESPROD_ROLL_STOCK_ID)
+    fun updateRollStock(
+        @Path("id") id: Int,
+        @Body req: RollStockUpdateRequest
+    ): Call<RollStockSaveResponse>
+
+    @DELETE(ApiRoutes.BALESPROD_ROLL_STOCK_ID)
+    fun deleteRollStock(@Path("id") id: Int): Call<RollStockSaveResponse>
+
+    // ── Bales Production / Issue Entry ────────────────────────────────────────
+    @GET(ApiRoutes.BALESPROD_FNG_QUALITIES)
+    fun getFinishingQualities(): Call<FinishingQualityResponse>
+
+    @GET(ApiRoutes.BALESPROD_CUSTOMERS)
+    fun getCustomers(): Call<CustomerResponse>
+
+    @GET(ApiRoutes.BALESPROD_PROD_ENTRY)
+    fun getBalesProdEntries(
+        @Query("date")     date: String,
+        @Query("spell_id") spellId: Int
+    ): Call<BalesProdEntryListResponse>
+
+    @POST(ApiRoutes.BALESPROD_PROD_ENTRY)
+    fun saveBalesProdEntry(@Body req: BalesProdSaveRequest): Call<BalesProdSaveResponse>
+
+    @PUT(ApiRoutes.BALESPROD_PROD_ENTRY_ID)
+    fun updateBalesProdEntry(
+        @Path("id") id: Int,
+        @Body req: BalesProdUpdateRequest
+    ): Call<BalesProdSaveResponse>
+
+    @DELETE(ApiRoutes.BALESPROD_PROD_ENTRY_ID)
+    fun deleteBalesProdEntry(@Path("id") id: Int): Call<BalesProdSaveResponse>
+
+    @GET(ApiRoutes.BALESPROD_ISSUE_ENTRY)
+    fun getBalesIssueEntries(
+        @Query("date")     date: String,
+        @Query("spell_id") spellId: Int
+    ): Call<BalesProdEntryListResponse>
+
+    @POST(ApiRoutes.BALESPROD_ISSUE_ENTRY)
+    fun saveBalesIssueEntry(@Body req: BalesIssueSaveRequest): Call<BalesProdSaveResponse>
+
+    @PUT(ApiRoutes.BALESPROD_ISSUE_ENTRY_ID)
+    fun updateBalesIssueEntry(
+        @Path("id") id: Int,
+        @Body req: BalesIssueUpdateRequest
+    ): Call<BalesProdSaveResponse>
+
+    @DELETE(ApiRoutes.BALESPROD_ISSUE_ENTRY_ID)
+    fun deleteBalesIssueEntry(@Path("id") id: Int): Call<BalesProdSaveResponse>
+
+    @GET(ApiRoutes.BALESPROD_STOCK)
+    fun getBalesStock(): Call<BalesStockResponse>
 }

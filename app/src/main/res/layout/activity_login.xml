@@ -37,8 +37,8 @@
             android:id="@+id/ivLogo"
             android:layout_width="140dp"
             android:layout_height="140dp"
-            android:src="@drawable/logo_vow"
-            android:contentDescription="VOW Logo"
+            android:src="@drawable/icon_180"
+            android:contentDescription="App Logo"
             android:scaleType="fitCenter" />
 
     </LinearLayout>

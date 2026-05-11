@@ -590,3 +590,16 @@ data class SpreaderQualityStockResponse(
     @SerializedName("shr_name")   val shrName: String?,
     @SerializedName("stock")      val stock: Double?
 )
+
+data class SpreaderQualityStockItem(
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("Quality")    val quality: String?,
+    @SerializedName("Bin No")     val binNo: String?,
+    @SerializedName("Stock")      val stock: Double?
+)
+
+data class SpreaderQualityStockListResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("rows")    val rows: List<SpreaderQualityStockItem>?
+)

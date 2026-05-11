@@ -36,6 +36,7 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
     private lateinit var etIssue         : EditText
     private lateinit var etBinNo         : EditText
     private lateinit var btnSave         : Button
+    private lateinit var btnShowStock    : ImageView
     private lateinit var rvEntries       : RecyclerView
     private lateinit var tvEntriesEmpty  : TextView
     private lateinit var pbEntries       : ProgressBar
@@ -69,6 +70,7 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
         etIssue           = findViewById(R.id.etIssue)
         etBinNo           = findViewById(R.id.etBinNo)
         btnSave           = findViewById(R.id.btnSave)
+        btnShowStock      = findViewById(R.id.btnShowStock)
         rvEntries         = findViewById(R.id.rvEntries)
         tvEntriesEmpty    = findViewById(R.id.tvEntriesEmpty)
         pbEntries         = findViewById(R.id.pbEntries)
@@ -91,6 +93,7 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
         }
 
         btnSave.setOnClickListener { saveEntry() }
+        btnShowStock.setOnClickListener { showQualityStockDialog() }
 
         loadSpells {
             loadQualities()
@@ -145,7 +148,7 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
         tvQualitiesStatus.visibility = View.VISIBLE
         tvQualitiesStatus.text = "Loading…"
 
-        RetrofitClient.getApiService(this).getSpreaderQualities(branchId)
+        RetrofitClient.getApiService(this).getSpreaderSprdQualities(branchId)
             .enqueue(object : Callback<SpreaderQualityResponse> {
                 override fun onResponse(call: Call<SpreaderQualityResponse>, response: Response<SpreaderQualityResponse>) {
                     qualitiesList.clear()
@@ -380,6 +383,74 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
     }
 
     private fun fmt(v: Double?) = String.format(Locale.getDefault(), "%.3f", v ?: 0.0)
+
+    private fun showQualityStockDialog() {
+        if (branchId <= 0) {
+            Toast.makeText(this, "Branch not set", Toast.LENGTH_SHORT).show(); return
+        }
+        val view = layoutInflater.inflate(R.layout.dialog_quality_stock_list, null)
+        val rv          = view.findViewById<RecyclerView>(R.id.rvStock)
+        val tvEmpty     = view.findViewById<TextView>(R.id.tvStockEmpty)
+        val pb          = view.findViewById<ProgressBar>(R.id.pbStock)
+        val btnClose    = view.findViewById<ImageView>(R.id.btnDialogClose)
+
+        rv.layoutManager = LinearLayoutManager(this)
+        val stockAdapter = StockAdapter()
+        rv.adapter = stockAdapter
+
+        val dlg = android.app.AlertDialog.Builder(this)
+            .setView(view)
+            .setCancelable(true)
+            .create()
+        btnClose.setOnClickListener { dlg.dismiss() }
+
+        pb.visibility      = View.VISIBLE
+        rv.visibility      = View.GONE
+        tvEmpty.visibility = View.GONE
+
+        RetrofitClient.getApiService(this).getSpreaderQualityStockList(branchId)
+            .enqueue(object : Callback<SpreaderQualityStockListResponse> {
+                override fun onResponse(call: Call<SpreaderQualityStockListResponse>, response: Response<SpreaderQualityStockListResponse>) {
+                    pb.visibility = View.GONE
+                    val rows = response.body()?.rows.orEmpty()
+                    if (rows.isEmpty()) {
+                        tvEmpty.visibility = View.VISIBLE
+                    } else {
+                        rv.visibility = View.VISIBLE
+                        stockAdapter.update(rows)
+                    }
+                }
+                override fun onFailure(call: Call<SpreaderQualityStockListResponse>, t: Throwable) {
+                    pb.visibility      = View.GONE
+                    tvEmpty.visibility = View.VISIBLE
+                    tvEmpty.text       = "Failed to load stock"
+                }
+            })
+        dlg.show()
+    }
+
+    inner class StockAdapter : RecyclerView.Adapter<StockAdapter.VH>() {
+        private val items = mutableListOf<SpreaderQualityStockItem>()
+        fun update(list: List<SpreaderQualityStockItem>) {
+            items.clear(); items.addAll(list); notifyDataSetChanged()
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH =
+            VH(LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_quality_stock, parent, false))
+        override fun getItemCount() = items.size
+        override fun onBindViewHolder(h: VH, pos: Int) = h.bind(items[pos])
+
+        inner class VH(v: View) : RecyclerView.ViewHolder(v) {
+            private val tvQuality = v.findViewById<TextView>(R.id.tvQuality)
+            private val tvBinNo   = v.findViewById<TextView>(R.id.tvBinNo)
+            private val tvStock   = v.findViewById<TextView>(R.id.tvStock)
+            fun bind(s: SpreaderQualityStockItem) {
+                tvQuality.text = s.quality ?: "-"
+                tvBinNo.text   = s.binNo ?: "-"
+                tvStock.text   = fmtInt(s.stock ?: 0.0)
+            }
+        }
+    }
 
     inner class EntriesAdapter : RecyclerView.Adapter<EntriesAdapter.VH>() {
         private val items = mutableListOf<SpreaderIssueEntry>()

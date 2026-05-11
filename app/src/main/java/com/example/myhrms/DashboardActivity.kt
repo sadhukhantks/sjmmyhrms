@@ -708,6 +708,18 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+        binding.menuBalesProductionEntry.setOnClickListener {
+            val i = Intent(this, BalesProductionEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuBalesIssueEntry.setOnClickListener {
+            val i = Intent(this, BalesIssueEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
         binding.menuWeightEntry.setOnClickListener {
             val i = Intent(this, WeightEntryActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)

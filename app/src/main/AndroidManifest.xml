@@ -147,6 +147,14 @@
             android:name=".RollStockActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".BalesProductionEntryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BalesIssueEntryActivity"
+            android:exported="false" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

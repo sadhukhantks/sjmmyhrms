@@ -3121,6 +3121,47 @@ def delete_spreader_prod_entry(entry_id):
         return jsonify({'status': 'error', 'message': str(e)}), 500
 
 
+@app.route('/spreader/quality-stock-list', methods=['GET'])
+def list_spreader_quality_stock():
+    """
+    Quality-wise spreader stock for a branch (Issue Entry → stock icon).
+    Stock = SUM(production - issue) per (sprd_quality_id, bin_no).
+    Query params: ?branch_id=<id> (required)
+    """
+    try:
+        branch_id = request.args.get('branch_id', type=int)
+        if not branch_id:
+            return jsonify({'status': 'error', 'message': 'branch_id is required'}), 400
+
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("""
+            SELECT tds.sprd_quality_id AS quality_id,
+                   sjqm.shr_name       AS Quality,
+                   tds.bin_no          AS `Bin No`,
+                   COALESCE(SUM(tds.production - tds.issue), 0) AS Stock
+            FROM tbl_daily_sperder tds
+            LEFT JOIN sprd_jute_quality_mst sjqm
+                   ON sjqm.sprd_jute_qlty_id = tds.sprd_quality_id
+            LEFT JOIN jute_quality_mst jqm
+                   ON jqm.jute_qlty_id = tds.quality_id
+            WHERE tds.branch_id = %s
+            GROUP BY tds.sprd_quality_id, sjqm.shr_name, tds.bin_no
+            ORDER BY sjqm.shr_name, tds.bin_no
+        """, (branch_id,))
+        rows = cursor.fetchall()
+        cursor.close()
+        db.close()
+        # Coerce Decimal Stock → float so JSON serialisation is consistent.
+        for r in rows:
+            if r.get('Stock') is not None:
+                try: r['Stock'] = float(r['Stock'])
+                except Exception: pass
+        return jsonify({'status': 'success', 'rows': rows, 'total': len(rows)})
+    except Exception as e:
+        return jsonify({'status': 'error', 'message': str(e)}), 500
+
+
 # ─── Assorting Module Blueprint ───────────────────────────────────────────────
 # Routes mounted under /assorting (see src/assorting/routes.py)
 from src.assorting import assorting_bp  # noqa: E402
