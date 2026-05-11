@@ -690,6 +690,12 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+        binding.menuSpgRunningHours.setOnClickListener {
+            val i = Intent(this, SpgRunningHoursActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
         binding.menuWindingEntry.setOnClickListener {
             val i = Intent(this, WindingEntryActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)

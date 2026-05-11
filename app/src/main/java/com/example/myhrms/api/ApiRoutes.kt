@@ -74,6 +74,10 @@ object ApiRoutes {
     const val DOFF_WE2_SUMMARY    = "doff/winding-entry-2-summary"
     const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
 
+    // ── Spg Running Hours ────────────────────────────────────────────────────
+    const val SPG_RUNNING_HOURS       = "doff/spg-running-hours"
+    const val SPG_RUNNING_HOURS_ID    = "doff/spg-running-hours/{id}"
+
     // ── Weight Entry ─────────────────────────────────────────────────────────
     const val WEIGHT_TRANSACTIONS = "weight-transactions"
     const val WEIGHT_TRANSACTION_DETAIL = "weight-transactions/{id}"

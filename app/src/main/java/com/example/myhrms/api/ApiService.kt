@@ -684,4 +684,24 @@ interface ApiService {
 
     @GET(ApiRoutes.BALESPROD_STOCK)
     fun getBalesStock(): Call<BalesStockResponse>
+
+    // ── Spg Running Hours ────────────────────────────────────────────────────
+    @GET(ApiRoutes.SPG_RUNNING_HOURS)
+    fun getSpgRunningHours(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<SpgRunningListResponse>
+
+    @POST(ApiRoutes.SPG_RUNNING_HOURS)
+    fun saveSpgRunningHours(@Body req: SpgRunningSaveRequest): Call<SpgRunningSaveResponse>
+
+    @PUT(ApiRoutes.SPG_RUNNING_HOURS_ID)
+    fun updateSpgRunningHours(
+        @Path("id") id: Int,
+        @Body req: SpgRunningUpdateRequest
+    ): Call<SpgRunningSaveResponse>
+
+    @DELETE(ApiRoutes.SPG_RUNNING_HOURS_ID)
+    fun deleteSpgRunningHours(@Path("id") id: Int): Call<SpgRunningSaveResponse>
 }

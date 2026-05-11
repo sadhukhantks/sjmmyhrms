@@ -590,6 +590,20 @@
                         android:layout_marginBottom="1dp"
                         android:clickable="true"
                         android:focusable="true" />
+
+                    <TextView
+                        android:id="@+id/menuSpgRunningHours"
+                        android:layout_width="match_parent"
+                        android:layout_height="44dp"
+                        android:gravity="center_vertical"
+                        android:background="@drawable/bg_submenu_item"
+                        android:paddingStart="48dp"
+                        android:text="  Spg Running Hours"
+                        android:textColor="@color/label_text"
+                        android:textSize="13sp"
+                        android:layout_marginBottom="1dp"
+                        android:clickable="true"
+                        android:focusable="true" />
                 </LinearLayout>
 
                 <TextView

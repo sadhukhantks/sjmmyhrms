@@ -247,6 +247,12 @@ class AttendanceDashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
             startActivity(i)
         }
+        findViewById<View>(R.id.menuSpgRunningHours).setOnClickListener {
+            val i = Intent(this, SpgRunningHoursActivity::class.java)
+            i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
+            i.putExtra("BRANCH_ID", intent.getIntExtra("BRANCH_ID", 0))
+            startActivity(i)
+        }
         findViewById<View>(R.id.menuWindingEntry).setOnClickListener {
             val i = Intent(this, WindingEntryActivity::class.java)
             i.putExtra("CO_ID", intent.getIntExtra("CO_ID", 0))
