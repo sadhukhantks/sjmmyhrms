@@ -685,6 +685,12 @@ interface ApiService {
     @GET(ApiRoutes.BALESPROD_STOCK)
     fun getBalesStock(): Call<BalesStockResponse>
 
+    @GET(ApiRoutes.BALESPROD_STOCK_PAIR)
+    fun getBalesStockPair(
+        @Query("fng_quality_id") fngQualityId: Int,
+        @Query("customer_id")    customerId: Int
+    ): Call<BalesStockPairResponse>
+
     // ── Spg Running Hours ────────────────────────────────────────────────────
     @GET(ApiRoutes.SPG_RUNNING_HOURS)
     fun getSpgRunningHours(

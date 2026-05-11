@@ -106,6 +106,7 @@ object ApiRoutes {
     const val BALESPROD_ISSUE_ENTRY    = "balesproduction/issue-entry"
     const val BALESPROD_ISSUE_ENTRY_ID = "balesproduction/issue-entry/{id}"
     const val BALESPROD_STOCK          = "balesproduction/stock"
+    const val BALESPROD_STOCK_PAIR     = "balesproduction/stock-pair"
 
     // ── Assorting Entry (src/assorting blueprint) ────────────────────────────
     const val ASSORTING_SHEDS           = "assorting/sheds"
