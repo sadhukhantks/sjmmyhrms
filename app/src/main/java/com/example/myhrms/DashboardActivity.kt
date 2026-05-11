@@ -400,14 +400,9 @@ class DashboardActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Present card → Show department-wise attendance (departments where employees are present)
+        // Hands card → Show department-wise attendance (departments where employees are present)
         binding.cardPresent.setOnClickListener {
             showDepartmentsWithPresent()
-        }
-
-        // Absent card → Attendance Report for that date
-        binding.cardAbsent.setOnClickListener {
-            openAttendanceReport()
         }
     }
 
@@ -507,7 +502,6 @@ class DashboardActivity : AppCompatActivity() {
                         binding.tvStatPresent.text = stats.totalPresent.toString()
                         binding.tvStatFace.text = stats.presentFace.toString()
                         binding.tvStatManual.text = stats.presentManual.toString()
-                        binding.tvStatAbsent.text = stats.totalAbsent.toString()
 
                         // Department-wise breakdown - use department_wise (all departments)
                         // and filter to present > 0 client-side. department_master for Master card.
