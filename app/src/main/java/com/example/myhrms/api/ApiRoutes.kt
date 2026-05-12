@@ -25,6 +25,7 @@ object ApiRoutes {
     const val REGISTER = "register"
 
     const val DASHBOARD_STATS = "dashboard-stats"
+    const val DASHBOARD_CARD_TREND = "dashboard/card-trend"
     const val ATTENDANCE_DASHBOARD = "attendance-dashboard"
     const val ATTENDANCE_REPORT = "attendance-report"
     const val EMP_WISE_ATTENDANCE = "emp-wise-attendance"

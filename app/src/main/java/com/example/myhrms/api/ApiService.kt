@@ -115,6 +115,13 @@ interface ApiService {
         @Query("spell_id") spellId: Int? = null
     ): Call<DashboardStatsResponse>
 
+    @GET(ApiRoutes.DASHBOARD_CARD_TREND)
+    fun getDashboardCardTrend(
+        @Query("metric")    metric: String,
+        @Query("branch_id") branchId: Int? = null,
+        @Query("end_date")  endDate: String? = null
+    ): Call<CardTrendResponse>
+
     // ── Emp-Wise Attendance Report ─────────────────────────────
     @GET(ApiRoutes.EMP_WISE_ATTENDANCE)
     fun getEmpWiseAttendance(

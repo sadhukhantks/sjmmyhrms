@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.myhrms.api.BranchData
 import com.example.myhrms.api.BranchResponse
+import com.example.myhrms.api.CardTrendResponse
 import com.example.myhrms.api.CompanyData
 import com.example.myhrms.api.CompanyResponse
 import com.example.myhrms.api.ApiConfig
@@ -23,6 +24,16 @@ import com.example.myhrms.api.RetrofitClient
 import com.example.myhrms.api.Shift
 import com.example.myhrms.api.ShiftResponse
 import com.example.myhrms.databinding.ActivityDashboardBinding
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
+import android.app.AlertDialog
+import android.graphics.Color
+import android.widget.ProgressBar
+import android.widget.TextView
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -376,34 +387,251 @@ class DashboardActivity : AppCompatActivity() {
     // ── Card Click Handlers ──────────────────────────────────────
 
     private fun setupCardClicks() {
-        // Departments card → Department Master
-        binding.cardDepartments.setOnClickListener {
-            val intent = Intent(this, DepartmentMasterActivity::class.java)
-            intent.putExtra("CO_ID", selectedCompanyId)
-            intent.putExtra("BRANCH_ID", selectedBranchId)
-            startActivity(intent)
+        binding.cardPresent.setOnClickListener { showDepartmentsWithPresent() }
+        binding.cardJute.setOnClickListener    { openWithBranch(JuteReceivedActivity::class.java) }
+        binding.cardSpg.setOnClickListener     { openWithBranch(SpinningDoffActivity::class.java) }
+        binding.cardWinding.setOnClickListener { openWithBranch(WindingEntryActivity::class.java) }
+        binding.cardOthers.setOnClickListener  { openWithBranch(OtherEntriesActivity::class.java) }
+        binding.cardBales.setOnClickListener   { openWithBranch(BalesProductionEntryActivity::class.java) }
+
+        // 7-day trend icons
+        binding.btnTrendHands.setOnClickListener   { showCardTrend("hands",   "No of Hands", 0xFF2E7D32.toInt()) }
+        binding.btnTrendJute.setOnClickListener    { showCardTrend("jute",    "Jute",        0xFF1565C0.toInt()) }
+        binding.btnTrendSpg.setOnClickListener     { showCardTrend("spg",     "Spg Prod",    0xFF6A1B9A.toInt()) }
+        binding.btnTrendWinding.setOnClickListener { showCardTrend("winding", "Winding",     0xFF00838F.toInt()) }
+        binding.btnTrendOthers.setOnClickListener  { showCardTrend("others",  "Others",      0xFFEF6C00.toInt()) }
+        binding.btnTrendBales.setOnClickListener   { showCardTrend("bales",   "Bales",       0xFFC62828.toInt()) }
+    }
+
+    private fun openWithBranch(target: Class<*>) {
+        val i = Intent(this, target)
+        i.putExtra("CO_ID", selectedCompanyId)
+        i.putExtra("BRANCH_ID", selectedBranchId)
+        startActivity(i)
+    }
+
+    // ── 7-day trend bar chart dialog ─────────────────────────────
+    private fun showCardTrend(metric: String, title: String, color: Int) {
+        val view  = layoutInflater.inflate(R.layout.dialog_card_trend, null)
+        val tvTitle = view.findViewById<TextView>(R.id.tvTrendTitle)
+        val chart   = view.findViewById<BarChart>(R.id.chartTrend)
+        val pb      = view.findViewById<ProgressBar>(R.id.pbTrend)
+        val tvEmpty = view.findViewById<TextView>(R.id.tvTrendEmpty)
+        val btnClose = view.findViewById<ImageView>(R.id.btnTrendClose)
+        val scrollChips = view.findViewById<android.widget.HorizontalScrollView>(R.id.scrollChips)
+        val llChips     = view.findViewById<android.widget.LinearLayout>(R.id.llTrendChips)
+
+        tvTitle.text = "$title — Last 7 Days"
+        view.findViewById<android.view.View>(R.id.tvTrendTitle)
+            .let { (it.parent as android.view.ViewGroup).setBackgroundColor(color) }
+
+        val dlg = AlertDialog.Builder(this).setView(view).setCancelable(true).create()
+        btnClose.setOnClickListener { dlg.dismiss() }
+
+        chart.visibility = View.GONE
+        tvEmpty.visibility = View.GONE
+        pb.visibility = View.VISIBLE
+        scrollChips.visibility = View.GONE
+
+        RetrofitClient.getApiService(this).getDashboardCardTrend(
+            metric   = metric,
+            branchId = if (selectedBranchId > 0) selectedBranchId else null,
+            endDate  = selectedDateApi
+        ).enqueue(object : Callback<CardTrendResponse> {
+            override fun onResponse(call: Call<CardTrendResponse>, response: Response<CardTrendResponse>) {
+                pb.visibility = View.GONE
+                val body = response.body()
+                val days = body?.days.orEmpty()
+                val series = body?.series.orEmpty()
+                val labels = days.map { it.date?.substring(5) ?: "" }
+                val hasData = days.any {
+                    (it.value ?: 0.0) != 0.0 || (it.values?.any { v -> v != 0.0 } == true)
+                }
+                if (days.isEmpty() || !hasData) {
+                    tvEmpty.visibility = View.VISIBLE
+                    return
+                }
+                chart.visibility = View.VISIBLE
+                if (series.size > 1) {
+                    val matrix = days.map { it.values ?: emptyList() }
+                    setupSeriesChips(llChips, scrollChips, chart, labels, series, matrix, color)
+                } else {
+                    renderTrendChart(chart, labels.zip(days.map { it.value ?: 0.0 }), color)
+                }
+            }
+            override fun onFailure(call: Call<CardTrendResponse>, t: Throwable) {
+                pb.visibility = View.GONE
+                tvEmpty.visibility = View.VISIBLE
+                tvEmpty.text = "Failed to load trend"
+            }
+        })
+        dlg.show()
+    }
+
+    private fun setupSeriesChips(
+        container: android.widget.LinearLayout,
+        scroll: android.widget.HorizontalScrollView,
+        chart: BarChart,
+        labels: List<String>,
+        seriesNames: List<String>,
+        matrix: List<List<Double>>,
+        primaryColor: Int
+    ) {
+        val palette = listOf(
+            primaryColor,
+            shade(primaryColor, 0.70f),
+            shade(primaryColor, 0.45f),
+            shade(primaryColor, 0.25f)
+        )
+        val seriesColors = seriesNames.mapIndexed { i, _ -> palette.getOrElse(i) { primaryColor } }
+
+        // Selected series: -1 means "show all"
+        var selected = -1
+        scroll.visibility = View.VISIBLE
+        container.removeAllViews()
+
+        val chips = mutableListOf<TextView>()
+        val dp = resources.displayMetrics.density
+        val mkChip: (Int, String) -> TextView = { idx, name ->
+            TextView(this).apply {
+                text = if (idx == -1) "All" else name
+                textSize = 12f
+                setPadding((14 * dp).toInt(), (6 * dp).toInt(),
+                           (14 * dp).toInt(), (6 * dp).toInt())
+                val lp = android.widget.LinearLayout.LayoutParams(
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT,
+                    android.widget.LinearLayout.LayoutParams.WRAP_CONTENT)
+                lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                layoutParams = lp
+                isClickable = true
+                isFocusable = true
+            }
         }
 
-        // Designations card → Occupation Master
-        binding.cardDesignations.setOnClickListener {
-            val intent = Intent(this, OccupationMasterActivity::class.java)
-            intent.putExtra("BRANCH_ID", selectedBranchId)
-            startActivity(intent)
+        fun paintChips() {
+            chips.forEachIndexed { i, chip ->
+                val chipIdx = i - 1
+                val active = (selected == chipIdx)
+                val chipColor =
+                    if (chipIdx == -1) primaryColor
+                    else seriesColors.getOrElse(chipIdx) { primaryColor }
+                chip.setBackgroundColor(if (active) chipColor else 0xFFE0E0E0.toInt())
+                chip.setTextColor(if (active) 0xFFFFFFFF.toInt() else 0xFF424242.toInt())
+                chip.setTypeface(null,
+                    if (active) android.graphics.Typeface.BOLD else android.graphics.Typeface.NORMAL)
+            }
         }
 
-
-        // Employees card → Employee Master
-        binding.cardEmployees.setOnClickListener {
-            val intent = Intent(this, EmployeeMasterActivity::class.java)
-            intent.putExtra("CO_ID", selectedCompanyId)
-            intent.putExtra("BRANCH_ID", selectedBranchId)
-            startActivity(intent)
+        // "All" chip first, then one per series
+        chips += mkChip(-1, "All").also { container.addView(it) }
+        seriesNames.forEachIndexed { idx, name ->
+            chips += mkChip(idx, name).also { container.addView(it) }
         }
-
-        // Hands card → Show department-wise attendance (departments where employees are present)
-        binding.cardPresent.setOnClickListener {
-            showDepartmentsWithPresent()
+        chips.forEachIndexed { i, chip ->
+            val chipIdx = i - 1
+            chip.setOnClickListener {
+                selected = if (selected == chipIdx) -1 else chipIdx
+                paintChips()
+                renderTrendByFilter(chart, labels, seriesNames, matrix, seriesColors, selected)
+            }
         }
+        paintChips()
+        renderTrendByFilter(chart, labels, seriesNames, matrix, seriesColors, selected)
+    }
+
+    private fun renderTrendByFilter(
+        chart: BarChart,
+        labels: List<String>,
+        seriesNames: List<String>,
+        matrix: List<List<Double>>,
+        seriesColors: List<Int>,
+        selected: Int
+    ) {
+        if (selected == -1) {
+            renderGroupedBars(chart, labels, seriesNames, matrix, seriesColors)
+        } else {
+            val data = labels.mapIndexed { i, lbl ->
+                lbl to (matrix.getOrNull(i)?.getOrNull(selected) ?: 0.0)
+            }
+            chart.fitScreen()
+            renderTrendChart(chart, data, seriesColors.getOrElse(selected) { 0xFF1565C0.toInt() })
+        }
+    }
+
+    private fun renderTrendChart(chart: BarChart, data: List<Pair<String, Double>>, color: Int) {
+        val labels  = data.map { it.first }
+        val entries = data.mapIndexed { i, (_, v) -> BarEntry(i.toFloat(), v.toFloat()) }
+        val dataSet = BarDataSet(entries, "").apply {
+            this.color = color
+            valueTextSize = 10f
+        }
+        chart.data = BarData(dataSet).apply { barWidth = 0.6f }
+        chart.description.isEnabled = false
+        chart.legend.isEnabled = false
+        chart.setFitBars(true)
+        chart.axisRight.isEnabled = false
+        chart.axisLeft.setDrawGridLines(false)
+        chart.axisLeft.axisMinimum = 0f
+        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chart.xAxis.setDrawGridLines(false)
+        chart.xAxis.granularity = 1f
+        chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        chart.xAxis.textSize = 10f
+        // Clear any grouped-bar centering / axis bounds left from a previous render.
+        chart.xAxis.setCenterAxisLabels(false)
+        chart.xAxis.resetAxisMinimum()
+        chart.xAxis.resetAxisMaximum()
+        chart.animateY(700)
+        chart.invalidate()
+    }
+
+    private fun renderGroupedBars(
+        chart: BarChart,
+        labels: List<String>,
+        seriesNames: List<String>,
+        matrix: List<List<Double>>,
+        seriesColors: List<Int>
+    ) {
+        val dataSets = seriesNames.mapIndexed { sIdx, name ->
+            val entries = matrix.mapIndexed { dIdx, row ->
+                BarEntry(dIdx.toFloat(), (row.getOrNull(sIdx) ?: 0.0).toFloat())
+            }
+            BarDataSet(entries, name).apply {
+                color = seriesColors.getOrElse(sIdx) { 0xFF1565C0.toInt() }
+                valueTextSize = 9f
+            }
+        }
+        val groupCount = labels.size
+        val groupSpace = 0.18f
+        val barSpace   = 0.04f
+        val barWidth   = (1f - groupSpace) / seriesNames.size - barSpace
+
+        chart.data = BarData(dataSets).apply { this.barWidth = barWidth }
+        chart.description.isEnabled = false
+        // Chips above the chart drive series selection — hide the built-in legend.
+        chart.legend.isEnabled = false
+        chart.axisRight.isEnabled = false
+        chart.axisLeft.setDrawGridLines(false)
+        chart.axisLeft.axisMinimum = 0f
+        chart.xAxis.position = XAxis.XAxisPosition.BOTTOM
+        chart.xAxis.setDrawGridLines(false)
+        chart.xAxis.granularity = 1f
+        chart.xAxis.setCenterAxisLabels(true)
+        chart.xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+        chart.xAxis.textSize = 10f
+        chart.xAxis.axisMinimum = 0f
+        chart.xAxis.axisMaximum = groupCount.toFloat()
+        chart.setFitBars(false)
+        chart.groupBars(0f, groupSpace, barSpace)
+        chart.animateY(700)
+        chart.invalidate()
+    }
+
+    private fun shade(color: Int, factor: Float): Int {
+        val r = (Color.red(color)   * factor + 255 * (1 - factor)).toInt().coerceIn(0, 255)
+        val g = (Color.green(color) * factor + 255 * (1 - factor)).toInt().coerceIn(0, 255)
+        val b = (Color.blue(color)  * factor + 255 * (1 - factor)).toInt().coerceIn(0, 255)
+        return Color.rgb(r, g, b)
     }
 
     private fun openAttendanceReport(departmentId: Int = -1) {
@@ -496,12 +724,31 @@ class DashboardActivity : AppCompatActivity() {
                         val stats = response.body() ?: return
                         android.util.Log.d("DashboardActivity", "API Response received: $stats")
                         
-                        binding.tvStatDepartments.text = stats.totalDepartments.toString()
-                        binding.tvStatDesignations.text = stats.totalDesignations.toString()
-                        binding.tvStatEmployees.text = stats.totalEmployees.toString()
                         binding.tvStatPresent.text = stats.totalPresent.toString()
-                        binding.tvStatFace.text = stats.presentFace.toString()
-                        binding.tvStatManual.text = stats.presentManual.toString()
+                        binding.tvStatFace.text    = stats.presentFace.toString()
+                        binding.tvStatManual.text  = stats.presentManual.toString()
+
+                        binding.tvJuteRecv.text    = stats.juteRecv.toString()
+                        binding.tvJuteIssue.text   = stats.juteIssue.toString()
+                        binding.tvJuteStock.text   = stats.juteStock.toString()
+
+                        binding.tvSpgProd.text     = stats.spgProd.toString()
+                        binding.tvSpgEff.text      = stats.spgEff.toString()
+                        binding.tvSpgRunEff.text   = stats.spgRunEff.toString()
+                        binding.tvSpgPrdFrame.text = stats.spgPrdFrame.toString()
+
+                        binding.tvWdgProd.text     = stats.wdgProd.toString()
+                        binding.tvWdgWinders.text  = stats.wdgWinders.toString()
+                        binding.tvWdgAvgProd.text  = stats.wdgAvgProd.toString()
+
+                        binding.tvOthWeaving.text  = stats.othWeaving.toString()
+                        binding.tvOthHemming.text  = stats.othHemming.toString()
+                        binding.tvOthHeracle.text  = stats.othHeracle.toString()
+                        binding.tvOthHsewer.text   = stats.othHsewer.toString()
+
+                        binding.tvBalesProd.text   = stats.balesProd.toString()
+                        binding.tvBalesIssue.text  = stats.balesIssue.toString()
+                        binding.tvBalesStock.text  = stats.balesStock.toString()
 
                         // Department-wise breakdown - use department_wise (all departments)
                         // and filter to present > 0 client-side. department_master for Master card.

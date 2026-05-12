@@ -43,7 +43,29 @@ data class DashboardStatsResponse(
     val departmentMaster: List<DeptWiseStat>?,
 
     @SerializedName("message")
-    val message: String?
+    val message: String?,
+
+    @SerializedName("jute_recv")     val juteRecv: Int = 0,
+    @SerializedName("jute_issue")    val juteIssue: Int = 0,
+    @SerializedName("jute_stock")    val juteStock: Int = 0,
+
+    @SerializedName("spg_prod")      val spgProd: Int = 0,
+    @SerializedName("spg_eff")       val spgEff: Int = 0,
+    @SerializedName("spg_run_eff")   val spgRunEff: Int = 0,
+    @SerializedName("spg_prd_frame") val spgPrdFrame: Int = 0,
+
+    @SerializedName("wdg_prod")      val wdgProd: Int = 0,
+    @SerializedName("wdg_winders")   val wdgWinders: Int = 0,
+    @SerializedName("wdg_avg_prod")  val wdgAvgProd: Int = 0,
+
+    @SerializedName("oth_weaving")   val othWeaving: Int = 0,
+    @SerializedName("oth_hemming")   val othHemming: Int = 0,
+    @SerializedName("oth_heracle")   val othHeracle: Int = 0,
+    @SerializedName("oth_hsewer")    val othHsewer: Int = 0,
+
+    @SerializedName("bales_prod")    val balesProd: Int = 0,
+    @SerializedName("bales_issue")   val balesIssue: Int = 0,
+    @SerializedName("bales_stock")   val balesStock: Int = 0
 )
 
 data class DeptWiseStat(
