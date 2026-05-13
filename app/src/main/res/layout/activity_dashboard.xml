@@ -1543,7 +1543,8 @@
                         android:orientation="horizontal"
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
-                        android:layout_marginTop="4dp">
+                        android:layout_marginTop="4dp"
+                        android:visibility="gone">
 
                         <ImageView
                             android:layout_width="22dp"
@@ -1664,7 +1665,8 @@
                                 android:orientation="horizontal"
                                 android:paddingStart="16dp"
                                 android:paddingEnd="16dp"
-                                android:layout_marginTop="4dp">
+                                android:layout_marginTop="4dp"
+                                android:visibility="gone">
 
                                 <ImageView
                                     android:layout_width="22dp"
@@ -1705,14 +1707,14 @@
                                     android:layout_height="22dp"
                                     android:src="@drawable/ic_employee"
                                     app:tint="#80CBC4"
-                                    android:contentDescription="Spg Doff Entry (1)" />
+                                    android:contentDescription="Spinning Doff Entry" />
 
                                 <TextView
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_weight="1"
                                     android:layout_marginStart="12dp"
-                                    android:text="Spg Doff Entry (1)"
+                                    android:text="Spinning Doff Entry"
                                     android:textColor="#E0E0E0"
                                     android:textSize="15sp" />
 
@@ -2072,7 +2074,8 @@
                         android:paddingStart="16dp"
                         android:paddingEnd="16dp"
                         android:layout_marginTop="4dp"
-                        android:layout_marginBottom="4dp">
+                        android:layout_marginBottom="4dp"
+                        android:visibility="gone">
 
                         <ImageView
                             android:layout_width="22dp"
