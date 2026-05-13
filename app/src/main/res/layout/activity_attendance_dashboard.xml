@@ -172,12 +172,13 @@
             </LinearLayout>
 
 
-            <!-- Card 1: Today's Attendance (Pie Chart) -->
+            <!-- Card 1: Today's Attendance (Pie Chart) — hidden by request -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="10dp"
                 app:cardElevation="3dp"
+                android:visibility="gone"
                 android:layout_marginBottom="12dp">
 
                 <LinearLayout
@@ -249,7 +250,7 @@
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="Last 7 Days Present"
+                        android:text="Last 7 Days Hands"
                         android:textColor="@color/toolbar_dark_blue"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -321,6 +322,13 @@
                         android:layout_height="240dp" />
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
+
+            <!-- ── MENU BLOCK (hidden from Attendance Dashboard by request) ─── -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
 
             <!-- ── ATTENDANCE SECTION ─────────────────────── -->
             <LinearLayout
@@ -671,6 +679,9 @@
                         android:focusable="true" />
                 </LinearLayout>
             </LinearLayout>
+
+            </LinearLayout>
+            <!-- ── /MENU BLOCK ───────────────────────────────────────────── -->
 
         </LinearLayout>
     </ScrollView>

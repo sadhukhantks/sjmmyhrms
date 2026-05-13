@@ -9,7 +9,9 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- Login Page Colors -->
-    <color name="toolbar_dark_blue">#003B5C</color>
+    <!-- "toolbar_dark_blue" keeps its name for legacy references; value is the
+         logo's dark forest green. -->
+    <color name="toolbar_dark_blue">#1B4332</color>
     <color name="login_btn_green">#C2D500</color>
     <color name="input_border">#D0D0D0</color>
     <color name="hint_text">#AAAAAA</color>
