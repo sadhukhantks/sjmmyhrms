@@ -12,6 +12,7 @@ import com.example.myhrms.api.LoginRequest
 import com.example.myhrms.api.LoginResponse
 import com.example.myhrms.api.RetrofitClient
 import com.example.myhrms.databinding.ActivityLoginBinding
+import com.example.myhrms.permissions.PermissionManager
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -124,9 +125,10 @@ class LoginActivity : AppCompatActivity() {
                     if (loginResponse != null && loginResponse.isSuccess) {
                         // Save username and user_id to SharedPreferences
                         saveUsername(username)
-                        loginResponse.user?.id?.let { userId ->
+                        val userId = loginResponse.user?.id
+                        userId?.let {
                             getSharedPreferences("LoginPrefs", MODE_PRIVATE)
-                                .edit().putInt("user_id", userId).apply()
+                                .edit().putInt("user_id", it).apply()
                         }
 
                         Toast.makeText(
@@ -135,11 +137,24 @@ class LoginActivity : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        // Navigate to Dashboard screen
-                        val dashboardIntent = Intent(this@LoginActivity, DashboardActivity::class.java)
-                        dashboardIntent.putExtra("USER_NAME", loginResponse.user?.fullName ?: username)
-                        startActivity(dashboardIntent)
-                        finish()
+                        val openDashboard = {
+                            val dashboardIntent = Intent(this@LoginActivity, DashboardActivity::class.java)
+                            dashboardIntent.putExtra("USER_NAME", loginResponse.user?.fullName ?: username)
+                            startActivity(dashboardIntent)
+                            finish()
+                        }
+
+                        if (userId != null) {
+                            // Pull menu permissions before opening the dashboard
+                            // so menus the user can't see never flash on screen.
+                            // On refresh failure we fall back to the cached value
+                            // (PermissionManager.loadFromCacheIfNeeded handles that).
+                            PermissionManager.refresh(this@LoginActivity, userId) { _ ->
+                                openDashboard()
+                            }
+                        } else {
+                            openDashboard()
+                        }
                     } else {
                         Toast.makeText(
                             this@LoginActivity,

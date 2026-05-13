@@ -24,6 +24,7 @@ import com.example.myhrms.api.RetrofitClient
 import com.example.myhrms.api.Shift
 import com.example.myhrms.api.ShiftResponse
 import com.example.myhrms.databinding.ActivityDashboardBinding
+import com.example.myhrms.permissions.PermissionManager
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.BarData
@@ -79,6 +80,7 @@ class DashboardActivity : AppCompatActivity() {
         setupProductionMenu()
         setupDeptWiseRecyclerView()
         setupCardClicks()
+        applyMenuPermissions()
 
         binding.root.post {
             isInitializing = false
@@ -377,6 +379,7 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun setupLogout() {
         binding.btnLogout.setOnClickListener {
+            PermissionManager.clear(this)
             val intent = Intent(this, LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
@@ -988,6 +991,81 @@ class DashboardActivity : AppCompatActivity() {
 
     private fun openProductionScreen(title: String) {
         startActivity(Intent(this, MenuPlaceholderActivity::class.java).putExtra("SCREEN_TITLE", title))
+    }
+
+    // ── Dynamic menu permissions ─────────────────────────────────
+    //
+    // Hides each dashboard menu (cards, group headers, leaves) when
+    // the logged-in user has no can_view on the matching menu_key.
+    // The menu_key values map 1:1 to rows seeded into the `menus`
+    // table by permissions_routes.init_permissions_db().
+    private fun applyMenuPermissions() {
+        // Group header + its sub-menu hidden together (no wrapping LinearLayout).
+        data class GroupViews(val header: View?, val subMenu: View?)
+
+        val groups = mapOf(
+            "grp_attendance"      to GroupViews(binding.menuAttendance, null),
+            "grp_other_entries"   to GroupViews(binding.headerOtherEntries, binding.subMenuOtherEntries),
+            "grp_production"      to GroupViews(binding.menuProduction, null),
+            "grp_jute"            to GroupViews(binding.headerJute, binding.subMenuJute),
+            "grp_spreader_entry"  to GroupViews(binding.headerSpreaderEntry, binding.subMenuSpreaderEntry),
+            "grp_doff_entry"      to GroupViews(binding.headerDoffEntry, binding.subMenuDoffEntry),
+            "grp_finishing_entry" to GroupViews(binding.headerFinishingEntry, binding.subMenuFinishingEntry),
+            "grp_stocks"          to GroupViews(binding.headerStocks, binding.subMenuStocks),
+        )
+        for ((key, gv) in groups) {
+            val visible = PermissionManager.canView(this, key)
+            if (visible) {
+                gv.header?.visibility = View.VISIBLE
+                // Sub-menu keeps its initial collapsed state; the existing
+                // toggleSubMenu() click handler will expand it on demand.
+            } else {
+                gv.header?.visibility = View.GONE
+                gv.subMenu?.visibility = View.GONE
+            }
+        }
+
+        // Top-level dashboard quick-access cards.
+        val cards = mapOf(
+            "card_present" to binding.cardPresent,
+            "card_jute"    to binding.cardJute,
+            "card_spg"     to binding.cardSpg,
+            "card_winding" to binding.cardWinding,
+            "card_others"  to binding.cardOthers,
+            "card_bales"   to binding.cardBales,
+        )
+        for ((key, view) in cards) {
+            PermissionManager.applyVisibility(this, key, view)
+        }
+
+        // Leaf menu items (clickable rows under each group).
+        val leaves = mapOf(
+            "menu_attendance_dashboard"   to binding.menuAttendanceDashboard,
+            "menu_onboarding"             to binding.menuOnBoarding,
+            "menu_attendance_entry"       to binding.menuAttendanceEntry,
+            "menu_attendance_reports"     to binding.menuAttendanceReports,
+            "menu_leave_entries"          to binding.menuLeaveEntries,
+            "menu_jute_received"          to binding.menuJuteReceived,
+            "menu_assorting_entry"        to binding.menuAssortingEntry,
+            "menu_production_entry"       to binding.menuProductionEntry,
+            "menu_issue_entry"            to binding.menuIssueEntry,
+            "menu_drawing_meter_entry"    to binding.menuDrawingMeterEntry,
+            "menu_spinning_doff_entry"    to binding.menuSpinningDoffEntry,
+            "menu_spellwise_frame_entry"  to binding.menuSpellWiseFrameEntry,
+            "menu_spg_doff_entry"         to binding.menuSpgDoffEntry,
+            "menu_spg_doff_entry1"        to binding.menuSpgDoffEntry1,
+            "menu_spg_running_hours"      to binding.menuSpgRunningHours,
+            "menu_winding_entry"          to binding.menuWindingEntry,
+            "menu_weaving_entry"          to binding.menuWeavingEntry,
+            "menu_other_entries"          to binding.menuOtherEntries,
+            "menu_bales_production_entry" to binding.menuBalesProductionEntry,
+            "menu_bales_issue_entry"      to binding.menuBalesIssueEntry,
+            "menu_roll_stock"             to binding.menuRollStock,
+            "menu_weight_entry"           to binding.menuWeightEntry,
+        )
+        for ((key, view) in leaves) {
+            PermissionManager.applyVisibility(this, key, view)
+        }
     }
 
     // ── Toggle Helper ────────────────────────────────────────────
