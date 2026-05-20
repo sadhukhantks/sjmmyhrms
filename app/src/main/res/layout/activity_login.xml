@@ -1,182 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/toolbar_dark_blue">
+    android:background="@drawable/bg_login_dark_gradient">
 
-    <!-- Toolbar -->
+    <!-- Watermark logo, sits behind everything. centerInside keeps the
+         aspect ratio of the source PNG; swap @drawable/icon_180 for a
+         higher-res asset to remove pixelation. -->
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/icon_180"
+        android:alpha="0.10"
+        android:contentDescription="@null"
+        android:scaleType="centerInside" />
+
+    <!-- Transparent toolbar so the back button still works against the
+         dark gradient without breaking the glass look. -->
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/toolbar_dark_blue"
+        android:background="@android:color/transparent"
         app:navigationIcon="@drawable/ic_arrow_back"
-        app:titleTextColor="@color/white">
+        app:titleTextColor="@color/white" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Login"
-            android:textColor="@color/white"
-            android:textSize="22sp"
-            android:textStyle="bold" />
-    </androidx.appcompat.widget.Toolbar>
-
-    <!-- Logo Area (dark blue background) -->
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="vertical"
-        android:paddingTop="20dp"
-        android:paddingBottom="24dp">
-
-        <ImageView
-            android:id="@+id/ivLogo"
-            android:layout_width="140dp"
-            android:layout_height="140dp"
-            android:src="@drawable/icon_180"
-            android:contentDescription="App Logo"
-            android:scaleType="fitCenter" />
-
-    </LinearLayout>
-
-    <!-- White card container with rounded top corners + watermark -->
-    <FrameLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:background="@drawable/bg_card_top_rounded">
-
-        <!-- Watermark logo, sits behind the form. Fills the white card
-             top-to-bottom; swap @drawable/icon_180 for a higher-res asset
-             once available to remove pixelation. -->
-        <ImageView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:src="@drawable/icon_180"
-            android:alpha="0.08"
-            android:contentDescription="@null"
-            android:scaleType="centerCrop" />
-
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:fillViewport="true"
-            android:background="@android:color/transparent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:gravity="center_horizontal"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="80dp"
+            android:paddingBottom="32dp">
 
-            <!-- User Name Label -->
+            <ImageView
+                android:id="@+id/ivLogo"
+                android:layout_width="84dp"
+                android:layout_height="84dp"
+                android:src="@drawable/icon_180"
+                android:contentDescription="App Logo"
+                android:scaleType="fitCenter" />
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="User Name"
-                android:textColor="@color/label_text"
-                android:textSize="16sp"
+                android:layout_marginTop="14dp"
+                android:text="Jute Erp"
+                android:textColor="@color/white"
+                android:textSize="26sp"
                 android:textStyle="bold"
-                android:layout_marginTop="16dp" />
+                android:letterSpacing="0.04" />
 
-            <!-- User Name Input -->
-            <EditText
-                android:id="@+id/etUsername"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="8dp"
-                android:background="@drawable/bg_input_rounded"
-                android:hint="eg. abc007"
-                android:textColorHint="@color/hint_text"
-                android:textColor="@color/black"
-                android:inputType="text"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textSize="16sp" />
-
-            <!-- Password Label -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password"
-                android:textColor="@color/label_text"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp" />
+                android:layout_marginTop="4dp"
+                android:text="Sign in to continue"
+                android:textColor="@color/glass_hint_text"
+                android:textSize="14sp" />
 
-            <!-- Password Input with Show/Hide Toggle -->
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilPassword"
+            <!-- Frosted glass form card -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                app:passwordToggleEnabled="true"
-                app:passwordToggleTint="@color/hint_text"
-                app:boxBackgroundMode="none"
-                app:hintEnabled="false">
+                android:layout_marginTop="28dp"
+                android:orientation="vertical"
+                android:background="@drawable/bg_glass_card"
+                android:padding="20dp">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etPassword"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="User Name"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="4dp" />
+
+                <EditText
+                    android:id="@+id/etUsername"
                     android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:background="@drawable/bg_input_rounded"
-                    android:hint="password"
-                    android:textColorHint="@color/hint_text"
-                    android:textColor="@color/black"
-                    android:inputType="textPassword"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_input_glass"
+                    android:hint="eg. abc007"
+                    android:textColorHint="@color/glass_hint_text"
+                    android:textColor="@color/white"
+                    android:textCursorDrawable="@null"
+                    android:inputType="text"
                     android:paddingStart="16dp"
-                    android:paddingEnd="48dp"
-                    android:textSize="16sp" />
+                    android:paddingEnd="16dp"
+                    android:textSize="15sp" />
 
-            </com.google.android.material.textfield.TextInputLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Password"
+                    android:textColor="@color/white"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginTop="20dp" />
 
-            <!-- API Settings Icon (below-right of password) -->
-            <ImageButton
-                android:id="@+id/btnSettings"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="end"
-                android:layout_marginTop="8dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="API Settings"
-                android:src="@drawable/ic_settings"
-                app:tint="@color/hint_text" />
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPassword"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    app:passwordToggleEnabled="true"
+                    app:passwordToggleTint="@color/glass_hint_text"
+                    app:boxBackgroundMode="none"
+                    app:hintEnabled="false">
 
-            <!-- Spacer to push button down -->
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPassword"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:background="@drawable/bg_input_glass"
+                        android:hint="password"
+                        android:textColorHint="@color/glass_hint_text"
+                        android:textColor="@color/white"
+                        android:textCursorDrawable="@null"
+                        android:inputType="textPassword"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="48dp"
+                        android:textSize="15sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Login Button -->
-            <Button
-                android:id="@+id/btnLogin"
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginTop="40dp"
-                android:layout_marginBottom="32dp"
-                android:background="@drawable/bg_button_green"
-                android:text="Login"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textAllCaps="false" />
+                <ImageButton
+                    android:id="@+id/btnSettings"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="6dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="API Settings"
+                    android:src="@drawable/ic_settings"
+                    app:tint="@color/glass_hint_text" />
 
-            <!-- Progress Bar (hidden by default) -->
-            <ProgressBar
-                android:id="@+id/progressBar"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:visibility="gone" />
+                <Button
+                    android:id="@+id/btnLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/bg_button_green"
+                    android:text="Login"
+                    android:textColor="@color/white"
+                    android:textSize="17sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.06"
+                    android:textAllCaps="false" />
 
+                <ProgressBar
+                    android:id="@+id/progressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="12dp"
+                    android:indeterminateTint="@color/login_btn_green"
+                    android:visibility="gone" />
+
+            </LinearLayout>
         </LinearLayout>
-        </ScrollView>
-    </FrameLayout>
+    </ScrollView>
 
-</LinearLayout>
-
+</FrameLayout>

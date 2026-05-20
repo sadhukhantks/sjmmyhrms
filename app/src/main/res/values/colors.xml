@@ -18,4 +18,13 @@
     <color name="label_text">#222222</color>
     <color name="login_btn_text">#333333</color>
     <color name="bg_light_gray">#F5F5F5</color>
+
+    <!-- Login: dark/glass style -->
+    <color name="login_dark_top">#0B1F1A</color>
+    <color name="login_dark_bottom">#1B4332</color>
+    <color name="glass_card_fill">#66000000</color>
+    <color name="glass_card_stroke">#33FFFFFF</color>
+    <color name="glass_input_fill">#22FFFFFF</color>
+    <color name="glass_input_stroke">#66FFFFFF</color>
+    <color name="glass_hint_text">#99FFFFFF</color>
 </resources>
