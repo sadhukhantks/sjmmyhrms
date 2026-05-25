@@ -11,43 +11,91 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
+        android:orientation="vertical"
         android:padding="10dp">
 
-        <CheckBox
-            android:id="@+id/cbFrame"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
-
-        <TextView
-            android:id="@+id/tvFrameCode"
-            android:layout_width="wrap_content"
+        <!-- Row 1: Frame No (checkbox + code + name) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="4dp"
-            android:textColor="#1565C0"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:minWidth="56dp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvFrameName"
-            android:layout_width="0dp"
-            android:layout_weight="1"
+            <CheckBox
+                android:id="@+id/cbFrame"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+            <TextView
+                android:id="@+id/tvFrameCode"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="4dp"
+                android:textColor="#1565C0"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:minWidth="56dp" />
+
+            <TextView
+                android:id="@+id/tvFrameName"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="10dp"
+                android:textColor="#000000"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <!-- Row 2: EB No + Name + Quality -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
-            android:textColor="#000000"
-            android:textSize="13sp" />
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginTop="8dp">
 
-        <Spinner
-            android:id="@+id/spQuality"
-            android:layout_width="0dp"
-            android:layout_weight="1.2"
-            android:layout_height="40dp"
-            android:layout_marginStart="6dp"
-            android:background="@drawable/bg_input_rounded_light"
-            android:paddingStart="6dp"
-            android:paddingEnd="2dp" />
+            <EditText
+                android:id="@+id/etEbNo"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="40dp"
+                android:background="@drawable/bg_input_rounded_light"
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp"
+                android:inputType="number"
+                android:imeOptions="actionDone"
+                android:maxLines="1"
+                android:textColor="#000000"
+                android:textSize="13sp"
+                android:hint="EB No"
+                android:textColorHint="#AAAAAA" />
+
+            <TextView
+                android:id="@+id/tvEbName"
+                android:layout_width="0dp"
+                android:layout_weight="1.3"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_input_rounded_light"
+                android:paddingStart="8dp"
+                android:paddingEnd="4dp"
+                android:gravity="center_vertical"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:textColor="#000000"
+                android:textSize="12sp"
+                android:hint="Name"
+                android:textColorHint="#AAAAAA" />
+
+            <Spinner
+                android:id="@+id/spQuality"
+                android:layout_width="0dp"
+                android:layout_weight="1.4"
+                android:layout_height="40dp"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_input_rounded_light"
+                android:paddingStart="6dp"
+                android:paddingEnd="2dp" />
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
-

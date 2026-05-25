@@ -106,7 +106,10 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
         entryDate = apiDate.format(cal.time)
         tvEntryDate.text = dispDate.format(cal.time)
         findViewById<View>(R.id.btnEntryDate).setOnClickListener { pickEntryDate() }
-        spinningAdapter = FrameEntryAdapter(onSelectionChanged = { updateSelectedLabel(it) })
+        spinningAdapter = FrameEntryAdapter(
+            onSelectionChanged = { updateSelectedLabel(it) },
+            onEbLookup = { ebNo, cb -> lookupEbApi(ebNo, cb) }
+        )
         rvFrames.layoutManager = LinearLayoutManager(this)
         rvFrames.adapter = spinningAdapter
         windingAdapter = WindingEntryAdapter(
@@ -254,6 +257,8 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
                                   else body?.mcIds.orEmpty()
                     val qmap    = entries.mapNotNull { e -> e.qualityId?.let { e.mcId to it } }.toMap()
                     if (qmap.isNotEmpty()) spinningAdapter.setQualityDefaults(qmap, replaceAll = false)
+                    // Seed per-row EB No (eb_id + emp_code + name) from saved entries
+                    spinningAdapter.setEbDefaults(entries)
                     spinningAdapter.setSelected(ids)
                     cbSelectAll.isChecked = ids.size == machineList.size && machineList.isNotEmpty()
                     // Auto-insert from fallback date when no records found
@@ -281,7 +286,8 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
         val entries = spinningAdapter.selectedEntries()
         if (entries.isEmpty()) { toast("No frame entries to copy"); return }
         if (entries.any { it.qualityId == null }) { toast("Quality missing in fallback data, please set manually"); return }
-        val req = FrameEntriesSaveRequest(date = entryDate, spellId = spellId, branchId = branchId, userId = userId, entries = entries)
+        val req = FrameEntriesSaveRequest(date = entryDate, spellId = spellId, branchId = branchId, userId = userId,
+            entries = entries)
         RetrofitClient.getApiService(this).saveFrameEntries(req)
             .enqueue(object : Callback<FrameEntriesSaveResponse> {
                 override fun onResponse(c: Call<FrameEntriesSaveResponse>, r: Response<FrameEntriesSaveResponse>) {
@@ -368,25 +374,31 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
         }
     }
     private fun lookupEb() {
-        val ebText = etEbNo.text?.toString()?.trim() ?: return
-        val ebNo = ebText.toLongOrNull() ?: return
-        if (ebNo <= 0) return
+        val ebNo = etEbNo.text?.toString()?.trim().orEmpty()
+        if (ebNo.isEmpty()) { resolvedEbId = 0L; tvEbName.text = ""; return }
+        lookupEbApi(ebNo) { ebId, name ->
+            if (ebId != null && ebId > 0L) {
+                resolvedEbId = ebId; tvEbName.text = name ?: ""
+            } else {
+                resolvedEbId = 0L; tvEbName.text = ""
+                Toast.makeText(this, "Employee not found", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    /** Shared EB No → (eb_id, emp_name) resolver. EB No is the employee's
+     *  emp_code (varchar, often contains letters e.g. "C2001"), so it is sent as
+     *  a raw string and never parsed to a number. Reports nulls when not found. */
+    private fun lookupEbApi(ebNo: String, onResult: (Long?, String?) -> Unit) {
+        if (ebNo.isEmpty()) { onResult(null, null); return }
         RetrofitClient.getApiService(this).windingEbLookup(ebNo, branchId)
             .enqueue(object : Callback<WindingEbLookupResponse> {
                 override fun onResponse(c: Call<WindingEbLookupResponse>, r: Response<WindingEbLookupResponse>) {
                     val body = r.body()
-                    if (body?.status == "success" && body.ebId != null) {
-                        resolvedEbId = body.ebId
-                        tvEbName.text = body.empName ?: ""
-                    } else {
-                        resolvedEbId = 0L
-                        tvEbName.text = ""
-                        Toast.makeText(this@SpellWiseFrameEntryActivity, "Employee not found", Toast.LENGTH_SHORT).show()
-                    }
+                    if (body?.status == "success" && body.ebId != null) onResult(body.ebId, body.empName)
+                    else onResult(null, null)
                 }
-                override fun onFailure(c: Call<WindingEbLookupResponse>, t: Throwable) {
-                    resolvedEbId = 0L; tvEbName.text = ""
-                }
+                override fun onFailure(c: Call<WindingEbLookupResponse>, t: Throwable) { onResult(null, null) }
             })
     }
     private fun saveWindingEntry() {
@@ -441,7 +453,9 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
     private fun startEditWinding(entry: WindingEntry) {
         editingEntryId  = entry.id
         resolvedEbId    = entry.ebId ?: 0L
-        etEbNo.setText(entry.ebId?.toString() ?: "")
+        // Show the emp_code (what the user types), not the numeric eb_id, so the
+        // string-based lookup re-resolves correctly when the field is touched.
+        etEbNo.setText(entry.empCode ?: entry.ebId?.toString() ?: "")
         tvEbName.text   = entry.empName ?: ""
         // select quality
         val qIdx = windingQualityList.indexOfFirst { it.qualityId == entry.qualityId }
@@ -478,8 +492,16 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
         if (spellId == null) { toast("Please select spell"); return }
         if (branchId <= 0)   { toast("Branch not selected"); return }
         val entries = spinningAdapter.selectedEntries()
+        if (entries.isEmpty()) { toast("Select at least one frame"); return }
         if (entries.any { it.qualityId == null }) { toast("Please select quality for all selected frames"); return }
-        val req = FrameEntriesSaveRequest(date = entryDate, spellId = spellId, branchId = branchId, userId = userId, entries = entries)
+        // EB No is required per checked frame: every selected row must resolve
+        val missingEb = spinningAdapter.checkedMissingEb()
+        if (missingEb.isNotEmpty()) {
+            toast("Enter a valid EB No for frame(s): ${missingEb.joinToString(", ")}")
+            return
+        }
+        val req = FrameEntriesSaveRequest(date = entryDate, spellId = spellId, branchId = branchId, userId = userId,
+            entries = entries)
         btnSave.isEnabled = false
         RetrofitClient.getApiService(this).saveFrameEntries(req)
             .enqueue(object : Callback<FrameEntriesSaveResponse> {

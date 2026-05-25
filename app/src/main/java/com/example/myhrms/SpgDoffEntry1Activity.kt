@@ -40,9 +40,13 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var tvMechCodesStatus: TextView
     private lateinit var etTrollyNo: EditText
     private lateinit var tvTrollyInfo: TextView
+    private lateinit var etNoOfSpindle: EditText
+    private lateinit var etSpoolWt: EditText
     private lateinit var etGrossWt: EditText
     private lateinit var etTareWt: EditText
     private lateinit var etNetWt: EditText
+    /** bobbin_weight for the selected machine; spool_wt = no_of_spindle * bobbin_weight. */
+    private var bobbinWeight = 0
     private lateinit var btnSave: Button
     private lateinit var rvSummary: RecyclerView
     private lateinit var tvSummaryEmpty: TextView
@@ -82,6 +86,8 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         tvMechCodesStatus = findViewById(R.id.tvMechCodesStatus)
         etTrollyNo        = findViewById(R.id.etTrollyNo)
         tvTrollyInfo      = findViewById(R.id.tvTrollyInfo)
+        etNoOfSpindle     = findViewById(R.id.etNoOfSpindle)
+        etSpoolWt         = findViewById(R.id.etSpoolWt)
         etGrossWt         = findViewById(R.id.etGrossWt)
         etTareWt          = findViewById(R.id.etTareWt)
         etNetWt           = findViewById(R.id.etNetWt)
@@ -109,6 +115,17 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         // Gross weight watcher → recalculate net
         etGrossWt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { recalcNet() }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+
+        // No of Spindle change → spool_wt = no_of_spindle * bobbin_weight, then tare
+        etNoOfSpindle.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                val n = etNoOfSpindle.text.toString().toIntOrNull() ?: 0
+                etSpoolWt.setText((n * bobbinWeight).toString())
+                recalcTare()
+            }
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
@@ -250,6 +267,9 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         selectedMcId     = code.mcId
         selectedMechCode = code.mechPostingCode
 
+        // No of spindle + spool weight come from this machine's frame_details_mst
+        fetchFrameSpindle(code.mcId)
+
         // Highlight selected=green, reset others=blue
         for (i in 0 until llMechCodes.childCount) {
             val child = llMechCodes.getChildAt(i) as? Button ?: continue
@@ -288,8 +308,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                     tvTrollyInfo.text = (body.trollyName ?: "Valid") +
                         if (tare > 0) "  (Tare: ${fmt(tare)})" else ""
                     tvTrollyInfo.setTextColor(Color.parseColor("#2E7D32"))
-                    etTareWt.setText(fmt(tare))
-                    recalcNet()
+                    recalcTare()   // tare = trolly tare + spool_wt/1000
                 } else {
                     etTrollyNo.setBackgroundResource(R.drawable.bg_input_invalid)
                     tvTrollyInfo.text = body?.message ?: "Trolly not found"
@@ -321,6 +340,33 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             else ->
                 etGrossWt.setBackgroundResource(R.drawable.bg_input_invalid)
         }
+    }
+
+    /** Tare = trolly tare + spool_wt/1000 (spool_wt = no_of_spindle * bobbin_weight). */
+    private fun recalcTare() {
+        val spool = etSpoolWt.text.toString().toDoubleOrNull() ?: 0.0
+        etTareWt.setText(fmt(validatedTareWt + spool / 1000.0))
+        recalcNet()
+    }
+
+    /** Fetch no_of_spindle + bobbin_weight for [mcId] from frame_details_mst and
+     *  fill the fields. Editing No of Spindle recomputes spool_wt from the cached
+     *  bobbin_weight. */
+    private fun fetchFrameSpindle(mcId: Int) {
+        RetrofitClient.getApiService(this).getDoffFrameSpindle(mcId)
+            .enqueue(object : Callback<FrameSpindleResponse> {
+                override fun onResponse(call: Call<FrameSpindleResponse>, response: Response<FrameSpindleResponse>) {
+                    val body = response.body()
+                    bobbinWeight = body?.bobbinWeight ?: 0
+                    // Setting No of Spindle triggers its watcher → spool_wt + tare
+                    etNoOfSpindle.setText((body?.noOfSpindle ?: 0).toString())
+                }
+                override fun onFailure(call: Call<FrameSpindleResponse>, t: Throwable) {
+                    bobbinWeight = 0
+                    etNoOfSpindle.setText("")
+                    etSpoolWt.setText("")
+                }
+            })
     }
 
     private fun fmt(v: Double) = String.format(Locale.getDefault(), "%.3f", v)
@@ -366,6 +412,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
 
     private fun clearForm() {
         etTrollyNo.setText(""); etGrossWt.setText(""); etTareWt.setText(""); etNetWt.setText("")
+        etNoOfSpindle.setText(""); etSpoolWt.setText(""); bobbinWeight = 0
         etGrossWt.setBackgroundResource(R.drawable.bg_input_rounded_light)
         resetTrolly()
         // Deselect mech code buttons

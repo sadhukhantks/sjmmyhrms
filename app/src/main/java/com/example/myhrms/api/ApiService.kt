@@ -232,6 +232,9 @@ interface ApiService {
     @GET(ApiRoutes.DOFF_LAST_BY_MACHINE)
     fun getDoffLastByMachine(@Query("mc_id") mcId: Int): Call<DoffDefaultsResponse>
 
+    @GET(ApiRoutes.DOFF_FRAME_SPINDLE)
+    fun getDoffFrameSpindle(@Query("mc_id") mcId: Int): Call<FrameSpindleResponse>
+
     @GET(ApiRoutes.DOFF_LAST_EMP)
     fun getDoffLastEmp(
         @Query("date")     date: String,
@@ -318,7 +321,7 @@ interface ApiService {
 
     @GET(ApiRoutes.DOFF_WINDING_EB_LOOKUP)
     fun windingEbLookup(
-        @Query("eb_no")     ebNo: Long,
+        @Query("eb_no")     ebNo: String,
         @Query("branch_id") branchId: Int
     ): Call<WindingEbLookupResponse>
 
@@ -577,6 +580,12 @@ interface ApiService {
 
     @DELETE(ApiRoutes.ASSORTING_ENTRY_ID)
     fun deleteAssortingEntry(@Path("id") id: Int): Call<AssortingSaveResponse>
+
+    @GET(ApiRoutes.ASSORTING_REPORT)
+    fun getAssortingReport(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<AssortingReportResponse>
 
     // ── Jute Received ─────────────────────────────────────────────────────────
     @GET(ApiRoutes.JUTE_RECEIVED_QUALITIES)

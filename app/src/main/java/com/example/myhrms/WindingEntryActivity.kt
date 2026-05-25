@@ -54,9 +54,8 @@ class WindingEntryActivity : AppCompatActivity() {
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: We2SummaryAdapter
 
-    // Selected employee
-    private var resolvedEbId  : Long   = 0L
-    private var resolvedEmpName: String = ""
+    // Selected employees (multi-select). Net weight is split equally across these on save.
+    private val selectedEbIds = linkedSetOf<Long>()
 
     // S or C toggle
     private var selectedType: String = "S"
@@ -207,8 +206,7 @@ class WindingEntryActivity : AppCompatActivity() {
         if (branchId <= 0) return
 
         llEmpButtons.removeAllViews()
-        resolvedEbId   = 0L
-        resolvedEmpName = ""
+        selectedEbIds.clear()
         tvEmpStatus.visibility = View.VISIBLE
         tvEmpStatus.text       = "Loading…"
 
@@ -255,15 +253,15 @@ class WindingEntryActivity : AppCompatActivity() {
     }
 
     private fun onEmpSelected(btn: Button, emp: We2Employee) {
-        resolvedEbId   = emp.ebId ?: 0L
-        resolvedEmpName = emp.empName ?: ""
-        // Highlight selected green, reset others blue
-        for (i in 0 until llEmpButtons.childCount) {
-            val child = llEmpButtons.getChildAt(i) as? Button ?: continue
-            child.setBackgroundColor(
-                if (child == btn) Color.parseColor("#2E7D32")
-                else              Color.parseColor("#1565C0")
-            )
+        val ebId = emp.ebId ?: 0L
+        if (ebId <= 0L) return
+        // Toggle this employee; multiple can be selected at once
+        if (selectedEbIds.contains(ebId)) {
+            selectedEbIds.remove(ebId)
+            btn.setBackgroundColor(Color.parseColor("#1565C0"))
+        } else {
+            selectedEbIds.add(ebId)
+            btn.setBackgroundColor(Color.parseColor("#2E7D32"))
         }
     }
 
@@ -360,8 +358,8 @@ class WindingEntryActivity : AppCompatActivity() {
         if (spellId == null) {
             Toast.makeText(this, "Please select a spell", Toast.LENGTH_SHORT).show(); return
         }
-        if (resolvedEbId <= 0L) {
-            Toast.makeText(this, "Please select an Employee", Toast.LENGTH_SHORT).show(); return
+        if (selectedEbIds.isEmpty()) {
+            Toast.makeText(this, "Please select at least one Employee", Toast.LENGTH_SHORT).show(); return
         }
         if (selectedType == "S" && validatedTrollyId == null) {
             Toast.makeText(this, "Please enter a valid Trolly No (required when S)", Toast.LENGTH_SHORT).show(); return
@@ -376,11 +374,13 @@ class WindingEntryActivity : AppCompatActivity() {
             Toast.makeText(this, "Net Weight must be positive", Toast.LENGTH_LONG).show(); return
         }
 
+        val ebIdList = selectedEbIds.toList()
         val req = We2SaveRequest(
             date        = entryDate,
             spellId     = spellId,
             branchId    = branchId,
-            ebId        = resolvedEbId,
+            ebId        = ebIdList.first(),
+            ebIds       = ebIdList,
             scType      = selectedType,
             trollyId    = if (selectedType == "S") validatedTrollyId else null,
             grossWeight = gross,
@@ -413,8 +413,7 @@ class WindingEntryActivity : AppCompatActivity() {
             (llEmpButtons.getChildAt(i) as? Button)
                 ?.setBackgroundColor(Color.parseColor("#1565C0"))
         }
-        resolvedEbId    = 0L
-        resolvedEmpName = ""
+        selectedEbIds.clear()
         etGrossWt.setText("")
         etTareWt.setText("")
         etNetWt.setText("")

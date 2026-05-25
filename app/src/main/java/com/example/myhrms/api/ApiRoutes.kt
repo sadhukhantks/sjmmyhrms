@@ -46,6 +46,7 @@ object ApiRoutes {
     const val DOFF_LAST_EMP           = "doff/last-emp"
     const val DOFF_VALIDATE_MACHINE   = "doff/validate-machine"
     const val DOFF_VALIDATE_TROLLY    = "doff/validate-trolly"
+    const val DOFF_FRAME_SPINDLE      = "doff/frame-spindle"
     const val DOFF_SUMMARY            = "doff/summary"
     const val DOFF_FRAME_MACHINES             = "doff/frame-machines"
     const val DOFF_FRAME_ENTRIES              = "doff/frame-entries"
@@ -117,6 +118,7 @@ object ApiRoutes {
     const val ASSORTING_VALIDATE_TROLLY = "assorting/validate-trolly"
     const val ASSORTING_ENTRY           = "assorting/entry"
     const val ASSORTING_ENTRY_ID        = "assorting/entry/{id}"
+    const val ASSORTING_REPORT          = "assorting/report"
 
     // ── Jute Received (src/jute_received blueprint) ──────────────────────────
     const val JUTE_RECEIVED_QUALITIES = "jute-received/qualities"

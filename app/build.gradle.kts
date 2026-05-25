@@ -36,6 +36,14 @@ android {
     buildFeatures {
         viewBinding = true
     }
+
+    // Name the built APK "JuteErp.apk" (per build type folder)
+    applicationVariants.all {
+        outputs.all {
+            (this as com.android.build.gradle.internal.api.BaseVariantOutputImpl)
+                .outputFileName = "JuteErp.apk"
+        }
+    }
 }
 
 configurations.all {

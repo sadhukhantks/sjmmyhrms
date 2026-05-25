@@ -60,6 +60,14 @@ data class TrollyResponse(
     @SerializedName("trollies")  val trollies: List<Trolly>?
 )
 
+data class FrameSpindleResponse(
+    @SerializedName("status")        val status: String?,
+    @SerializedName("found")         val found: Boolean?,
+    @SerializedName("no_of_spindle") val noOfSpindle: Int?,
+    @SerializedName("bobbin_weight") val bobbinWeight: Int?,
+    @SerializedName("spool_wt")      val spoolWt: Double?
+)
+
 // ── Defaults helper response ─────────────────────────────────────────────────
 
 data class DoffDefaultsResponse(
@@ -174,7 +182,10 @@ data class DoffSummaryResponse(
 
 data class FrameEntry(
     @SerializedName("mc_id")      val mcId: Int,
-    @SerializedName("quality_id") val qualityId: Int?
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("eb_id")      val ebId: Long? = null,
+    @SerializedName("emp_code")   val empCode: String? = null,
+    @SerializedName("emp_name")   val empName: String? = null
 )
 
 data class FrameEntriesResponse(
@@ -342,7 +353,8 @@ data class We2SaveRequest(
     @SerializedName("date")         val date: String,
     @SerializedName("spell_id")     val spellId: Int,
     @SerializedName("branch_id")    val branchId: Int,
-    @SerializedName("eb_id")        val ebId: Long,
+    @SerializedName("eb_id")        val ebId: Long,            // first selected (back-compat)
+    @SerializedName("eb_ids")       val ebIds: List<Long>,     // all selected; weight split equally
     @SerializedName("sc_type")      val scType: String,
     @SerializedName("trolly_id")    val trollyId: Int?,
     @SerializedName("gross_weight") val grossWeight: Double,
@@ -354,7 +366,8 @@ data class We2SaveRequest(
 data class We2SaveResponse(
     @SerializedName("status")  val status: String?,
     @SerializedName("message") val message: String?,
-    @SerializedName("id")      val id: Int?
+    @SerializedName("id")      val id: Int?,
+    @SerializedName("count")   val count: Int? = null
 )
 
 data class We2GroupedRow(
