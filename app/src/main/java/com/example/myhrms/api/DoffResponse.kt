@@ -322,6 +322,20 @@ data class We2EmployeesResponse(
     @SerializedName("employees") val employees: List<We2Employee>?
 )
 
+data class We2SpoolType(
+    @SerializedName("trolly_id")     val trollyId: Int?,
+    @SerializedName("trolly_name")   val trollyName: String?,
+    @SerializedName("trolly_no")     val trollyNo: Int?,
+    @SerializedName("spool_weight")  val spoolWeight: Double?,
+    @SerializedName("bucket_weight") val bucketWeight: Double?
+)
+
+data class We2SpoolTypesResponse(
+    @SerializedName("status")      val status: String?,
+    @SerializedName("message")     val message: String?,
+    @SerializedName("spool_types") val spoolTypes: List<We2SpoolType>?
+)
+
 data class We2EmpLookupResponse(
     @SerializedName("status")   val status: String?,
     @SerializedName("message")  val message: String?,
@@ -340,7 +354,8 @@ data class We2SummaryRow(
     @SerializedName("trolly_name")  val trollyName: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("tare_weight")  val tareWeight: Double?,
-    @SerializedName("net_weight")   val netWeight: Double?
+    @SerializedName("net_weight")   val netWeight: Double?,
+    @SerializedName("no_of_spools") val noOfSpools: Int?
 )
 
 data class We2SummaryResponse(
@@ -360,6 +375,7 @@ data class We2SaveRequest(
     @SerializedName("gross_weight") val grossWeight: Double,
     @SerializedName("tare_weight")  val tareWeight: Double,
     @SerializedName("net_weight")   val netWeight: Double,
+    @SerializedName("no_of_spools") val noOfSpools: Int?,
     @SerializedName("user_id")      val userId: Int
 )
 

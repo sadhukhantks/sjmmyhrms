@@ -41,7 +41,10 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var btnTypeS     : Button
     private lateinit var btnTypeC     : Button
     private lateinit var etTrollyNo   : EditText
+    private lateinit var etNoOfSpools : EditText
     private lateinit var tvTrollyInfo : TextView
+    private lateinit var llSpoolButtons : LinearLayout
+    private lateinit var tvSpoolStatus  : TextView
     private lateinit var etGrossWt    : EditText
     private lateinit var etTareWt     : EditText
     private lateinit var etNetWt      : EditText
@@ -63,6 +66,10 @@ class WindingEntryActivity : AppCompatActivity() {
     // Validated trolly
     private var validatedTrollyId: Int?    = null
     private var validatedTareWt  : Double  = 0.0
+
+    // Selected spool type (single-select). Per-spool weight feeds the tare calc.
+    private var selectedSpoolTrollyId: Int?   = null
+    private var selectedSpoolWeight  : Double = 0.0
 
     private val mainHandler  = Handler(Looper.getMainLooper())
     private var trollyDebounce: Runnable? = null
@@ -87,7 +94,10 @@ class WindingEntryActivity : AppCompatActivity() {
         btnTypeS       = findViewById(R.id.btnTypeS)
         btnTypeC       = findViewById(R.id.btnTypeC)
         etTrollyNo     = findViewById(R.id.etTrollyNo)
+        etNoOfSpools   = findViewById(R.id.etNoOfSpools)
         tvTrollyInfo   = findViewById(R.id.tvTrollyInfo)
+        llSpoolButtons = findViewById(R.id.llSpoolButtons)
+        tvSpoolStatus  = findViewById(R.id.tvSpoolStatus)
         etGrossWt      = findViewById(R.id.etGrossWt)
         etTareWt       = findViewById(R.id.etTareWt)
         etNetWt        = findViewById(R.id.etNetWt)
@@ -114,13 +124,13 @@ class WindingEntryActivity : AppCompatActivity() {
         btnTypeC.setOnClickListener { selectType("C") }
         selectType("S")
 
-        // Trolly No debounced lookup (only when C)
+        // Trolly No debounced lookup (active for both S and C)
         etTrollyNo.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 resetTrolly()
                 trollyDebounce?.let { mainHandler.removeCallbacks(it) }
                 val v = s?.toString()?.trim().orEmpty()
-                if (v.isEmpty() || selectedType != "S") return
+                if (v.isEmpty()) return
                 val r = Runnable { lookupTrolly(v) }
                 trollyDebounce = r
                 mainHandler.postDelayed(r, 500)
@@ -129,7 +139,7 @@ class WindingEntryActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
         etTrollyNo.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && selectedType == "S") {
+            if (!hasFocus) {
                 val v = etTrollyNo.text.toString().trim()
                 if (v.isNotEmpty() && validatedTrollyId == null) lookupTrolly(v)
             }
@@ -138,6 +148,13 @@ class WindingEntryActivity : AppCompatActivity() {
         // Gross weight → recalc net
         etGrossWt.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { recalcNet() }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+
+        // No of spools → recalc tare (trolly tare + spools × spool weight)
+        etNoOfSpools.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { recalcTare() }
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
@@ -154,6 +171,8 @@ class WindingEntryActivity : AppCompatActivity() {
         btnSave.setOnClickListener { saveEntry() }
 
         ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+
+        loadSpoolTypes()
 
         loadSpells {
             loadEmpButtons()
@@ -269,34 +288,92 @@ class WindingEntryActivity : AppCompatActivity() {
     private fun selectType(type: String) {
         selectedType = type
         if (type == "S") {
-            // (S) → Trolly required, enable field
             btnTypeS.setBackgroundColor(Color.parseColor("#2E7D32"))
             btnTypeC.setBackgroundColor(Color.parseColor("#1565C0"))
-            etTrollyNo.isEnabled = true
-            etTrollyNo.requestFocus()
         } else {
-            // (C) → No trolly, disable and clear field, tare = 0
             btnTypeS.setBackgroundColor(Color.parseColor("#1565C0"))
             btnTypeC.setBackgroundColor(Color.parseColor("#2E7D32"))
-            etTrollyNo.setText("")
-            etTrollyNo.isEnabled = false
-            tvTrollyInfo.text    = ""
-            etTrollyNo.setBackgroundResource(R.drawable.bg_input_rounded_light)
-            validatedTrollyId = null
-            validatedTareWt   = 0.0
-            etTareWt.setText("0.000")
-            recalcNet()
         }
+        // Trolly No stays active for both S and C so the user can enter it
+        etTrollyNo.isEnabled = true
+        etTrollyNo.requestFocus()
     }
 
     // ── Trolly lookup ────────────────────────────────────────────────────────
     private fun resetTrolly() {
         validatedTrollyId = null
         validatedTareWt   = 0.0
-        etTareWt.setText("")
-        etNetWt.setText("")
         tvTrollyInfo.text = ""
         etTrollyNo.setBackgroundResource(R.drawable.bg_input_rounded_light)
+        recalcTare()
+    }
+
+    // ── Spool types (trolly_mst, trolly_type='P') ────────────────────────────
+    private fun loadSpoolTypes() {
+        if (branchId <= 0) return
+        llSpoolButtons.removeAllViews()
+        selectedSpoolTrollyId = null
+        selectedSpoolWeight   = 0.0
+        tvSpoolStatus.visibility = View.VISIBLE
+        tvSpoolStatus.text       = "Loading…"
+
+        RetrofitClient.getApiService(this).getWe2SpoolTypes(branchId.takeIf { it > 0 })
+            .enqueue(object : Callback<We2SpoolTypesResponse> {
+                override fun onResponse(call: Call<We2SpoolTypesResponse>, response: Response<We2SpoolTypesResponse>) {
+                    val types = response.body()?.spoolTypes.orEmpty()
+                    if (types.isEmpty()) {
+                        tvSpoolStatus.text       = "No spool types found"
+                        tvSpoolStatus.visibility = View.VISIBLE
+                    } else {
+                        tvSpoolStatus.visibility = View.GONE
+                        llSpoolButtons.removeAllViews()
+                        val dp = resources.displayMetrics.density
+                        for (sp in types) {
+                            val btn = Button(this@WindingEntryActivity)
+                            btn.text     = (sp.trollyName ?: "?").take(14)
+                            btn.textSize = 11f
+                            btn.setTypeface(null, Typeface.BOLD)
+                            btn.setTextColor(Color.WHITE)
+                            btn.setBackgroundColor(Color.parseColor("#1565C0"))
+                            val lp = LinearLayout.LayoutParams(
+                                LinearLayout.LayoutParams.WRAP_CONTENT,
+                                (36 * dp).toInt()
+                            )
+                            lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                            btn.layoutParams = lp
+                            btn.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
+                            btn.tag = sp
+                            btn.setOnClickListener { onSpoolSelected(sp) }
+                            llSpoolButtons.addView(btn)
+                        }
+                    }
+                }
+                override fun onFailure(call: Call<We2SpoolTypesResponse>, t: Throwable) {
+                    tvSpoolStatus.text       = "Failed to load spool types"
+                    tvSpoolStatus.visibility = View.VISIBLE
+                }
+            })
+    }
+
+    private fun onSpoolSelected(sp: We2SpoolType) {
+        // Single-select toggle: tapping the active one clears it
+        selectedSpoolTrollyId = if (selectedSpoolTrollyId == sp.trollyId) null else sp.trollyId
+        selectedSpoolWeight   = if (selectedSpoolTrollyId == null) 0.0 else (sp.spoolWeight ?: 0.0)
+        for (i in 0 until llSpoolButtons.childCount) {
+            val b = llSpoolButtons.getChildAt(i) as? Button ?: continue
+            val t = b.tag as? We2SpoolType
+            val on = selectedSpoolTrollyId != null && t?.trollyId == selectedSpoolTrollyId
+            b.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
+        }
+        recalcTare()
+    }
+
+    // tare = validated trolly tare + (no of spools × selected spool weight)
+    private fun recalcTare() {
+        val spools = etNoOfSpools.text.toString().trim().toIntOrNull() ?: 0
+        val tare   = validatedTareWt + (spools * selectedSpoolWeight)
+        etTareWt.setText(fmt(tare))
+        recalcNet()
     }
 
     private fun lookupTrolly(trollyNo: String) {
@@ -315,8 +392,7 @@ class WindingEntryActivity : AppCompatActivity() {
                         if (tare > 0) "  (Tare: ${fmt(tare)})" else ""
                     tvTrollyInfo.text = info
                     tvTrollyInfo.setTextColor(Color.parseColor("#2E7D32"))
-                    etTareWt.setText(fmt(tare))
-                    recalcNet()
+                    recalcTare()
                 } else {
                     etTrollyNo.setBackgroundResource(R.drawable.bg_input_invalid)
                     tvTrollyInfo.text = body?.message ?: "Trolly not found"
@@ -361,9 +437,6 @@ class WindingEntryActivity : AppCompatActivity() {
         if (selectedEbIds.isEmpty()) {
             Toast.makeText(this, "Please select at least one Employee", Toast.LENGTH_SHORT).show(); return
         }
-        if (selectedType == "S" && validatedTrollyId == null) {
-            Toast.makeText(this, "Please enter a valid Trolly No (required when S)", Toast.LENGTH_SHORT).show(); return
-        }
         val gross = etGrossWt.text.toString().toDoubleOrNull()
         if (gross == null || gross <= 0.0) {
             Toast.makeText(this, "Please enter Gross Weight", Toast.LENGTH_SHORT).show(); return
@@ -382,10 +455,11 @@ class WindingEntryActivity : AppCompatActivity() {
             ebId        = ebIdList.first(),
             ebIds       = ebIdList,
             scType      = selectedType,
-            trollyId    = if (selectedType == "S") validatedTrollyId else null,
+            trollyId    = validatedTrollyId,
             grossWeight = gross,
             tareWeight  = tare,
             netWeight   = net,
+            noOfSpools  = etNoOfSpools.text.toString().trim().toIntOrNull(),
             userId      = userId
         )
         btnSave.isEnabled = false
@@ -418,6 +492,15 @@ class WindingEntryActivity : AppCompatActivity() {
         etTareWt.setText("")
         etNetWt.setText("")
         etGrossWt.setBackgroundResource(R.drawable.bg_input_rounded_light)
+        // Clear spool selection + count
+        etNoOfSpools.setText("")
+        selectedSpoolTrollyId = null
+        selectedSpoolWeight   = 0.0
+        for (i in 0 until llSpoolButtons.childCount) {
+            (llSpoolButtons.getChildAt(i) as? Button)
+                ?.setBackgroundColor(Color.parseColor("#1565C0"))
+        }
+        etTrollyNo.setText("")
         resetTrolly()
         selectType("S")
     }
