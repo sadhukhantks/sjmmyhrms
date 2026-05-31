@@ -2,45 +2,85 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:background="#F54927"
     android:padding="10dp"
     android:layout_marginBottom="2dp"
     android:clickable="true"
     android:focusable="true">
 
-    <!-- Machine No -->
-    <TextView
-        android:id="@+id/tvMachineNo"
-        android:layout_width="0dp"
+    <!-- Row 1: Machine No | Weights | No of Doff -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="#000000"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
+        android:orientation="horizontal">
 
-    <!-- Weights string -->
-    <TextView
-        android:id="@+id/tvWeights"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="3"
-        android:textColor="#000000"
-        android:textSize="12sp"
-        android:gravity="center_vertical"
-        android:paddingStart="4dp"
-        android:paddingEnd="4dp"/>
+        <!-- Machine No -->
+        <TextView
+            android:id="@+id/tvMachineNo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
 
-    <!-- No of Doff -->
-    <TextView
-        android:id="@+id/tvNoOfDoff"
-        android:layout_width="0dp"
+        <!-- Weights string -->
+        <TextView
+            android:id="@+id/tvWeights"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="3"
+            android:textColor="#000000"
+            android:textSize="12sp"
+            android:gravity="center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"/>
+
+        <!-- No of Doff -->
+        <TextView
+            android:id="@+id/tvNoOfDoff"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#000000"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+    </LinearLayout>
+
+    <!-- Row 2: EB No + Employee Name -->
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="#000000"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:gravity="center"/>
+        android:orientation="horizontal"
+        android:paddingTop="4dp">
+
+        <!-- EB No -->
+        <TextView
+            android:id="@+id/tvEbNo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="#000000"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:gravity="center"/>
+
+        <!-- Employee Name -->
+        <TextView
+            android:id="@+id/tvEmpName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="4"
+            android:textColor="#000000"
+            android:textSize="12sp"
+            android:gravity="center_vertical"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>

@@ -217,12 +217,35 @@ class WindingEntryActivity : AppCompatActivity() {
                         R.layout.spinner_item_black,
                         spellList.map { it.spellName ?: "" }
                     ).also { it.setDropDownViewResource(R.layout.spinner_dropdown_item_black) }
-                    if (spellList.isNotEmpty()) spEntrySpell.setSelection(0)
+                    if (spellList.isNotEmpty()) applyDefaultSpell()
                     onDone()
                 }
                 override fun onFailure(call: Call<SpellResponse>, t: Throwable) { onDone() }
             })
     }
+
+    // Default spell + production date based on current clock time:
+    //   06:00–13:59 → A | 14:00–17:59 → B1 | 18:00–21:59 → B2
+    //   22:00–23:59 & 00:00–05:59 → C (overnight shift → production date = current date − 1)
+    private fun applyDefaultSpell() {
+        val cal = Calendar.getInstance()
+        val mins = cal.get(Calendar.HOUR_OF_DAY) * 60 + cal.get(Calendar.MINUTE)
+        val code = when (mins) {
+            in 360..839   -> "A"    // 06:00–13:59
+            in 840..1079  -> "B1"   // 14:00–17:59
+            in 1080..1319 -> "B2"   // 18:00–21:59
+            else          -> "C"    // 22:00–23:59 and 00:00–05:59
+        }
+        if (code == "C") cal.add(Calendar.DAY_OF_MONTH, -1)
+        entryDate        = apiDate.format(cal.time)
+        tvEntryDate.text = dispDate.format(cal.time)
+
+        val idx = spellList.indexOfFirst { normalizeSpell(it.spellName) == code }
+        spEntrySpell.setSelection(if (idx >= 0) idx else 0)
+    }
+
+    private fun normalizeSpell(name: String?): String =
+        (name ?: "").uppercase().filter { it.isLetterOrDigit() }.removePrefix("SPELL")
 
     private fun selectedSpellId(): Int? =
         spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellId
@@ -440,8 +463,8 @@ class WindingEntryActivity : AppCompatActivity() {
     private fun recalcNet() {
         val gross = etGrossWt.text.toString().toDoubleOrNull() ?: 0.0
         val tare  = etTareWt.text.toString().toDoubleOrNull()  ?: 0.0
-        val net   = gross - tare
-        etNetWt.setText(fmt(net))
+        val net   = kotlin.math.round(gross - tare)
+        etNetWt.setText(String.format(Locale.getDefault(), "%.0f", net))
         etNetWt.setTextColor(
             if (net <= 0.0) Color.parseColor("#C62828") else Color.parseColor("#1E1E1E")
         )
@@ -471,7 +494,7 @@ class WindingEntryActivity : AppCompatActivity() {
             Toast.makeText(this, "Please enter Gross Weight", Toast.LENGTH_SHORT).show(); return
         }
         val tare = etTareWt.text.toString().toDoubleOrNull() ?: 0.0
-        val net  = gross - tare
+        val net  = kotlin.math.round(gross - tare)
         if (net <= 0.0) {
             Toast.makeText(this, "Net Weight must be positive", Toast.LENGTH_LONG).show(); return
         }

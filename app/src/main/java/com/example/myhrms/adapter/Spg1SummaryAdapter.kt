@@ -37,6 +37,8 @@ class Spg1SummaryAdapter(
         private val tvMachineNo : TextView = itemView.findViewById(R.id.tvMachineNo)
         private val tvWeights   : TextView = itemView.findViewById(R.id.tvWeights)
         private val tvNoOfDoff  : TextView = itemView.findViewById(R.id.tvNoOfDoff)
+        private val tvEbNo      : TextView = itemView.findViewById(R.id.tvEbNo)
+        private val tvEmpName   : TextView = itemView.findViewById(R.id.tvEmpName)
 
         fun bind(row: Spg1SummaryRow, onClick: (Spg1SummaryRow) -> Unit) {
             tvMachineNo.text = row.mechPostingCode?.toString()
@@ -49,6 +51,9 @@ class Spg1SummaryAdapter(
             else "${wtParts.joinToString("+")} = $total"
 
             tvNoOfDoff.text = row.noOfDoff.toString()
+
+            tvEbNo.text    = row.empCode?.takeIf { it.isNotBlank() } ?: "-"
+            tvEmpName.text = row.empName?.takeIf { it.isNotBlank() } ?: "-"
 
             itemView.setOnClickListener { onClick(row) }
         }

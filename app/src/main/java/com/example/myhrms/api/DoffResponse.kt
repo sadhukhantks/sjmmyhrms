@@ -297,6 +297,8 @@ data class Spg1SummaryRow(
     @SerializedName("mc_code")           val mcCode: String?,
     @SerializedName("mc_name")           val mcName: String?,
     @SerializedName("mech_posting_code") val mechPostingCode: Int?,
+    @SerializedName("emp_code")          val empCode: String?,
+    @SerializedName("emp_name")          val empName: String?,
     @SerializedName("weights")           val weights: List<Double>?,
     @SerializedName("no_of_doff")        val noOfDoff: Int,
     @SerializedName("total_wt")          val totalWt: Double
