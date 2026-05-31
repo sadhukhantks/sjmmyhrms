@@ -53,6 +53,7 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var tvSummaryEmpty : TextView
     private lateinit var pbSummary    : ProgressBar
     private lateinit var ivQualityShiftReport : ImageView
+    private lateinit var btnSpinning : Button
 
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: We2SummaryAdapter
@@ -106,6 +107,7 @@ class WindingEntryActivity : AppCompatActivity() {
         tvSummaryEmpty = findViewById(R.id.tvSummaryEmpty)
         pbSummary      = findViewById(R.id.pbSummary)
         ivQualityShiftReport = findViewById(R.id.ivQualityShiftReport)
+        btnSpinning          = findViewById(R.id.btnSpinning)
 
         summaryAdapter = We2SummaryAdapter { row -> showDetailDialog(row) }
         rvSummary.layoutManager = LinearLayoutManager(this)
@@ -171,6 +173,12 @@ class WindingEntryActivity : AppCompatActivity() {
         btnSave.setOnClickListener { saveEntry() }
 
         ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+
+        btnSpinning.setOnClickListener {
+            val intent = android.content.Intent(this, SpgDoffEntry1Activity::class.java)
+            intent.putExtra("BRANCH_ID", branchId)
+            startActivity(intent)
+        }
 
         loadSpoolTypes()
 
@@ -282,6 +290,17 @@ class WindingEntryActivity : AppCompatActivity() {
             selectedEbIds.add(ebId)
             btn.setBackgroundColor(Color.parseColor("#2E7D32"))
         }
+        // Employee selection drives spool count (S only) and the tare
+        recalcSpools()
+    }
+
+    // For (S), No of Spools auto-tracks employees × 8; the spools watcher
+    // then drives recalcTare. For (C), spools stay manual.
+    private fun recalcSpools() {
+        if (selectedType == "S") {
+            etNoOfSpools.setText((selectedEbIds.size * 8).toString())
+        }
+        recalcTare()
     }
 
     // ── S/C toggle ───────────────────────────────────────────────────────────
@@ -290,13 +309,23 @@ class WindingEntryActivity : AppCompatActivity() {
         if (type == "S") {
             btnTypeS.setBackgroundColor(Color.parseColor("#2E7D32"))
             btnTypeC.setBackgroundColor(Color.parseColor("#1565C0"))
+            // Spools auto-derived from spindles for (S) → read-only
+            etNoOfSpools.isEnabled = false
+            etNoOfSpools.isFocusable = false
+            etNoOfSpools.isFocusableInTouchMode = false
         } else {
             btnTypeS.setBackgroundColor(Color.parseColor("#1565C0"))
             btnTypeC.setBackgroundColor(Color.parseColor("#2E7D32"))
+            // Manual spools entry for (C)
+            etNoOfSpools.isEnabled = true
+            etNoOfSpools.isFocusable = true
+            etNoOfSpools.isFocusableInTouchMode = true
         }
         // Trolly No stays active for both S and C so the user can enter it
         etTrollyNo.isEnabled = true
         etTrollyNo.requestFocus()
+        // S → spools = employees × 8; C → manual
+        recalcSpools()
     }
 
     // ── Trolly lookup ────────────────────────────────────────────────────────
@@ -460,6 +489,7 @@ class WindingEntryActivity : AppCompatActivity() {
             tareWeight  = tare,
             netWeight   = net,
             noOfSpools  = etNoOfSpools.text.toString().trim().toIntOrNull(),
+            noOfSpindle = if (selectedType == "S") selectedEbIds.size * 8 else null,
             userId      = userId
         )
         btnSave.isEnabled = false

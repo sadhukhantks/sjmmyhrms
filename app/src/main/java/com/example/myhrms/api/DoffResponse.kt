@@ -376,6 +376,7 @@ data class We2SaveRequest(
     @SerializedName("tare_weight")  val tareWeight: Double,
     @SerializedName("net_weight")   val netWeight: Double,
     @SerializedName("no_of_spools") val noOfSpools: Int?,
+    @SerializedName("no_of_spindle") val noOfSpindle: Int?,
     @SerializedName("user_id")      val userId: Int
 )
 

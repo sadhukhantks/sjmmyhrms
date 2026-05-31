@@ -52,6 +52,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var tvSummaryEmpty: TextView
     private lateinit var pbSummary: ProgressBar
     private lateinit var ivQualityShiftReport: ImageView
+    private lateinit var btnWinding: Button
 
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: Spg1SummaryAdapter
@@ -96,6 +97,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         tvSummaryEmpty    = findViewById(R.id.tvSummaryEmpty)
         pbSummary         = findViewById(R.id.pbSummary)
         ivQualityShiftReport = findViewById(R.id.ivQualityShiftReport)
+        btnWinding           = findViewById(R.id.btnWinding)
 
         summaryAdapter = Spg1SummaryAdapter { row -> showDetailDialog(row) }
         rvSummary.layoutManager = LinearLayoutManager(this)
@@ -104,6 +106,12 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
 
         // Report icon click listener
         ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+
+        btnWinding.setOnClickListener {
+            val intent = android.content.Intent(this, WindingEntryActivity::class.java)
+            intent.putExtra("BRANCH_ID", branchId)
+            startActivity(intent)
+        }
 
         // Init date
         val cal = Calendar.getInstance()
