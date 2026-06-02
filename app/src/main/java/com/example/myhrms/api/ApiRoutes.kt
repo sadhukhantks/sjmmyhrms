@@ -46,6 +46,7 @@ object ApiRoutes {
     const val DOFF_LAST_EMP           = "doff/last-emp"
     const val DOFF_VALIDATE_MACHINE   = "doff/validate-machine"
     const val DOFF_VALIDATE_TROLLY    = "doff/validate-trolly"
+    const val DOFF_VALIDATE_TROLLY_WINDING = "doff/validate-trolly_winding"
     const val DOFF_FRAME_SPINDLE      = "doff/frame-spindle"
     const val DOFF_SUMMARY            = "doff/summary"
     const val DOFF_FRAME_MACHINES             = "doff/frame-machines"

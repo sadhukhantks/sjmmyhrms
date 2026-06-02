@@ -68,9 +68,10 @@ class WindingEntryActivity : AppCompatActivity() {
     private var validatedTrollyId: Int?    = null
     private var validatedTareWt  : Double  = 0.0
 
-    // Selected spool type (single-select). Per-spool weight feeds the tare calc.
-    private var selectedSpoolTrollyId: Int?   = null
-    private var selectedSpoolWeight  : Double = 0.0
+    // Selected spool types (multi-select): trollyId -> per-spool weight.
+    // Single selection → tare = trolly + spools × weight (tare read-only).
+    // Multiple selection → tare = trolly weight only and the tare field is editable.
+    private val selectedSpools = linkedMapOf<Int, Double>()
 
     private val mainHandler  = Handler(Looper.getMainLooper())
     private var trollyDebounce: Runnable? = null
@@ -157,6 +158,13 @@ class WindingEntryActivity : AppCompatActivity() {
         // No of spools → recalc tare (trolly tare + spools × spool weight)
         etNoOfSpools.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) { recalcTare() }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+
+        // Manual tare edits (multiple spool types selected) → recalc net
+        etTareWt.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { recalcNet() }
             override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
@@ -364,8 +372,7 @@ class WindingEntryActivity : AppCompatActivity() {
     private fun loadSpoolTypes() {
         if (branchId <= 0) return
         llSpoolButtons.removeAllViews()
-        selectedSpoolTrollyId = null
-        selectedSpoolWeight   = 0.0
+        selectedSpools.clear()
         tvSpoolStatus.visibility = View.VISIBLE
         tvSpoolStatus.text       = "Loading…"
 
@@ -408,28 +415,43 @@ class WindingEntryActivity : AppCompatActivity() {
     }
 
     private fun onSpoolSelected(sp: We2SpoolType) {
-        // Single-select toggle: tapping the active one clears it
-        selectedSpoolTrollyId = if (selectedSpoolTrollyId == sp.trollyId) null else sp.trollyId
-        selectedSpoolWeight   = if (selectedSpoolTrollyId == null) 0.0 else (sp.spoolWeight ?: 0.0)
+        val id = sp.trollyId ?: return
+        // Multi-select toggle: tapping an active one clears it
+        if (selectedSpools.containsKey(id)) selectedSpools.remove(id)
+        else selectedSpools[id] = sp.spoolWeight ?: 0.0
         for (i in 0 until llSpoolButtons.childCount) {
             val b = llSpoolButtons.getChildAt(i) as? Button ?: continue
             val t = b.tag as? We2SpoolType
-            val on = selectedSpoolTrollyId != null && t?.trollyId == selectedSpoolTrollyId
+            val on = t?.trollyId != null && selectedSpools.containsKey(t.trollyId)
             b.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
         }
-        recalcTare()
+        recalcTare(seedMultiTare = true)
     }
 
-    // tare = validated trolly tare + (no of spools × selected spool weight)
-    private fun recalcTare() {
-        val spools = etNoOfSpools.text.toString().trim().toIntOrNull() ?: 0
-        val tare   = validatedTareWt + (spools * selectedSpoolWeight)
-        etTareWt.setText(fmt(tare))
-        recalcNet()
+    // Single spool → tare = validated trolly tare + (no of spools × spool weight), read-only.
+    // Multiple spools → tare = trolly weight only and the field is editable for manual entry.
+    private fun recalcTare(seedMultiTare: Boolean = false) {
+        if (selectedSpools.size >= 2) {
+            setTareEditable(true)
+            if (seedMultiTare) etTareWt.setText(fmt(validatedTareWt))
+            recalcNet()
+        } else {
+            setTareEditable(false)
+            val spools = etNoOfSpools.text.toString().trim().toIntOrNull() ?: 0
+            val weight = selectedSpools.values.firstOrNull() ?: 0.0
+            etTareWt.setText(fmt(validatedTareWt + (spools * weight)))
+            recalcNet()
+        }
+    }
+
+    private fun setTareEditable(editable: Boolean) {
+        etTareWt.isEnabled              = editable
+        etTareWt.isFocusable           = editable
+        etTareWt.isFocusableInTouchMode = editable
     }
 
     private fun lookupTrolly(trollyNo: String) {
-        RetrofitClient.getApiService(this).validateDoffTrolly(
+        RetrofitClient.getApiService(this).validateDoffTrollyWinding(
             trollyNo = trollyNo,
             branchId = branchId.takeIf { it > 0 }
         ).enqueue(object : Callback<DoffTrollyValidateResponse> {
@@ -547,8 +569,8 @@ class WindingEntryActivity : AppCompatActivity() {
         etGrossWt.setBackgroundResource(R.drawable.bg_input_rounded_light)
         // Clear spool selection + count
         etNoOfSpools.setText("")
-        selectedSpoolTrollyId = null
-        selectedSpoolWeight   = 0.0
+        selectedSpools.clear()
+        setTareEditable(false)
         for (i in 0 until llSpoolButtons.childCount) {
             (llSpoolButtons.getChildAt(i) as? Button)
                 ?.setBackgroundColor(Color.parseColor("#1565C0"))

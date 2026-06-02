@@ -259,6 +259,12 @@ interface ApiService {
         @Query("branch_id") branchId: Int? = null
     ): Call<DoffTrollyValidateResponse>
 
+    @GET(ApiRoutes.DOFF_VALIDATE_TROLLY_WINDING)
+    fun validateDoffTrollyWinding(
+        @Query("trolly_no") trollyNo: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<DoffTrollyValidateResponse>
+
     @GET(ApiRoutes.DOFF_SUMMARY)
     fun getDoffSummary(
         @Query("date")      date: String,
