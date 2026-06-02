@@ -32,6 +32,16 @@ class LoginActivity : AppCompatActivity() {
         setupLoginButton()
         setupSettingsButton()
         loadPreviousUsername()
+        showVersion()
+    }
+
+    private fun showVersion() {
+        val name = try {
+            packageManager.getPackageInfo(packageName, 0).versionName
+        } catch (e: Exception) {
+            null
+        }
+        binding.tvVersion.text = "v${name ?: "?"}"
     }
 
     private fun setupToolbar() {
