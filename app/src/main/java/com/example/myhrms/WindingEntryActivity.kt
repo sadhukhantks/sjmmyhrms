@@ -34,6 +34,9 @@ class WindingEntryActivity : AppCompatActivity() {
     private var userId    = 0
     private var entryDate = ""
 
+    private lateinit var rootLayout   : LinearLayout
+    private lateinit var cardEntry    : androidx.cardview.widget.CardView
+    private lateinit var cardSummary  : androidx.cardview.widget.CardView
     private lateinit var tvEntryDate  : TextView
     private lateinit var spEntrySpell : Spinner
     private lateinit var llEmpButtons : LinearLayout
@@ -89,6 +92,9 @@ class WindingEntryActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
         toolbar.setNavigationOnClickListener { finish() }
 
+        rootLayout     = findViewById(R.id.rootLayout)
+        cardEntry      = findViewById(R.id.cardEntry)
+        cardSummary    = findViewById(R.id.cardSummary)
         tvEntryDate    = findViewById(R.id.tvEntryDate)
         spEntrySpell   = findViewById(R.id.spEntrySpell)
         llEmpButtons   = findViewById(R.id.llEmpButtons)
@@ -132,6 +138,7 @@ class WindingEntryActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {
                 resetTrolly()
                 trollyDebounce?.let { mainHandler.removeCallbacks(it) }
+                if (selectedType == "C") return   // (C): no trolly validation
                 val v = s?.toString()?.trim().orEmpty()
                 if (v.isEmpty()) return
                 val r = Runnable { lookupTrolly(v) }
@@ -142,7 +149,7 @@ class WindingEntryActivity : AppCompatActivity() {
             override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
         etTrollyNo.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus) {
+            if (!hasFocus && selectedType != "C") {   // (C): no trolly validation
                 val v = etTrollyNo.text.toString().trim()
                 if (v.isNotEmpty() && validatedTrollyId == null) lookupTrolly(v)
             }
@@ -172,6 +179,7 @@ class WindingEntryActivity : AppCompatActivity() {
         // Spell change → reload employees + summary
         spEntrySpell.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                applySpellBackground()
                 loadEmpButtons()
                 loadSummary()
             }
@@ -255,6 +263,23 @@ class WindingEntryActivity : AppCompatActivity() {
     private fun normalizeSpell(name: String?): String =
         (name ?: "").uppercase().filter { it.isLetterOrDigit() }.removePrefix("SPELL")
 
+    /** Tint the whole page (background + cards) based on the selected spell:
+     *  A → light green, B1 → light blue, B2 → light orange, C → light grey. */
+    private fun applySpellBackground() {
+        val code = normalizeSpell(spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellName)
+        val color = when (code) {
+            "A"  -> "#DCEDC8"   // light green
+            "B1" -> "#BBDEFB"   // light blue
+            "B2" -> "#FFE0B2"   // light orange
+            "C"  -> "#E0E0E0"   // light grey
+            else -> "#F2F2F2"   // default
+        }
+        val parsed = Color.parseColor(color)
+        rootLayout.setBackgroundColor(parsed)
+        cardEntry.setCardBackgroundColor(parsed)
+        cardSummary.setCardBackgroundColor(parsed)
+    }
+
     private fun selectedSpellId(): Int? =
         spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellId
 
@@ -325,37 +350,36 @@ class WindingEntryActivity : AppCompatActivity() {
         recalcSpools()
     }
 
-    // For (S), No of Spools auto-tracks employees × 8; the spools watcher
-    // then drives recalcTare. For (C), spools stay manual.
+    // Both (S) and (C): No of Spools auto-tracks selected employees × 8.
+    // The spools watcher then drives recalcTare (and, for (C), the gross weight).
     private fun recalcSpools() {
-        if (selectedType == "S") {
-            etNoOfSpools.setText((selectedEbIds.size * 8).toString())
-        }
+        etNoOfSpools.setText((selectedEbIds.size * 8).toString())
         recalcTare()
     }
 
     // ── S/C toggle ───────────────────────────────────────────────────────────
     private fun selectType(type: String) {
         selectedType = type
+        // Spools are seeded from employees × 8 but remain editable for both types
+        etNoOfSpools.isEnabled = true
+        etNoOfSpools.isFocusable = true
+        etNoOfSpools.isFocusableInTouchMode = true
         if (type == "S") {
             btnTypeS.setBackgroundColor(Color.parseColor("#2E7D32"))
             btnTypeC.setBackgroundColor(Color.parseColor("#1565C0"))
-            // Spools auto-derived from spindles for (S) → read-only
-            etNoOfSpools.isEnabled = false
-            etNoOfSpools.isFocusable = false
-            etNoOfSpools.isFocusableInTouchMode = false
+            // (S): gross is weighed and entered manually
+            setGrossEditable(true)
         } else {
             btnTypeS.setBackgroundColor(Color.parseColor("#1565C0"))
             btnTypeC.setBackgroundColor(Color.parseColor("#2E7D32"))
-            // Manual spools entry for (C)
-            etNoOfSpools.isEnabled = true
-            etNoOfSpools.isFocusable = true
-            etNoOfSpools.isFocusableInTouchMode = true
+            // (C): gross = spools × 16 (auto), tare = 0, no trolly validation
+            setGrossEditable(false)
+            resetTrolly()
         }
         // Trolly No stays active for both S and C so the user can enter it
         etTrollyNo.isEnabled = true
         etTrollyNo.requestFocus()
-        // S → spools = employees × 8; C → manual
+        // spools = employees × 8 (then recalcTare drives tare/gross)
         recalcSpools()
     }
 
@@ -419,18 +443,42 @@ class WindingEntryActivity : AppCompatActivity() {
         // Multi-select toggle: tapping an active one clears it
         if (selectedSpools.containsKey(id)) selectedSpools.remove(id)
         else selectedSpools[id] = sp.spoolWeight ?: 0.0
+        val selectedTypes = mutableListOf<We2SpoolType>()
         for (i in 0 until llSpoolButtons.childCount) {
             val b = llSpoolButtons.getChildAt(i) as? Button ?: continue
             val t = b.tag as? We2SpoolType
             val on = t?.trollyId != null && selectedSpools.containsKey(t.trollyId)
             b.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
+            if (on && t != null) selectedTypes.add(t)
         }
+
+        // Show selected spool type weight(s), same style as the Trolly No info line
+        if (selectedTypes.isEmpty()) {
+            tvSpoolStatus.visibility = View.GONE
+            tvSpoolStatus.text = ""
+        } else {
+            tvSpoolStatus.text = selectedTypes.joinToString("   ") {
+                "${it.trollyName ?: "Spool"}  (Wt: ${fmt(it.spoolWeight ?: 0.0)})"
+            }
+            tvSpoolStatus.setTextColor(Color.parseColor("#2E7D32"))
+            tvSpoolStatus.visibility = View.VISIBLE
+        }
+
         recalcTare(seedMultiTare = true)
     }
 
     // Single spool → tare = validated trolly tare + (no of spools × spool weight), read-only.
     // Multiple spools → tare = trolly weight only and the field is editable for manual entry.
     private fun recalcTare(seedMultiTare: Boolean = false) {
+        if (selectedType == "C") {
+            // (C): No of Spools = employees × 8, Gross = spools × 16, Tare always 0.
+            setTareEditable(false)
+            val spools = etNoOfSpools.text.toString().trim().toIntOrNull() ?: 0
+            etGrossWt.setText((spools * 16).toString())
+            etTareWt.setText(fmt(0.0))
+            recalcNet()
+            return
+        }
         if (selectedSpools.size >= 2) {
             setTareEditable(true)
             if (seedMultiTare) etTareWt.setText(fmt(validatedTareWt))
@@ -448,6 +496,12 @@ class WindingEntryActivity : AppCompatActivity() {
         etTareWt.isEnabled              = editable
         etTareWt.isFocusable           = editable
         etTareWt.isFocusableInTouchMode = editable
+    }
+
+    private fun setGrossEditable(editable: Boolean) {
+        etGrossWt.isEnabled              = editable
+        etGrossWt.isFocusable           = editable
+        etGrossWt.isFocusableInTouchMode = editable
     }
 
     private fun lookupTrolly(trollyNo: String) {

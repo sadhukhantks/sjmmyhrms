@@ -34,6 +34,9 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private var userId   = 0
     private var entryDate = ""
 
+    private lateinit var rootLayout: LinearLayout
+    private lateinit var cardEntry: androidx.cardview.widget.CardView
+    private lateinit var cardSummary: androidx.cardview.widget.CardView
     private lateinit var tvEntryDate: TextView
     private lateinit var spEntrySpell: Spinner
     private lateinit var llMechCodes: LinearLayout
@@ -81,6 +84,9 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
         toolbar.setNavigationOnClickListener { finish() }
 
+        rootLayout        = findViewById(R.id.rootLayout)
+        cardEntry         = findViewById(R.id.cardEntry)
+        cardSummary       = findViewById(R.id.cardSummary)
         tvEntryDate       = findViewById(R.id.tvEntryDate)
         spEntrySpell      = findViewById(R.id.spEntrySpell)
         llMechCodes       = findViewById(R.id.llMechCodes)
@@ -162,6 +168,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         // Spell change → reload mech codes
         spEntrySpell.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
+                applySpellBackground()
                 loadMechCodes()
                 loadSummary()
             }
@@ -234,6 +241,23 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
 
     private fun normalizeSpell(name: String?): String =
         (name ?: "").uppercase().filter { it.isLetterOrDigit() }.removePrefix("SPELL")
+
+    /** Tint the whole page (background + cards) based on the selected spell:
+     *  A → light green, B1 → light blue, B2 → light orange, C → light grey. */
+    private fun applySpellBackground() {
+        val code = normalizeSpell(spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellName)
+        val color = when (code) {
+            "A"  -> "#DCEDC8"   // light green
+            "B1" -> "#BBDEFB"   // light blue
+            "B2" -> "#FFE0B2"   // light orange
+            "C"  -> "#E0E0E0"   // light grey
+            else -> "#F2F2F2"   // default
+        }
+        val parsed = Color.parseColor(color)
+        rootLayout.setBackgroundColor(parsed)
+        cardEntry.setCardBackgroundColor(parsed)
+        cardSummary.setCardBackgroundColor(parsed)
+    }
 
     private fun selectedSpellId(): Int? =
         spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellId
