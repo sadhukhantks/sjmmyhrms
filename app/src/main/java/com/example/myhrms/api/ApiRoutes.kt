@@ -71,6 +71,7 @@ object ApiRoutes {
     const val DOFF_WE2_EMP_LOOKUP = "doff/winding-entry-2-emp-lookup"
     const val DOFF_WE2_EMPLOYEES  = "doff/winding-entry-2-employees"
     const val DOFF_WE2_SPOOL_TYPES = "doff/winding-entry-2-spool-types"
+    const val DOFF_WE2_QUALITIES  = "doff/winding-entry-2-qualities"
     const val DOFF_WE2            = "doff/winding-entry-2"
     const val DOFF_WE2_TROLLY     = "doff/winding-entry-2-trolly"
     const val DOFF_WE2_QUALITY_SHIFT_REPORT = "doff/winding-entry-2-quality-shift-report"

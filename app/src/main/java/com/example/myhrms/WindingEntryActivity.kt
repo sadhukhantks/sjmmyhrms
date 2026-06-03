@@ -41,6 +41,8 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var spEntrySpell : Spinner
     private lateinit var llEmpButtons : LinearLayout
     private lateinit var tvEmpStatus  : TextView
+    private lateinit var llQualityButtons : LinearLayout
+    private lateinit var tvQualityStatus  : TextView
     private lateinit var btnTypeS     : Button
     private lateinit var btnTypeC     : Button
     private lateinit var etTrollyNo   : EditText
@@ -64,8 +66,16 @@ class WindingEntryActivity : AppCompatActivity() {
     // Selected employees (multi-select). Net weight is split equally across these on save.
     private val selectedEbIds = linkedSetOf<Long>()
 
-    // S or C toggle
+    // S or C toggle — driven automatically by the selected qualities' spool_cop.
     private var selectedType: String = "S"
+
+    // All employees loaded for the date/spell (full list before quality filter).
+    private val allEmployees = mutableListOf<We2Employee>()
+
+    // Winding qualities available for the date/spell, and the multi-selected set.
+    // All selected qualities must share the same spool_cop (cannot mix S and C).
+    private val qualityList = mutableListOf<We2Quality>()
+    private val selectedQualityIds = linkedSetOf<Int>()
 
     // Validated trolly
     private var validatedTrollyId: Int?    = null
@@ -99,6 +109,8 @@ class WindingEntryActivity : AppCompatActivity() {
         spEntrySpell   = findViewById(R.id.spEntrySpell)
         llEmpButtons   = findViewById(R.id.llEmpButtons)
         tvEmpStatus    = findViewById(R.id.tvEmpStatus)
+        llQualityButtons = findViewById(R.id.llQualityButtons)
+        tvQualityStatus  = findViewById(R.id.tvQualityStatus)
         btnTypeS       = findViewById(R.id.btnTypeS)
         btnTypeC       = findViewById(R.id.btnTypeC)
         etTrollyNo     = findViewById(R.id.etTrollyNo)
@@ -128,9 +140,9 @@ class WindingEntryActivity : AppCompatActivity() {
 
         findViewById<View>(R.id.btnEntryDate).setOnClickListener { pickDate() }
 
-        // S/C toggle (default S)
-        btnTypeS.setOnClickListener { selectType("S") }
-        btnTypeC.setOnClickListener { selectType("C") }
+        // S/C is auto-selected from the chosen qualities' spool_cop — no manual taps.
+        btnTypeS.isClickable = false
+        btnTypeC.isClickable = false
         selectType("S")
 
         // Trolly No debounced lookup (active for both S and C)
@@ -181,6 +193,7 @@ class WindingEntryActivity : AppCompatActivity() {
             override fun onItemSelected(p: AdapterView<*>?, v: View?, pos: Int, id: Long) {
                 applySpellBackground()
                 loadEmpButtons()
+                loadQualityButtons()
                 loadSummary()
             }
             override fun onNothingSelected(p: AdapterView<*>?) {}
@@ -200,6 +213,7 @@ class WindingEntryActivity : AppCompatActivity() {
 
         loadSpells {
             loadEmpButtons()
+            loadQualityButtons()
             loadSummary()
         }
     }
@@ -213,6 +227,7 @@ class WindingEntryActivity : AppCompatActivity() {
             entryDate        = apiDate.format(cal.time)
             tvEntryDate.text = dispDate.format(cal.time)
             loadEmpButtons()
+            loadQualityButtons()
             loadSummary()
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
     }
@@ -289,6 +304,7 @@ class WindingEntryActivity : AppCompatActivity() {
         if (branchId <= 0) return
 
         llEmpButtons.removeAllViews()
+        allEmployees.clear()
         selectedEbIds.clear()
         tvEmpStatus.visibility = View.VISIBLE
         tvEmpStatus.text       = "Loading…"
@@ -299,40 +315,57 @@ class WindingEntryActivity : AppCompatActivity() {
             branchId = branchId
         ).enqueue(object : Callback<We2EmployeesResponse> {
             override fun onResponse(call: Call<We2EmployeesResponse>, response: Response<We2EmployeesResponse>) {
-                val emps = response.body()?.employees.orEmpty()
-                if (emps.isEmpty()) {
-                    tvEmpStatus.text       = "No employees found for selected date/spell"
-                    tvEmpStatus.visibility = View.VISIBLE
-                } else {
-                    tvEmpStatus.visibility = View.GONE
-                    llEmpButtons.removeAllViews()
-                    val dp = resources.displayMetrics.density
-                    for (emp in emps) {
-                        val label = (emp.empName ?: emp.empCode ?: "?").take(7)
-                        val btn   = Button(this@WindingEntryActivity)
-                        btn.text     = label
-                        btn.textSize = 11f
-                        btn.setTypeface(null, Typeface.BOLD)
-                        btn.setTextColor(Color.WHITE)
-                        btn.setBackgroundColor(Color.parseColor("#1565C0"))
-                        val lp = LinearLayout.LayoutParams(
-                            (52 * dp).toInt(),
-                            (36 * dp).toInt()
-                        )
-                        lp.setMargins(0, 0, (6 * dp).toInt(), 0)
-                        btn.layoutParams = lp
-                        btn.setPadding(0, 0, 0, 0)
-                        btn.tag = emp
-                        btn.setOnClickListener { onEmpSelected(btn, emp) }
-                        llEmpButtons.addView(btn)
-                    }
-                }
+                allEmployees.clear()
+                allEmployees.addAll(response.body()?.employees.orEmpty())
+                renderEmployeeButtons()
             }
             override fun onFailure(call: Call<We2EmployeesResponse>, t: Throwable) {
                 tvEmpStatus.text       = "Failed to load employees"
                 tvEmpStatus.visibility = View.VISIBLE
             }
         })
+    }
+
+    /** Build the employee buttons, filtered to those mapped to the selected
+     *  qualities. With no quality selected, all employees are shown. */
+    private fun renderEmployeeButtons() {
+        llEmpButtons.removeAllViews()
+        val visible =
+            if (selectedQualityIds.isEmpty()) allEmployees
+            else allEmployees.filter { emp ->
+                emp.qualityIds?.any { selectedQualityIds.contains(it) } == true
+            }
+        // Drop any selections that are no longer visible
+        val visibleIds = visible.mapNotNull { it.ebId }.toSet()
+        selectedEbIds.retainAll(visibleIds)
+
+        if (visible.isEmpty()) {
+            tvEmpStatus.text =
+                if (allEmployees.isEmpty()) "No employees found for selected date/spell"
+                else "No employees mapped to selected quality"
+            tvEmpStatus.visibility = View.VISIBLE
+        } else {
+            tvEmpStatus.visibility = View.GONE
+            val dp = resources.displayMetrics.density
+            for (emp in visible) {
+                val label = (emp.empName ?: emp.empCode ?: "?").take(7)
+                val btn   = Button(this)
+                btn.text     = label
+                btn.textSize = 11f
+                btn.setTypeface(null, Typeface.BOLD)
+                btn.setTextColor(Color.WHITE)
+                val on = emp.ebId != null && selectedEbIds.contains(emp.ebId)
+                btn.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
+                val lp = LinearLayout.LayoutParams((52 * dp).toInt(), (36 * dp).toInt())
+                lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                btn.layoutParams = lp
+                btn.setPadding(0, 0, 0, 0)
+                btn.tag = emp
+                btn.setOnClickListener { onEmpSelected(btn, emp) }
+                llEmpButtons.addView(btn)
+            }
+        }
+        recalcSpools()
     }
 
     private fun onEmpSelected(btn: Button, emp: We2Employee) {
@@ -357,8 +390,103 @@ class WindingEntryActivity : AppCompatActivity() {
         recalcTare()
     }
 
-    // ── S/C toggle ───────────────────────────────────────────────────────────
-    private fun selectType(type: String) {
+    // ── Quality buttons (distinct winding qualities from the frame entry) ────
+    private fun loadQualityButtons() {
+        val spellId = selectedSpellId() ?: return
+        if (branchId <= 0) return
+
+        llQualityButtons.removeAllViews()
+        qualityList.clear()
+        selectedQualityIds.clear()
+        tvQualityStatus.visibility = View.VISIBLE
+        tvQualityStatus.setTextColor(Color.parseColor("#777777"))
+        tvQualityStatus.text       = "Loading…"
+
+        RetrofitClient.getApiService(this).getWe2Qualities(
+            date     = entryDate,
+            spellId  = spellId,
+            branchId = branchId
+        ).enqueue(object : Callback<We2QualitiesResponse> {
+            override fun onResponse(call: Call<We2QualitiesResponse>, response: Response<We2QualitiesResponse>) {
+                val qualities = response.body()?.qualities.orEmpty()
+                qualityList.clear()
+                qualityList.addAll(qualities)
+                if (qualities.isEmpty()) {
+                    tvQualityStatus.text       = "No qualities found for selected date/spell"
+                    tvQualityStatus.visibility = View.VISIBLE
+                } else {
+                    tvQualityStatus.visibility = View.GONE
+                    llQualityButtons.removeAllViews()
+                    val dp = resources.displayMetrics.density
+                    for (q in qualities) {
+                        val btn = Button(this@WindingEntryActivity)
+                        btn.text     = (q.qualityName ?: "?").take(14)
+                        btn.textSize = 11f
+                        btn.setTypeface(null, Typeface.BOLD)
+                        btn.setTextColor(Color.WHITE)
+                        btn.setBackgroundColor(Color.parseColor("#1565C0"))
+                        val lp = LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            (36 * dp).toInt()
+                        )
+                        lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                        btn.layoutParams = lp
+                        btn.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
+                        btn.tag = q
+                        btn.setOnClickListener { onQualitySelected(q) }
+                        llQualityButtons.addView(btn)
+                    }
+                }
+            }
+            override fun onFailure(call: Call<We2QualitiesResponse>, t: Throwable) {
+                tvQualityStatus.text       = "Failed to load qualities"
+                tvQualityStatus.visibility = View.VISIBLE
+            }
+        })
+    }
+
+    private fun spoolCopOf(qualityId: Int): String? =
+        qualityList.firstOrNull { it.qualityId == qualityId }
+            ?.spoolCop?.trim()?.uppercase()?.takeIf { it.isNotEmpty() }
+
+    /** The spool_cop ('S'/'C') common to the currently selected qualities. */
+    private fun selectedSpoolCop(): String? =
+        selectedQualityIds.firstOrNull()?.let { spoolCopOf(it) }
+
+    // Multi-select: all selected qualities must share the same spool_cop.
+    // Selecting drives the auto S/C toggle and filters the employee buttons.
+    private fun onQualitySelected(q: We2Quality) {
+        if (selectedQualityIds.contains(q.qualityId)) {
+            selectedQualityIds.remove(q.qualityId)
+        } else {
+            val current = selectedSpoolCop()
+            val cop     = spoolCopOf(q.qualityId)
+            if (current != null && cop != null && cop != current) {
+                Toast.makeText(
+                    this, "Cannot select S and C qualities together", Toast.LENGTH_SHORT
+                ).show()
+                return
+            }
+            selectedQualityIds.add(q.qualityId)
+        }
+        refreshQualityButtonColors()
+        // Auto S/C from the selected spool_cop (default S when nothing selected)
+        selectType(selectedSpoolCop() ?: "S", focusTrolly = false)
+        // Show only employees mapped to the selected qualities
+        renderEmployeeButtons()
+    }
+
+    private fun refreshQualityButtonColors() {
+        for (i in 0 until llQualityButtons.childCount) {
+            val child = llQualityButtons.getChildAt(i) as? Button ?: continue
+            val tag   = child.tag as? We2Quality
+            val on    = tag != null && selectedQualityIds.contains(tag.qualityId)
+            child.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
+        }
+    }
+
+    // ── S/C toggle (auto-driven by quality spool_cop) ────────────────────────
+    private fun selectType(type: String, focusTrolly: Boolean = true) {
         selectedType = type
         // Spools are seeded from employees × 8 but remain editable for both types
         etNoOfSpools.isEnabled = true
@@ -378,7 +506,7 @@ class WindingEntryActivity : AppCompatActivity() {
         }
         // Trolly No stays active for both S and C so the user can enter it
         etTrollyNo.isEnabled = true
-        etTrollyNo.requestFocus()
+        if (focusTrolly) etTrollyNo.requestFocus()
         // spools = employees × 8 (then recalcTare drives tare/gross)
         recalcSpools()
     }
@@ -584,6 +712,9 @@ class WindingEntryActivity : AppCompatActivity() {
             ebIds       = ebIdList,
             scType      = selectedType,
             trollyId    = validatedTrollyId,
+            // Store the quality only when one is selected; with several picked,
+            // the per-employee mapping in the frame entry already resolves it.
+            qualityId   = selectedQualityIds.singleOrNull(),
             grossWeight = gross,
             tareWeight  = tare,
             netWeight   = net,
@@ -611,11 +742,6 @@ class WindingEntryActivity : AppCompatActivity() {
     }
 
     private fun clearForm() {
-        // Deselect all employee buttons
-        for (i in 0 until llEmpButtons.childCount) {
-            (llEmpButtons.getChildAt(i) as? Button)
-                ?.setBackgroundColor(Color.parseColor("#1565C0"))
-        }
         selectedEbIds.clear()
         etGrossWt.setText("")
         etTareWt.setText("")
@@ -631,7 +757,11 @@ class WindingEntryActivity : AppCompatActivity() {
         }
         etTrollyNo.setText("")
         resetTrolly()
+        // Deselect quality buttons → reset type to S and show all employees again
+        selectedQualityIds.clear()
+        refreshQualityButtonColors()
         selectType("S")
+        renderEmployeeButtons()
     }
 
     // ── Summary list (grouped by employee) ──────────────────────────────────

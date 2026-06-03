@@ -35,11 +35,13 @@ class We2SummaryAdapter(
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvEmpName  : TextView = itemView.findViewById(R.id.tvEmpName)
+        private val tvQuality  : TextView = itemView.findViewById(R.id.tvQuality)
         private val tvWeights  : TextView = itemView.findViewById(R.id.tvWeights)
         private val tvNoOfDoff : TextView = itemView.findViewById(R.id.tvNoOfDoff)
 
         fun bind(row: We2GroupedRow, onClick: (We2GroupedRow) -> Unit) {
             tvEmpName.text  = row.empName?.takeIf { it.isNotBlank() } ?: row.empCode ?: "-"
+            tvQuality.text  = row.qualityName?.takeIf { it.isNotBlank() } ?: "-"
 
             val wtParts = row.weights?.map { fmt(it) } ?: emptyList()
             val total   = fmt(row.totalWt)

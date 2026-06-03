@@ -406,6 +406,13 @@ interface ApiService {
         @Query("branch_id") branchId: Int? = null
     ): Call<We2SpoolTypesResponse>
 
+    @GET(ApiRoutes.DOFF_WE2_QUALITIES)
+    fun getWe2Qualities(
+        @Query("date")      date: String,
+        @Query("spell_id")  spellId: Int,
+        @Query("branch_id") branchId: Int
+    ): Call<We2QualitiesResponse>
+
     @GET(ApiRoutes.DOFF_WE2_EMPLOYEES)
     fun getWe2Employees(
         @Query("date")      date: String,

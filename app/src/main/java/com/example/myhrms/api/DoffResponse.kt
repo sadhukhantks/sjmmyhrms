@@ -315,7 +315,10 @@ data class Spg1SummaryResponse(
 data class We2Employee(
     @SerializedName("eb_id")    val ebId: Long?,
     @SerializedName("emp_code") val empCode: String?,
-    @SerializedName("emp_name") val empName: String?
+    @SerializedName("emp_name") val empName: String?,
+    // Winding qualities this employee is mapped to (from the frame entry).
+    // Used to filter the employee buttons when qualities are selected.
+    @SerializedName("quality_ids") val qualityIds: List<Int>? = null
 )
 
 data class We2EmployeesResponse(
@@ -338,6 +341,22 @@ data class We2SpoolTypesResponse(
     @SerializedName("spool_types") val spoolTypes: List<We2SpoolType>?
 )
 
+// Distinct winding qualities selected in the winding frame entry for the
+// chosen date/spell — shown as selectable buttons on Winding Entry (2).
+// spool_cop ('S' = spool / 'C' = cop) drives the auto S/C toggle and the
+// "cannot mix S and C" selection rule.
+data class We2Quality(
+    @SerializedName("quality_id")   val qualityId: Int,
+    @SerializedName("quality_name") val qualityName: String?,
+    @SerializedName("spool_cop")    val spoolCop: String?
+)
+
+data class We2QualitiesResponse(
+    @SerializedName("status")    val status: String?,
+    @SerializedName("message")   val message: String?,
+    @SerializedName("qualities") val qualities: List<We2Quality>?
+)
+
 data class We2EmpLookupResponse(
     @SerializedName("status")   val status: String?,
     @SerializedName("message")  val message: String?,
@@ -354,6 +373,7 @@ data class We2SummaryRow(
     @SerializedName("sc_type")      val scType: String?,
     @SerializedName("trolly_id")    val trollyId: Int?,
     @SerializedName("trolly_name")  val trollyName: String?,
+    @SerializedName("quality_name") val qualityName: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("tare_weight")  val tareWeight: Double?,
     @SerializedName("net_weight")   val netWeight: Double?,
@@ -374,6 +394,7 @@ data class We2SaveRequest(
     @SerializedName("eb_ids")       val ebIds: List<Long>,     // all selected; weight split equally
     @SerializedName("sc_type")      val scType: String,
     @SerializedName("trolly_id")    val trollyId: Int?,
+    @SerializedName("quality_id")   val qualityId: Int?,
     @SerializedName("gross_weight") val grossWeight: Double,
     @SerializedName("tare_weight")  val tareWeight: Double,
     @SerializedName("net_weight")   val netWeight: Double,
@@ -390,12 +411,13 @@ data class We2SaveResponse(
 )
 
 data class We2GroupedRow(
-    @SerializedName("eb_id")      val ebId: Long?,
-    @SerializedName("emp_code")   val empCode: String?,
-    @SerializedName("emp_name")   val empName: String?,
-    @SerializedName("weights")    val weights: List<Double>?,
-    @SerializedName("no_of_doff") val noOfDoff: Int,
-    @SerializedName("total_wt")   val totalWt: Double
+    @SerializedName("eb_id")        val ebId: Long?,
+    @SerializedName("emp_code")     val empCode: String?,
+    @SerializedName("emp_name")     val empName: String?,
+    @SerializedName("quality_name") val qualityName: String?,
+    @SerializedName("weights")      val weights: List<Double>?,
+    @SerializedName("no_of_doff")   val noOfDoff: Int,
+    @SerializedName("total_wt")     val totalWt: Double
 )
 
 data class We2GroupedResponse(

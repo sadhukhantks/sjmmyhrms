@@ -130,7 +130,40 @@
                         </LinearLayout>
                     </LinearLayout>
 
-                    <!-- ROW 2: Employee buttons (like Mech Posting Code in SPG Doff Entry) -->
+                    <!-- ROW 2: Quality buttons (distinct winding qualities from frame entry) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Quality"
+                        android:textColor="#000000"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"/>
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none"
+                        android:layout_marginBottom="4dp">
+                        <LinearLayout
+                            android:id="@+id/llQualityButtons"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:paddingBottom="4dp"/>
+                    </HorizontalScrollView>
+
+                    <TextView
+                        android:id="@+id/tvQualityStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:textColor="#777777"
+                        android:layout_marginBottom="10dp"
+                        android:visibility="gone"/>
+
+                    <!-- ROW 3: Employee buttons (like Mech Posting Code in SPG Doff Entry) -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -163,7 +196,7 @@
                         android:layout_marginBottom="10dp"
                         android:visibility="gone"/>
 
-                    <!-- ROW 3: (S) (C) buttons fit-to-width  +  Trolly No -->
+                    <!-- ROW 4: (S) (C) buttons fit-to-width  +  Trolly No -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -495,7 +528,11 @@
                             android:textColor="#FFFFFF" android:textStyle="bold"
                             android:textSize="12sp" android:gravity="center"/>
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
-                            android:layout_weight="4" android:text="Weights"
+                            android:layout_weight="2" android:text="Quality"
+                            android:textColor="#FFFFFF" android:textStyle="bold"
+                            android:textSize="12sp" android:gravity="center"/>
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="3" android:text="Weights"
                             android:textColor="#FFFFFF" android:textStyle="bold"
                             android:textSize="12sp" android:gravity="center"/>
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
