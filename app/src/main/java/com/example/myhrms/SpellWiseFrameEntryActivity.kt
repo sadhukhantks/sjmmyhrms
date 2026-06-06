@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.FrameEntryAdapter
 import com.example.myhrms.adapter.WindingEntryAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -423,11 +424,16 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
             ).enqueue(object : Callback<WindingEntrySaveResponse> {
                 override fun onResponse(c: Call<WindingEntrySaveResponse>, r: Response<WindingEntrySaveResponse>) {
                     btnWindingSave.isEnabled = true
-                    toast(r.body()?.message ?: "Updated")
-                    clearWindingForm(); loadWindingEntries()
+                    if (r.isSuccessful && r.body()?.status == "success") {
+                        ResultDialog.success(this@SpellWiseFrameEntryActivity, message = r.body()?.message ?: "Updated")
+                        clearWindingForm(); loadWindingEntries()
+                    } else {
+                        ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Update Failed", message = r.body()?.message ?: "Could not update the entry")
+                    }
                 }
                 override fun onFailure(c: Call<WindingEntrySaveResponse>, t: Throwable) {
-                    btnWindingSave.isEnabled = true; toast("Error: ${t.localizedMessage}")
+                    btnWindingSave.isEnabled = true
+                    ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
         } else {
@@ -441,11 +447,16 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
             ).enqueue(object : Callback<WindingEntrySaveResponse> {
                 override fun onResponse(c: Call<WindingEntrySaveResponse>, r: Response<WindingEntrySaveResponse>) {
                     btnWindingSave.isEnabled = true
-                    toast(r.body()?.message ?: "Saved")
-                    clearWindingForm(); loadWindingEntries()
+                    if (r.isSuccessful && r.body()?.status == "success") {
+                        ResultDialog.success(this@SpellWiseFrameEntryActivity, message = r.body()?.message ?: "Saved")
+                        clearWindingForm(); loadWindingEntries()
+                    } else {
+                        ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Save Failed", message = r.body()?.message ?: "Could not save the entry")
+                    }
                 }
                 override fun onFailure(c: Call<WindingEntrySaveResponse>, t: Throwable) {
-                    btnWindingSave.isEnabled = true; toast("Error: ${t.localizedMessage}")
+                    btnWindingSave.isEnabled = true
+                    ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
         }
@@ -472,9 +483,16 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
                 RetrofitClient.getApiService(this).deleteWindingEntry(id)
                     .enqueue(object : Callback<WindingEntrySaveResponse> {
                         override fun onResponse(c: Call<WindingEntrySaveResponse>, r: Response<WindingEntrySaveResponse>) {
-                            toast(r.body()?.message ?: "Deleted"); loadWindingEntries()
+                            if (r.isSuccessful && r.body()?.status == "success") {
+                                ResultDialog.success(this@SpellWiseFrameEntryActivity, message = r.body()?.message ?: "Deleted")
+                            } else {
+                                ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Delete Failed", message = r.body()?.message ?: "Could not delete the entry")
+                            }
+                            loadWindingEntries()
                         }
-                        override fun onFailure(c: Call<WindingEntrySaveResponse>, t: Throwable) { toast("Error") }
+                        override fun onFailure(c: Call<WindingEntrySaveResponse>, t: Throwable) {
+                            ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
+                        }
                     })
             }
             .setNegativeButton("Cancel", null)
@@ -507,10 +525,15 @@ class SpellWiseFrameEntryActivity : AppCompatActivity() {
             .enqueue(object : Callback<FrameEntriesSaveResponse> {
                 override fun onResponse(c: Call<FrameEntriesSaveResponse>, r: Response<FrameEntriesSaveResponse>) {
                     btnSave.isEnabled = true
-                    toast(r.body()?.message ?: if (r.isSuccessful) "Saved" else "Failed")
+                    if (r.isSuccessful) {
+                        ResultDialog.success(this@SpellWiseFrameEntryActivity, message = r.body()?.message ?: "Saved")
+                    } else {
+                        ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Save Failed", message = r.body()?.message ?: "Could not save the entries")
+                    }
                 }
                 override fun onFailure(c: Call<FrameEntriesSaveResponse>, t: Throwable) {
-                    btnSave.isEnabled = true; toast("Error: ${t.localizedMessage}")
+                    btnSave.isEnabled = true
+                    ResultDialog.error(this@SpellWiseFrameEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }

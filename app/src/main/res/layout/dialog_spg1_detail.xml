@@ -36,6 +36,9 @@
         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
             android:layout_weight="2" android:text="Net Wt"
             android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
+        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+            android:layout_weight="2" android:text="Doff Time"
+            android:textColor="#FFFFFF" android:textStyle="bold" android:textSize="12sp" android:gravity="center"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

@@ -46,7 +46,7 @@ class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
             tvTrollyNo.text = row.trollyName ?: (row.trollyId?.toString() ?: "-")
             tvGrossWt.text  = row.grossWeight?.let { fmt(it) } ?: "-"
             tvTareWt.text   = row.tareWeight?.let  { fmt(it) } ?: "-"
-            tvNetWt.text    = row.netWeight?.let   { fmt(it) } ?: "-"
+            tvNetWt.text    = row.netWeight?.let   { Math.round(it).toString() } ?: "-"
         }
 
         private fun fmt(v: Double) = String.format(Locale.getDefault(), "%.3f", v)

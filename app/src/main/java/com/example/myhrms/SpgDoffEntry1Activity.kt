@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.Spg1SummaryAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -451,16 +452,17 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             .enqueue(object : Callback<DoffSaveResponse> {
                 override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: if (response.isSuccessful) "Saved" else "Save failed"
-                    Toast.makeText(this@SpgDoffEntry1Activity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(this@SpgDoffEntry1Activity, message = response.body()?.message ?: "Saved")
                         clearForm()
                         loadSummary()
+                    } else {
+                        ResultDialog.error(this@SpgDoffEntry1Activity, title = "Save Failed", message = response.body()?.message ?: "Save failed")
                     }
                 }
                 override fun onFailure(call: Call<DoffSaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@SpgDoffEntry1Activity, "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@SpgDoffEntry1Activity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }
@@ -566,12 +568,16 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             private val tvGross   = v.findViewById<TextView>(R.id.tvGrossWt)
             private val tvTare    = v.findViewById<TextView>(R.id.tvTareWt)
             private val tvNet     = v.findViewById<TextView>(R.id.tvNetWt)
+            private val tvDoffTime = v.findViewById<TextView>(R.id.tvDoffTime)
             fun bind(seq: Int, t: DoffTransaction) {
                 tvSeq.text    = seq.toString()
                 tvTrolly.text = t.trollyName ?: "-"
                 tvGross.text  = t.grossWeight?.let { fmt(it) } ?: "-"
                 tvTare.text   = t.tareWeight?.let { fmt(it) } ?: "-"
-                tvNet.text    = t.netWeight?.let { fmt(it) } ?: "-"
+                tvNet.text    = t.netWeight?.let { Math.round(it).toString() } ?: "-"
+                // updated_date_time arrives as "YYYY-MM-DD HH:MM" — show only HH:MM
+                tvDoffTime.text = t.updatedDateTime?.substringAfter(' ', "")
+                    ?.takeIf { it.isNotBlank() } ?: "-"
             }
         }
     }

@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.WeightTransactionAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -159,18 +160,18 @@ class WeightEntryActivity : AppCompatActivity() {
                 override fun onResponse(call: Call<WeightSaveResponse>, response: Response<WeightSaveResponse>) {
                     btnSave.isEnabled = true
                     if (response.isSuccessful && response.body()?.status == "success") {
-                        Toast.makeText(this@WeightEntryActivity, "Saved successfully", Toast.LENGTH_SHORT).show()
+                        ResultDialog.success(this@WeightEntryActivity, message = response.body()?.message ?: "Saved successfully")
                         etGross.setText("")
                         etTare.setText("")
                         etNet.setText("")
                         reloadList()
                     } else {
-                        Toast.makeText(this@WeightEntryActivity, "Save failed", Toast.LENGTH_SHORT).show()
+                        ResultDialog.error(this@WeightEntryActivity, title = "Save Failed", message = response.body()?.message ?: "Could not save the entry")
                     }
                 }
                 override fun onFailure(call: Call<WeightSaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@WeightEntryActivity, "Network error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@WeightEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }
@@ -210,10 +211,15 @@ class WeightEntryActivity : AppCompatActivity() {
                 RetrofitClient.getApiService(this).deleteWeightTransaction(id)
                     .enqueue(object : Callback<WeightSaveResponse> {
                         override fun onResponse(call: Call<WeightSaveResponse>, response: Response<WeightSaveResponse>) {
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                ResultDialog.success(this@WeightEntryActivity, message = response.body()?.message ?: "Deleted")
+                            } else {
+                                ResultDialog.error(this@WeightEntryActivity, title = "Delete Failed", message = response.body()?.message ?: "Could not delete the record")
+                            }
                             reloadList()
                         }
                         override fun onFailure(call: Call<WeightSaveResponse>, t: Throwable) {
-                            Toast.makeText(this@WeightEntryActivity, "Delete failed", Toast.LENGTH_SHORT).show()
+                            ResultDialog.error(this@WeightEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                         }
                     })
             }

@@ -437,9 +437,10 @@ interface ApiService {
 
     @GET(ApiRoutes.DOFF_WE2_SUMMARY)
     fun getWe2GroupedSummary(
-        @Query("date")      date: String,
-        @Query("spell_id")  spellId: Int,
-        @Query("branch_id") branchId: Int
+        @Query("date")       date: String,
+        @Query("spell_id")   spellId: Int,
+        @Query("branch_id")  branchId: Int,
+        @Query("quality_id") qualityId: String? = null
     ): Call<We2GroupedResponse>
 
     @POST(ApiRoutes.DOFF_WE2)

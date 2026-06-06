@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -249,17 +250,17 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
                 .enqueue(object : Callback<SpreaderIssueSaveResponse> {
                     override fun onResponse(call: Call<SpreaderIssueSaveResponse>, response: Response<SpreaderIssueSaveResponse>) {
                         btnSave.isEnabled = true
-                        val msg = response.body()?.message ?: if (response.isSuccessful) "Updated" else "Update failed"
-                        Toast.makeText(this@SpreaderIssueEntryActivity, msg, Toast.LENGTH_SHORT).show()
                         if (response.isSuccessful && response.body()?.status == "success") {
+                            ResultDialog.success(this@SpreaderIssueEntryActivity, message = response.body()?.message ?: "Updated")
                             clearForm()
                             loadEntries()
+                        } else {
+                            ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Update Failed", message = response.body()?.message ?: "Could not update the entry")
                         }
                     }
                     override fun onFailure(call: Call<SpreaderIssueSaveResponse>, t: Throwable) {
                         btnSave.isEnabled = true
-                        Toast.makeText(this@SpreaderIssueEntryActivity,
-                            "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                        ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                     }
                 })
             return
@@ -278,17 +279,17 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
             .enqueue(object : Callback<SpreaderIssueSaveResponse> {
                 override fun onResponse(call: Call<SpreaderIssueSaveResponse>, response: Response<SpreaderIssueSaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: if (response.isSuccessful) "Saved" else "Save failed"
-                    Toast.makeText(this@SpreaderIssueEntryActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(this@SpreaderIssueEntryActivity, message = response.body()?.message ?: "Saved")
                         clearForm()
                         loadEntries()
+                    } else {
+                        ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Save Failed", message = response.body()?.message ?: "Could not save the entry")
                     }
                 }
                 override fun onFailure(call: Call<SpreaderIssueSaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@SpreaderIssueEntryActivity,
-                        "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }
@@ -322,14 +323,16 @@ class SpreaderIssueEntryActivity : AppCompatActivity() {
                 RetrofitClient.getApiService(this).deleteSpreaderIssueEntry(id)
                     .enqueue(object : Callback<SpreaderIssueSaveResponse> {
                         override fun onResponse(call: Call<SpreaderIssueSaveResponse>, response: Response<SpreaderIssueSaveResponse>) {
-                            Toast.makeText(this@SpreaderIssueEntryActivity,
-                                response.body()?.message ?: "Deleted", Toast.LENGTH_SHORT).show()
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                ResultDialog.success(this@SpreaderIssueEntryActivity, message = response.body()?.message ?: "Deleted")
+                            } else {
+                                ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Delete Failed", message = response.body()?.message ?: "Could not delete the entry")
+                            }
                             if (editingEntryId == id) clearForm()
                             loadEntries()
                         }
                         override fun onFailure(call: Call<SpreaderIssueSaveResponse>, t: Throwable) {
-                            Toast.makeText(this@SpreaderIssueEntryActivity,
-                                "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            ResultDialog.error(this@SpreaderIssueEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                         }
                     })
             }

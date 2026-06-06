@@ -18,6 +18,7 @@ import com.example.myhrms.adapter.QualityShiftReportAdapter
 import com.example.myhrms.adapter.We2DetailAdapter
 import com.example.myhrms.adapter.We2SummaryAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -449,24 +450,18 @@ class WindingEntryActivity : AppCompatActivity() {
         qualityList.firstOrNull { it.qualityId == qualityId }
             ?.spoolCop?.trim()?.uppercase()?.takeIf { it.isNotEmpty() }
 
-    /** The spool_cop ('S'/'C') common to the currently selected qualities. */
+    /** The spool_cop ('S'/'C') of the currently selected quality. */
     private fun selectedSpoolCop(): String? =
         selectedQualityIds.firstOrNull()?.let { spoolCopOf(it) }
 
-    // Multi-select: all selected qualities must share the same spool_cop.
+    // Single-select: tapping a quality selects only that one (replacing any
+    // prior selection); tapping the selected one again clears it.
     // Selecting drives the auto S/C toggle and filters the employee buttons.
     private fun onQualitySelected(q: We2Quality) {
         if (selectedQualityIds.contains(q.qualityId)) {
-            selectedQualityIds.remove(q.qualityId)
+            selectedQualityIds.clear()
         } else {
-            val current = selectedSpoolCop()
-            val cop     = spoolCopOf(q.qualityId)
-            if (current != null && cop != null && cop != current) {
-                Toast.makeText(
-                    this, "Cannot select S and C qualities together", Toast.LENGTH_SHORT
-                ).show()
-                return
-            }
+            selectedQualityIds.clear()
             selectedQualityIds.add(q.qualityId)
         }
         refreshQualityButtonColors()
@@ -474,6 +469,8 @@ class WindingEntryActivity : AppCompatActivity() {
         selectType(selectedSpoolCop() ?: "S", focusTrolly = false)
         // Show only employees mapped to the selected qualities
         renderEmployeeButtons()
+        // Quality changed → refresh the summary (filtered by selected qualities)
+        loadSummary()
     }
 
     private fun refreshQualityButtonColors() {
@@ -727,16 +724,28 @@ class WindingEntryActivity : AppCompatActivity() {
             .enqueue(object : Callback<We2SaveResponse> {
                 override fun onResponse(call: Call<We2SaveResponse>, response: Response<We2SaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: if (response.isSuccessful) "Saved" else "Save failed"
-                    Toast.makeText(this@WindingEntryActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(
+                            this@WindingEntryActivity,
+                            message = response.body()?.message ?: "Saved successfully"
+                        )
                         clearForm()
                         loadSummary()
+                    } else {
+                        ResultDialog.error(
+                            this@WindingEntryActivity,
+                            title   = "Save Failed",
+                            message = response.body()?.message ?: "Could not save the entry"
+                        )
                     }
                 }
                 override fun onFailure(call: Call<We2SaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@WindingEntryActivity, "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(
+                        this@WindingEntryActivity,
+                        title   = "Error",
+                        message = t.localizedMessage ?: "Network error"
+                    )
                 }
             })
     }
@@ -773,10 +782,15 @@ class WindingEntryActivity : AppCompatActivity() {
         tvSummaryEmpty.visibility = View.GONE
         rvSummary.visibility      = View.GONE
 
+        // When qualities are selected, filter the summary by them; otherwise
+        // the summary is based on date+spell only.
+        val qualityCsv = selectedQualityIds.joinToString(",").ifEmpty { null }
+
         RetrofitClient.getApiService(this).getWe2GroupedSummary(
-            date     = entryDate,
-            spellId  = spellId,
-            branchId = branchId
+            date      = entryDate,
+            spellId   = spellId,
+            branchId  = branchId,
+            qualityId = qualityCsv
         ).enqueue(object : Callback<We2GroupedResponse> {
             override fun onResponse(call: Call<We2GroupedResponse>, response: Response<We2GroupedResponse>) {
                 pbSummary.visibility = View.GONE
@@ -837,7 +851,7 @@ class WindingEntryActivity : AppCompatActivity() {
         val id = row.id ?: return
         AlertDialog.Builder(this)
             .setTitle("Delete entry?")
-            .setMessage("Remove ${row.empName ?: row.empCode} (Net: ${row.netWeight} kg)?")
+            .setMessage("Remove ${row.empName ?: row.empCode} (Net: ${row.netWeight?.let { Math.round(it) } ?: "-"} kg)?")
             .setPositiveButton("Delete") { _, _ ->
                 RetrofitClient.getApiService(this).deleteWe2(id)
                     .enqueue(object : Callback<We2SaveResponse> {

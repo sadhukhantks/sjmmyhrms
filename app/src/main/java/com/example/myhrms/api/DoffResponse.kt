@@ -106,7 +106,8 @@ data class DoffTransaction(
     @SerializedName("tare_weight")   val tareWeight: Double?,
     @SerializedName("net_weight")    val netWeight: Double?,
     @SerializedName("weight_type")   val weightType: String?,
-    @SerializedName("branch_id")     val branchId: Int?
+    @SerializedName("branch_id")     val branchId: Int?,
+    @SerializedName("updated_date_time") val updatedDateTime: String?
 )
 
 data class DoffListResponse(

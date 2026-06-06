@@ -75,7 +75,7 @@ object ApiRoutes {
     const val DOFF_WE2            = "doff/winding-entry-2"
     const val DOFF_WE2_TROLLY     = "doff/winding-entry-2-trolly"
     const val DOFF_WE2_QUALITY_SHIFT_REPORT = "doff/winding-entry-2-quality-shift-report"
-    const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail-by-emp"
+    const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail"
     const val DOFF_WE2_SUMMARY    = "doff/winding-entry-2-summary"
     const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
 

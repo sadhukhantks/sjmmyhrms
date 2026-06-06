@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.DoffTransactionAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -402,17 +403,17 @@ class SpinningDoffActivity : AppCompatActivity() {
             .enqueue(object : Callback<DoffSaveResponse> {
                 override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: if (response.isSuccessful) "Saved" else "Failed"
-                    Toast.makeText(this@SpinningDoffActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(this@SpinningDoffActivity, message = response.body()?.message ?: "Saved")
                         clearForm(keepSpell = true)
                         reloadList()
+                    } else {
+                        ResultDialog.error(this@SpinningDoffActivity, title = "Save Failed", message = response.body()?.message ?: "Could not save the entry")
                     }
                 }
                 override fun onFailure(call: Call<DoffSaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@SpinningDoffActivity,
-                        "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@SpinningDoffActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }
@@ -508,13 +509,15 @@ class SpinningDoffActivity : AppCompatActivity() {
                 RetrofitClient.getApiService(this).deleteDoffTransaction(id)
                     .enqueue(object : Callback<DoffSaveResponse> {
                         override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
-                            Toast.makeText(this@SpinningDoffActivity,
-                                response.body()?.message ?: "Deleted", Toast.LENGTH_SHORT).show()
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                ResultDialog.success(this@SpinningDoffActivity, message = response.body()?.message ?: "Deleted")
+                            } else {
+                                ResultDialog.error(this@SpinningDoffActivity, title = "Delete Failed", message = response.body()?.message ?: "Could not delete the entry")
+                            }
                             reloadList()
                         }
                         override fun onFailure(call: Call<DoffSaveResponse>, t: Throwable) {
-                            Toast.makeText(this@SpinningDoffActivity,
-                                "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            ResultDialog.error(this@SpinningDoffActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                         }
                     })
             }

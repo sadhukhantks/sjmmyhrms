@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.DrawingSummaryAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -378,18 +379,19 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
             .enqueue(object : Callback<DrawingEntrySaveResponse> {
                 override fun onResponse(call: Call<DrawingEntrySaveResponse>, response: Response<DrawingEntrySaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: "Entry saved"
-                    Toast.makeText(this@DrawingMeterEntryActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(this@DrawingMeterEntryActivity, message = response.body()?.message ?: "Entry saved")
                         // Keep shed selection + machine buttons + hours.
                         // Only reset per-entry fields so user can pick the next machine.
                         clearEntryFieldsKeepShedAndMachines()
                         loadSummary()
+                    } else {
+                        ResultDialog.error(this@DrawingMeterEntryActivity, title = "Save Failed", message = response.body()?.message ?: "Could not save the entry")
                     }
                 }
                 override fun onFailure(call: Call<DrawingEntrySaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@DrawingMeterEntryActivity, "Save failed: ${t.message}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@DrawingMeterEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }

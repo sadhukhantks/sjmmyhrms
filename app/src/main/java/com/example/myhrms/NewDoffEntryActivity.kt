@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.myhrms.adapter.DoffSummaryAdapter
 import com.example.myhrms.api.*
+import com.example.myhrms.ui.ResultDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -423,17 +424,17 @@ class NewDoffEntryActivity : AppCompatActivity() {
             .enqueue(object : Callback<DoffSaveResponse> {
                 override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
                     btnSave.isEnabled = true
-                    val msg = response.body()?.message ?: if (response.isSuccessful) "Saved" else "Failed"
-                    Toast.makeText(this@NewDoffEntryActivity, msg, Toast.LENGTH_SHORT).show()
                     if (response.isSuccessful && response.body()?.status == "success") {
+                        ResultDialog.success(this@NewDoffEntryActivity, message = response.body()?.message ?: "Saved")
                         clearAfterSave(keepDateSpell = true)
                         reloadSummary()
+                    } else {
+                        ResultDialog.error(this@NewDoffEntryActivity, title = "Save Failed", message = response.body()?.message ?: "Could not save the entry")
                     }
                 }
                 override fun onFailure(call: Call<DoffSaveResponse>, t: Throwable) {
                     btnSave.isEnabled = true
-                    Toast.makeText(this@NewDoffEntryActivity,
-                        "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                    ResultDialog.error(this@NewDoffEntryActivity, title = "Error", message = t.localizedMessage ?: "Network error")
                 }
             })
     }
