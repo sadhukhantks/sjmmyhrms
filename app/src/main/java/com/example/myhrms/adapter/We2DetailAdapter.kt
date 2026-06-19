@@ -37,6 +37,7 @@ class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
         private val tvTrollyNo: TextView = itemView.findViewById(R.id.tvTrollyNo)
         private val tvGrossWt : TextView = itemView.findViewById(R.id.tvGrossWt)
         private val tvTareWt  : TextView = itemView.findViewById(R.id.tvTareWt)
+        private val tvNoOfSpools : TextView = itemView.findViewById(R.id.tvNoOfSpools)
         private val tvNetWt   : TextView = itemView.findViewById(R.id.tvNetWt)
 
         fun bind(seq: Int, row: We2SummaryRow) {
@@ -46,6 +47,7 @@ class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
             tvTrollyNo.text = row.trollyName ?: (row.trollyId?.toString() ?: "-")
             tvGrossWt.text  = row.grossWeight?.let { fmt(it) } ?: "-"
             tvTareWt.text   = row.tareWeight?.let  { fmt(it) } ?: "-"
+            tvNoOfSpools.text = row.noOfSpools?.toString() ?: "-"
             tvNetWt.text    = row.netWeight?.let   { Math.round(it).toString() } ?: "-"
         }
 

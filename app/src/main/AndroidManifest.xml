@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
@@ -108,6 +110,22 @@
             android:exported="false" />
 
         <activity
+            android:name=".ContWindingEntryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".MachineActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".NewMachineActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".HandsReportActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".DrawingMeterEntryActivity"
             android:exported="false" />
 
@@ -141,6 +159,10 @@
 
         <activity
             android:name=".JuteReceivedActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".JuteMukamReceivedActivity"
             android:exported="false" />
 
         <activity

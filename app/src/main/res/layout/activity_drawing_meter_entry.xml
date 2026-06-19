@@ -429,11 +429,35 @@
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="2"
+                            android:layout_weight="1.8"
                             android:text="Machine"
                             android:textColor="#1565C0"
                             android:textSize="12sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.2"
+                            android:text="Hours"
+                            android:textColor="#1565C0"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="end"
+                            android:paddingEnd="6dp"
+                            android:paddingStart="4dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.2"
+                            android:text="Const"
+                            android:textColor="#1565C0"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="end"
+                            android:paddingEnd="6dp"
+                            android:paddingStart="4dp" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -444,20 +468,20 @@
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:gravity="end"
-                            android:paddingEnd="8dp"
-                            android:paddingStart="8dp" />
+                            android:paddingEnd="6dp"
+                            android:paddingStart="4dp" />
 
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
+                            android:layout_weight="1.2"
                             android:text="Eff%"
                             android:textColor="#1565C0"
                             android:textSize="12sp"
                             android:textStyle="bold"
                             android:gravity="end"
                             android:paddingEnd="0dp"
-                            android:paddingStart="8dp" />
+                            android:paddingStart="4dp" />
 
                     </LinearLayout>
 

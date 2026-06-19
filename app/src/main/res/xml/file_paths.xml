@@ -2,5 +2,6 @@
 <paths>
     <cache-path name="camera_photos" path="photos/" />
     <files-path name="face_photos" path="face_photos/" />
+    <cache-path name="pdfs" path="pdfs/" />
 </paths>
 

@@ -39,6 +39,7 @@ class Spg1SummaryAdapter(
         private val tvNoOfDoff  : TextView = itemView.findViewById(R.id.tvNoOfDoff)
         private val tvEbNo      : TextView = itemView.findViewById(R.id.tvEbNo)
         private val tvEmpName   : TextView = itemView.findViewById(R.id.tvEmpName)
+        private val tvQuality   : TextView = itemView.findViewById(R.id.tvQuality)
 
         fun bind(row: Spg1SummaryRow, onClick: (Spg1SummaryRow) -> Unit) {
             tvMachineNo.text = row.mechPostingCode?.toString()
@@ -54,6 +55,7 @@ class Spg1SummaryAdapter(
 
             tvEbNo.text    = row.empCode?.takeIf { it.isNotBlank() } ?: "-"
             tvEmpName.text = row.empName?.takeIf { it.isNotBlank() } ?: "-"
+            tvQuality.text = row.qualityName?.takeIf { it.isNotBlank() } ?: "-"
 
             itemView.setOnClickListener { onClick(row) }
         }

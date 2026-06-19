@@ -92,7 +92,10 @@ data class UpdateAttendanceRequest(
     val idleHours: Double?,
 
     @SerializedName("machine_ids")
-    val machineIds: List<Int>? = null
+    val machineIds: List<Int>? = null,
+
+    @SerializedName("user_id")
+    val userId: Int? = null
 )
 
 data class UpdateAttendanceResponse(

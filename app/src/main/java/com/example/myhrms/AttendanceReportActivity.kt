@@ -620,7 +620,9 @@ class AttendanceReportActivity : AppCompatActivity() {
                 shiftHours     = record.shiftHours,
                 workingHours   = workingHours,
                 idleHours      = idleHours,
-                machineIds     = machineIds
+                machineIds     = machineIds,
+                userId         = getSharedPreferences("LoginPrefs", MODE_PRIVATE)
+                    .getInt("user_id", 0).takeIf { it > 0 }
             )
 
             btnSave.isEnabled = false

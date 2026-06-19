@@ -387,7 +387,9 @@ class AttendanceReportAdapter(
             shiftHours = record.shiftHours,
             workingHours = state.hours,
             idleHours = record.idleHours,
-            machineIds = state.selectedMachineIds.toList()
+            machineIds = state.selectedMachineIds.toList(),
+            userId = ctx.getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
+                .getInt("user_id", 0).takeIf { it > 0 }
         )
         RetrofitClient.getApiService(ctx).updateAttendance(record.id, request)
             .enqueue(object : Callback<UpdateAttendanceResponse> {

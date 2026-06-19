@@ -1374,6 +1374,40 @@
                                     android:src="@drawable/ic_chevron_right"
                                     app:tint="#80CBC4" />
                             </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/menuJuteMukamReceived"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Jute Mukam Received" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Jute Mukam Received"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
                         </LinearLayout>
                     </LinearLayout>
 
@@ -1762,37 +1796,250 @@
                     </LinearLayout>
 
                     <LinearLayout
-                        android:id="@+id/menuWindingEntry"
                         android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_submenu_item"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
                         android:layout_marginTop="4dp">
 
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:src="@drawable/ic_employee"
-                            app:tint="#90CAF9"
-                            android:contentDescription="Winding Entry" />
+                        <!-- Winding Entry Header (expandable) -->
+                        <LinearLayout
+                            android:id="@+id/headerWindingEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp">
 
-                        <TextView
-                            android:layout_width="0dp"
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Winding Entry" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Winding Entry"
+                                android:textColor="#90CAF9"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/arrowWindingEntry"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_expand_more"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Expand" />
+                        </LinearLayout>
+
+                        <!-- Winding Entry sub-items -->
+                        <LinearLayout
+                            android:id="@+id/subMenuWindingEntry"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Winding Entry"
-                            android:textColor="#E0E0E0"
-                            android:textSize="15sp" />
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:paddingStart="16dp"
+                            android:paddingTop="2dp">
 
-                        <ImageView
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:src="@drawable/ic_chevron_right"
-                            app:tint="#90CAF9" />
+                            <LinearLayout
+                                android:id="@+id/menuWindingEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Winding Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Winding Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/menuContWindingEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_employee"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Cont Winding Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Cont Winding Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Others Entry group (grp_others_entry) -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginTop="4dp">
+
+                        <!-- Others Entry Header (expandable) -->
+                        <LinearLayout
+                            android:id="@+id/headerOthersEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_submenu_item"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="16dp"
+                            android:paddingEnd="16dp">
+
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:src="@drawable/ic_employee"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Others Entry" />
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:layout_marginStart="12dp"
+                                android:text="Others Entry"
+                                android:textColor="#90CAF9"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <ImageView
+                                android:id="@+id/arrowOthersEntry"
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@drawable/ic_expand_more"
+                                app:tint="#90CAF9"
+                                android:contentDescription="Expand" />
+                        </LinearLayout>
+
+                        <!-- Others Entry sub-items -->
+                        <LinearLayout
+                            android:id="@+id/subMenuOthersEntry"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:paddingStart="16dp"
+                            android:paddingTop="2dp">
+
+                            <LinearLayout
+                                android:id="@+id/menuMechineEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_add"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="Machine Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="Machine Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:id="@+id/menuNewMechineEntry"
+                                android:layout_width="match_parent"
+                                android:layout_height="48dp"
+                                android:background="@drawable/bg_submenu_item"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingStart="16dp"
+                                android:paddingEnd="16dp"
+                                android:layout_marginTop="4dp">
+
+                                <ImageView
+                                    android:layout_width="22dp"
+                                    android:layout_height="22dp"
+                                    android:src="@drawable/ic_add"
+                                    app:tint="#80CBC4"
+                                    android:contentDescription="New Machine Entry" />
+
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginStart="12dp"
+                                    android:text="New Machine Entry"
+                                    android:textColor="#E0E0E0"
+                                    android:textSize="15sp" />
+
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@drawable/ic_chevron_right"
+                                    app:tint="#80CBC4" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
 
                     <LinearLayout

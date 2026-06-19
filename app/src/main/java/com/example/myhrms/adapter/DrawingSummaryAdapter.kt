@@ -33,13 +33,24 @@ class DrawingSummaryAdapter : RecyclerView.Adapter<DrawingSummaryAdapter.ViewHol
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val tvMcName: TextView = view.findViewById(R.id.tvMcName)
+        private val tvHours: TextView = view.findViewById(R.id.tvHours)
+        private val tvConst: TextView = view.findViewById(R.id.tvConst)
         private val tvUnit: TextView = view.findViewById(R.id.tvUnit)
         private val tvEff: TextView = view.findViewById(R.id.tvEff)
 
         fun bind(item: DrawingSummaryItem) {
             tvMcName.text = item.mcShortName ?: "—"
+            tvHours.text = fmtNum(item.runningHours)
+            tvConst.text = (item.constMeter?.toInt() ?: 0).toString()
             tvUnit.text = (item.unit?.toInt() ?: 0).toString()  // Show as integer
             tvEff.text = String.format(Locale.getDefault(), "%.2f%%", item.eff ?: 0.0)
+        }
+
+        /** Whole numbers show without a decimal (8), fractional with up to 2 (7.5). */
+        private fun fmtNum(value: Double?): String {
+            val v = value ?: 0.0
+            return if (v == v.toLong().toDouble()) v.toLong().toString()
+            else String.format(Locale.getDefault(), "%.2f", v)
         }
     }
 }

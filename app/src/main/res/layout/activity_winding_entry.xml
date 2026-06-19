@@ -140,18 +140,12 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp"/>
 
-                    <HorizontalScrollView
+                    <com.example.myhrms.FlowLayout
+                        android:id="@+id/llQualityButtons"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scrollbars="none"
-                        android:layout_marginBottom="4dp">
-                        <LinearLayout
-                            android:id="@+id/llQualityButtons"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingBottom="4dp"/>
-                    </HorizontalScrollView>
+                        android:layout_marginBottom="4dp"
+                        android:paddingBottom="4dp"/>
 
                     <TextView
                         android:id="@+id/tvQualityStatus"
@@ -173,18 +167,12 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp"/>
 
-                    <HorizontalScrollView
+                    <com.example.myhrms.FlowLayout
+                        android:id="@+id/llEmpButtons"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scrollbars="none"
-                        android:layout_marginBottom="4dp">
-                        <LinearLayout
-                            android:id="@+id/llEmpButtons"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingBottom="4dp"/>
-                    </HorizontalScrollView>
+                        android:layout_marginBottom="4dp"
+                        android:paddingBottom="4dp"/>
 
                     <TextView
                         android:id="@+id/tvEmpStatus"
@@ -195,6 +183,14 @@
                         android:textColor="#777777"
                         android:layout_marginBottom="10dp"
                         android:visibility="gone"/>
+
+                    <!-- Per-employee spool counts (built dynamically per selected employee) -->
+                    <LinearLayout
+                        android:id="@+id/llEmpSpools"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="6dp"/>
 
                     <!-- ROW 4: (S) (C) buttons fit-to-width  +  Trolly No -->
                     <LinearLayout
@@ -311,18 +307,12 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp"/>
 
-                    <HorizontalScrollView
+                    <com.example.myhrms.FlowLayout
+                        android:id="@+id/llSpoolButtons"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scrollbars="none"
-                        android:layout_marginBottom="4dp">
-                        <LinearLayout
-                            android:id="@+id/llSpoolButtons"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingBottom="4dp"/>
-                    </HorizontalScrollView>
+                        android:layout_marginBottom="4dp"
+                        android:paddingBottom="4dp"/>
 
                     <TextView
                         android:id="@+id/tvSpoolStatus"
@@ -503,6 +493,17 @@
                         </LinearLayout>
 
                         <ImageView
+                            android:id="@+id/ivPrintSummary"
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/ic_print"
+                            android:padding="4dp"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Print Summary"
+                            app:tint="#1565C0"/>
+
+                        <ImageView
                             android:id="@+id/ivQualityShiftReport"
                             android:layout_width="32dp"
                             android:layout_height="32dp"
@@ -524,6 +525,10 @@
                         android:paddingStart="8dp"
                         android:paddingEnd="8dp">
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="0.7" android:text="Sl"
+                            android:textColor="#FFFFFF" android:textStyle="bold"
+                            android:textSize="12sp" android:gravity="center"/>
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="2" android:text="Emp Name"
                             android:textColor="#FFFFFF" android:textStyle="bold"
                             android:textSize="12sp" android:gravity="center"/>
@@ -533,6 +538,10 @@
                             android:textSize="12sp" android:gravity="center"/>
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"
                             android:layout_weight="3" android:text="Weights"
+                            android:textColor="#FFFFFF" android:textStyle="bold"
+                            android:textSize="12sp" android:gravity="center"/>
+                        <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                            android:layout_weight="1" android:text="Spools"
                             android:textColor="#FFFFFF" android:textStyle="bold"
                             android:textSize="12sp" android:gravity="center"/>
                         <TextView android:layout_width="0dp" android:layout_height="wrap_content"

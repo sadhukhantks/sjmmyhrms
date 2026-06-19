@@ -30,17 +30,24 @@ class We2SummaryAdapter(
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: VH, position: Int) {
-        holder.bind(items[position], onClick)
+        holder.bind(items[position], position + 1, onClick)
     }
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val tvSlNo     : TextView = itemView.findViewById(R.id.tvSlNo)
         private val tvEmpName  : TextView = itemView.findViewById(R.id.tvEmpName)
+        private val tvEbNo     : TextView = itemView.findViewById(R.id.tvEbNo)
         private val tvQuality  : TextView = itemView.findViewById(R.id.tvQuality)
         private val tvWeights  : TextView = itemView.findViewById(R.id.tvWeights)
+        private val tvNoOfSpools : TextView = itemView.findViewById(R.id.tvNoOfSpools)
         private val tvNoOfDoff : TextView = itemView.findViewById(R.id.tvNoOfDoff)
 
-        fun bind(row: We2GroupedRow, onClick: (We2GroupedRow) -> Unit) {
+        fun bind(row: We2GroupedRow, slNo: Int, onClick: (We2GroupedRow) -> Unit) {
+            tvSlNo.text     = slNo.toString()
             tvEmpName.text  = row.empName?.takeIf { it.isNotBlank() } ?: row.empCode ?: "-"
+            val ebNo = row.empCode?.takeIf { it.isNotBlank() }
+            tvEbNo.text = ebNo ?: ""
+            tvEbNo.visibility = if (ebNo != null) View.VISIBLE else View.GONE
             tvQuality.text  = row.qualityName?.takeIf { it.isNotBlank() } ?: "-"
 
             val wtParts = row.weights?.map { fmt(it) } ?: emptyList()
@@ -48,6 +55,7 @@ class We2SummaryAdapter(
             tvWeights.text = if (wtParts.isEmpty()) total
                              else "${wtParts.joinToString("+")} = $total"
 
+            tvNoOfSpools.text = row.noOfSpools.toString()
             tvNoOfDoff.text = row.noOfDoff.toString()
             itemView.setOnClickListener { onClick(row) }
         }

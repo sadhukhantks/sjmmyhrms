@@ -350,6 +350,24 @@ interface ApiService {
     @DELETE(ApiRoutes.DOFF_WINDING_ENTRY_DETAIL)
     fun deleteWindingEntry(@Path("id") id: Int): Call<WindingEntrySaveResponse>
 
+    // ── Continuous Winding Entry (tbl_cont_widning_entry) ──────────────────────
+    @GET(ApiRoutes.CONT_WINDING_ENTRY)
+    fun getContWindingEntries(
+        @Query("date") date: String
+    ): Call<ContWindingEntriesResponse>
+
+    @POST(ApiRoutes.CONT_WINDING_ENTRY)
+    fun saveContWindingEntry(@Body req: ContWindingSaveRequest): Call<ContWindingSaveResponse>
+
+    @PUT(ApiRoutes.CONT_WINDING_ENTRY_ID)
+    fun updateContWindingEntry(
+        @Path("id") id: Int,
+        @Body req: ContWindingUpdateRequest
+    ): Call<ContWindingSaveResponse>
+
+    @DELETE(ApiRoutes.CONT_WINDING_ENTRY_ID)
+    fun deleteContWindingEntry(@Path("id") id: Int): Call<ContWindingSaveResponse>
+
     // ── On Boarding ───────────────────────────────────────────────
     @GET(ApiRoutes.ONBOARDING_EMPLOYEE)
     fun getOnBoardingEmployee(
@@ -630,6 +648,27 @@ interface ApiService {
     @DELETE(ApiRoutes.JUTE_RECEIVED_ENTRY_ID)
     fun deleteJuteReceivedEntry(@Path("id") id: Int): Call<JuteReceivedSaveResponse>
 
+    // ── Jute Mukam Received ───────────────────────────────────────────────────
+    @GET(ApiRoutes.JUTE_MUKAM_RECVD_SETUP)
+    fun getJuteMukamRecvdSetup(
+        @Query("co_id") coId: Int? = null,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<JuteMukamRecvdSetupResponse>
+
+    @GET(ApiRoutes.JUTE_MUKAM_RECVD_ENTRY_ID)
+    fun getJuteMukamRecvdEntry(
+        @Path("recvd_no") recvdNo: Int
+    ): Call<JuteMukamRecvdEntryResponse>
+
+    @POST(ApiRoutes.JUTE_MUKAM_RECVD_ENTRY)
+    fun saveJuteMukamRecvdEntry(@Body req: JuteMukamRecvdSaveRequest): Call<JuteMukamRecvdSaveResponse>
+
+    @PUT(ApiRoutes.JUTE_MUKAM_RECVD_ENTRY_ID)
+    fun updateJuteMukamRecvdEntry(
+        @Path("recvd_no") recvdNo: Int,
+        @Body req: JuteMukamRecvdSaveRequest
+    ): Call<JuteMukamRecvdSaveResponse>
+
     // ── Finishing → Other Entries ─────────────────────────────────────────────
     @GET(ApiRoutes.FINISHING_ENTRY)
     fun getFinishingEntries(
@@ -648,6 +687,38 @@ interface ApiService {
 
     @DELETE(ApiRoutes.FINISHING_ENTRY_ID)
     fun deleteFinishingEntry(@Path("id") id: Int): Call<FinishingSaveResponse>
+
+    // ── Daily Machine Summary (tbl_daily_summ_mechine_data) ────────────────────
+    @GET(ApiRoutes.MACHINE_SUMMARY)
+    fun getMachineSummaries(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<MachineSummaryListResponse>
+
+    @POST(ApiRoutes.MACHINE_SUMMARY)
+    fun saveMachineSummary(@Body req: MachineSummarySaveRequest): Call<MachineSummarySaveResponse>
+
+    @PUT(ApiRoutes.MACHINE_SUMMARY_ID)
+    fun updateMachineSummary(
+        @Path("id") id: Int,
+        @Body req: MachineSummaryUpdateRequest
+    ): Call<MachineSummarySaveResponse>
+
+    @DELETE(ApiRoutes.MACHINE_SUMMARY_ID)
+    fun deleteMachineSummary(@Path("id") id: Int): Call<MachineSummarySaveResponse>
+
+    // Departments (dept_mst) that have machines — for the New Machine Entry grid.
+    @GET(ApiRoutes.MACHINE_DEPARTMENTS)
+    fun getMachineDepartments(
+        @Query("branch_id") branchId: Int
+    ): Call<DepartmentResponse>
+
+    // Hands Report (vw_man_machine) for a date + branch.
+    @GET(ApiRoutes.HANDS_REPORT)
+    fun getHandsReport(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<HandsReportResponse>
 
     // ── Bales Production → Roll Stock ─────────────────────────────────────────
     @GET(ApiRoutes.BALESPROD_MC_CODES)

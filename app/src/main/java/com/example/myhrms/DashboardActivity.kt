@@ -858,6 +858,7 @@ class DashboardActivity : AppCompatActivity() {
             intent.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(intent)
         }
+
     }
 
     private fun setupProductionMenu() {
@@ -877,6 +878,12 @@ class DashboardActivity : AppCompatActivity() {
         }
         binding.menuAssortingEntry.setOnClickListener {
             val i = Intent(this, AssortingEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuJuteMukamReceived.setOnClickListener {
+            val i = Intent(this, JuteMukamReceivedActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
@@ -940,8 +947,35 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+        // Winding Entry expandable group
+        binding.headerWindingEntry.setOnClickListener {
+            toggleSubMenu(binding.subMenuWindingEntry, binding.arrowWindingEntry)
+        }
         binding.menuWindingEntry.setOnClickListener {
             val i = Intent(this, WindingEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuContWindingEntry.setOnClickListener {
+            val i = Intent(this, ContWindingEntryActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+
+        // Others Entry expandable group (under Production)
+        binding.headerOthersEntry.setOnClickListener {
+            toggleSubMenu(binding.subMenuOthersEntry, binding.arrowOthersEntry)
+        }
+        binding.menuMechineEntry.setOnClickListener {
+            val i = Intent(this, MachineActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
+        binding.menuNewMechineEntry.setOnClickListener {
+            val i = Intent(this, NewMachineActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
@@ -1006,10 +1040,12 @@ class DashboardActivity : AppCompatActivity() {
         val groups = mapOf(
             "grp_attendance"      to GroupViews(binding.menuAttendance, null),
             "grp_other_entries"   to GroupViews(binding.headerOtherEntries, binding.subMenuOtherEntries),
+            "grp_others_entry"    to GroupViews(binding.headerOthersEntry, binding.subMenuOthersEntry),
             "grp_production"      to GroupViews(binding.menuProduction, null),
             "grp_jute"            to GroupViews(binding.headerJute, binding.subMenuJute),
             "grp_spreader_entry"  to GroupViews(binding.headerSpreaderEntry, binding.subMenuSpreaderEntry),
             "grp_doff_entry"      to GroupViews(binding.headerDoffEntry, binding.subMenuDoffEntry),
+            "grp_winding_entry"   to GroupViews(binding.headerWindingEntry, binding.subMenuWindingEntry),
             "grp_finishing_entry" to GroupViews(binding.headerFinishingEntry, binding.subMenuFinishingEntry),
             "grp_stocks"          to GroupViews(binding.headerStocks, binding.subMenuStocks),
         )
@@ -1045,8 +1081,11 @@ class DashboardActivity : AppCompatActivity() {
             "menu_attendance_entry"       to binding.menuAttendanceEntry,
             "menu_attendance_reports"     to binding.menuAttendanceReports,
             "menu_leave_entries"          to binding.menuLeaveEntries,
+            "menu_mechine_entry"          to binding.menuMechineEntry,
+            "menu_newmechine_entry"       to binding.menuNewMechineEntry,
             "menu_jute_received"          to binding.menuJuteReceived,
             "menu_assorting_entry"        to binding.menuAssortingEntry,
+            "menu_jute_mukam_received"    to binding.menuJuteMukamReceived,
             "menu_production_entry"       to binding.menuProductionEntry,
             "menu_issue_entry"            to binding.menuIssueEntry,
             "menu_drawing_meter_entry"    to binding.menuDrawingMeterEntry,
@@ -1056,6 +1095,7 @@ class DashboardActivity : AppCompatActivity() {
             "menu_spg_doff_entry1"        to binding.menuSpgDoffEntry1,
             "menu_spg_running_hours"      to binding.menuSpgRunningHours,
             "menu_winding_entry"          to binding.menuWindingEntry,
+            "menu_cont_winding_entry"     to binding.menuContWindingEntry,
             "menu_weaving_entry"          to binding.menuWeavingEntry,
             "menu_other_entries"          to binding.menuOtherEntries,
             "menu_bales_production_entry" to binding.menuBalesProductionEntry,

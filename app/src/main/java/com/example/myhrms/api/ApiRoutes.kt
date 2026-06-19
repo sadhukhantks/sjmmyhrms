@@ -62,6 +62,10 @@ object ApiRoutes {
     const val DOFF_WINDING_ENTRY              = "doff/winding-entry"
     const val DOFF_WINDING_ENTRY_DETAIL       = "doff/winding-entry/{id}"
 
+    // ── Continuous Winding Entry (tbl_cont_widning_entry) ────────────────────
+    const val CONT_WINDING_ENTRY              = "doff/cont-winding-entry"
+    const val CONT_WINDING_ENTRY_ID           = "doff/cont-winding-entry/{id}"
+
     // ── Spg Doff Entry (1) ──────────────────────────────────────────────────
     const val DOFF_SPG1_MECH_CODES = "doff/spg1-mech-codes"
     const val DOFF_SPG1_SUMMARY    = "doff/spg1-summary"
@@ -128,9 +132,20 @@ object ApiRoutes {
     const val JUTE_RECEIVED_ENTRY     = "jute-received/entry"
     const val JUTE_RECEIVED_ENTRY_ID  = "jute-received/entry/{id}"
 
+    // ── Jute Mukam Received (src/jute_mukam_recvd blueprint) ─────────────────
+    const val JUTE_MUKAM_RECVD_SETUP    = "jute-mukam-recvd/setup"
+    const val JUTE_MUKAM_RECVD_ENTRY    = "jute-mukam-recvd/entry"
+    const val JUTE_MUKAM_RECVD_ENTRY_ID = "jute-mukam-recvd/entry/{recvd_no}"
+
     // ── Finishing → Other Entries ─────────────────────────────────────────────
     const val FINISHING_ENTRY     = "otherentries/entry"
     const val FINISHING_ENTRY_ID  = "otherentries/entry/{id}"
+
+    // ── Daily Machine Summary (tbl_daily_summ_mechine_data) ───────────────────
+    const val MACHINE_SUMMARY     = "otherentries/machine-summary"
+    const val MACHINE_SUMMARY_ID  = "otherentries/machine-summary/{id}"
+    const val MACHINE_DEPARTMENTS = "otherentries/machine-departments"
+    const val HANDS_REPORT        = "otherentries/hands-report"
 
     // ── Drawing Meter Entry ──────────────────────────────────────────────────
     const val DRAWING_SHEDS          = "drawing/sheds"

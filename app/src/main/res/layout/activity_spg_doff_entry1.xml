@@ -142,18 +142,12 @@
                         android:textStyle="bold"
                         android:layout_marginBottom="4dp"/>
 
-                    <HorizontalScrollView
+                    <com.example.myhrms.FlowLayout
+                        android:id="@+id/llMechCodes"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:scrollbars="none"
-                        android:layout_marginBottom="10dp">
-                        <LinearLayout
-                            android:id="@+id/llMechCodes"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:paddingBottom="4dp"/>
-                    </HorizontalScrollView>
+                        android:layout_marginBottom="10dp"
+                        android:paddingBottom="4dp"/>
 
                     <TextView
                         android:id="@+id/tvMechCodesStatus"
@@ -438,6 +432,17 @@
                                 android:paddingStart="18dp"
                                 android:paddingEnd="18dp"/>
                         </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivPrintSummary"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_marginEnd="6dp"
+                            android:src="@drawable/ic_print"
+                            android:padding="4dp"
+                            android:background="?android:attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="Print Summary"
+                            app:tint="#1565C0"/>
 
                         <ImageView
                             android:id="@+id/ivQualityShiftReport"

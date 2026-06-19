@@ -40,7 +40,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var cardSummary: androidx.cardview.widget.CardView
     private lateinit var tvEntryDate: TextView
     private lateinit var spEntrySpell: Spinner
-    private lateinit var llMechCodes: LinearLayout
+    private lateinit var llMechCodes: FlowLayout
     private lateinit var tvMechCodesStatus: TextView
     private lateinit var etTrollyNo: EditText
     private lateinit var tvTrollyInfo: TextView
@@ -56,10 +56,14 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var tvSummaryEmpty: TextView
     private lateinit var pbSummary: ProgressBar
     private lateinit var ivQualityShiftReport: ImageView
+    private lateinit var ivPrintSummary: ImageView
     private lateinit var btnWinding: Button
 
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: Spg1SummaryAdapter
+
+    // Latest summary rows (quality-wise ordered) — used for printing.
+    private val currentSummary = mutableListOf<Spg1SummaryRow>()
 
     // Selected machine from mech-code buttons
     private var selectedMcId: Int? = null
@@ -104,6 +108,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         tvSummaryEmpty    = findViewById(R.id.tvSummaryEmpty)
         pbSummary         = findViewById(R.id.pbSummary)
         ivQualityShiftReport = findViewById(R.id.ivQualityShiftReport)
+        ivPrintSummary       = findViewById(R.id.ivPrintSummary)
         btnWinding           = findViewById(R.id.btnWinding)
 
         summaryAdapter = Spg1SummaryAdapter { row -> showDetailDialog(row) }
@@ -113,6 +118,8 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
 
         // Report icon click listener
         ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+
+        ivPrintSummary.setOnClickListener { printSummaryPdf() }
 
         btnWinding.setOnClickListener {
             val intent = android.content.Intent(this, WindingEntryActivity::class.java)
@@ -303,7 +310,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                             (44 * dp).toInt(),
                             (34 * dp).toInt()
                         )
-                        lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                        lp.setMargins(0, 0, (6 * dp).toInt(), (6 * dp).toInt())
                         btn.layoutParams = lp
                         btn.setPadding(0, 0, 0, 0)
                         btn.tag = code
@@ -427,6 +434,9 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
 
     private fun fmt(v: Double) = String.format(Locale.getDefault(), "%.3f", v)
 
+    // Quality-wise shift-wise report values shown without decimals
+    private fun fmtReport(v: Double) = String.format(Locale.getDefault(), "%.0f", v)
+
     // ── Save ─────────────────────────────────────────────────────────────────
     private fun saveEntry() {
         val spellId = selectedSpellId()
@@ -498,7 +508,14 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         ).enqueue(object : Callback<Spg1SummaryResponse> {
             override fun onResponse(call: Call<Spg1SummaryResponse>, response: Response<Spg1SummaryResponse>) {
                 pbSummary.visibility = View.GONE
-                val list = response.body()?.summary.orEmpty()
+                // Order the summary quality-wise (then by machine within a quality).
+                val list = response.body()?.summary.orEmpty().sortedWith(
+                    compareBy({ it.qualityName?.lowercase(Locale.getDefault()) ?: "" },
+                              { it.mechPostingCode ?: Int.MAX_VALUE },
+                              { it.mcId })
+                )
+                currentSummary.clear()
+                currentSummary.addAll(list)
                 if (list.isEmpty()) {
                     tvSummaryEmpty.visibility = View.VISIBLE
                 } else {
@@ -510,8 +527,143 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                 pbSummary.visibility    = View.GONE
                 tvSummaryEmpty.visibility = View.VISIBLE
                 tvSummaryEmpty.text     = "Failed to load summary"
+                currentSummary.clear()
             }
         })
+    }
+
+    // ── Print summary to PDF ─────────────────────────────────────────────────
+    // Rows are already quality-wise ordered (see loadSummary). A subtotal row is
+    // printed after each quality block, and a grand total at the very end.
+    private fun printSummaryPdf() {
+        if (currentSummary.isEmpty()) {
+            ResultDialog.error(this, title = "Nothing to print", message = "No summary available")
+            return
+        }
+
+        val spellName = spellList.getOrNull(spEntrySpell.selectedItemPosition)?.spellName ?: ""
+
+        // Page geometry (A4 @ 72dpi ≈ 595 x 842)
+        val pageW = 595; val pageH = 842
+        val left = 30f; val right = pageW - 30f
+        val rowH = 20f
+
+        // Columns: Sl | Mc No | EB No | Emp Name | Quality | Weight | Doffs
+        val xSl    = left
+        val xMc    = left + 35f
+        val xEb    = left + 95f
+        val xName  = left + 165f
+        val xQual  = left + 310f
+        val xWt    = left + 440f
+        val xDoff  = left + 515f
+
+        val pdf = android.graphics.pdf.PdfDocument()
+        val title  = android.graphics.Paint().apply { textSize = 14f; isFakeBoldText = true }
+        val head   = android.graphics.Paint().apply { textSize = 10f; isFakeBoldText = true }
+        val cell   = android.graphics.Paint().apply { textSize = 10f }
+        val cellB  = android.graphics.Paint().apply { textSize = 10f; isFakeBoldText = true }
+        val line   = android.graphics.Paint().apply { strokeWidth = 0.6f; color = Color.DKGRAY }
+
+        var page = pdf.startPage(
+            android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, 1).create())
+        var canvas = page.canvas
+        var y = 40f
+        var pageNo = 1
+
+        fun fmt(v: Double) = String.format(Locale.getDefault(), "%.0f", v)
+
+        fun drawHeaderBlock() {
+            canvas.drawText("Spg Doff Entry (1) — Summary", left, y, title); y += 18f
+            canvas.drawText("Date: ${tvEntryDate.text}    Spell: $spellName", left, y, cell); y += 16f
+            canvas.drawText("Sl", xSl, y, head)
+            canvas.drawText("Mc No", xMc, y, head)
+            canvas.drawText("EB No", xEb, y, head)
+            canvas.drawText("Emp Name", xName, y, head)
+            canvas.drawText("Quality", xQual, y, head)
+            canvas.drawText("Weight", xWt, y, head)
+            canvas.drawText("Doff", xDoff, y, head)
+            y += 6f
+            canvas.drawLine(left, y, right, y, line); y += 14f
+        }
+
+        fun newPage() {
+            pdf.finishPage(page)
+            pageNo += 1
+            page = pdf.startPage(
+                android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, pageNo).create())
+            canvas = page.canvas
+            y = 40f
+            drawHeaderBlock()
+        }
+
+        fun ensureSpace() { if (y > pageH - 60f) newPage() }
+
+        drawHeaderBlock()
+
+        var sl = 1
+        var gWt = 0.0; var gDoff = 0
+        var i = 0
+        while (i < currentSummary.size) {
+            val quality = currentSummary[i].qualityName ?: "-"
+            var qWt = 0.0; var qDoff = 0
+
+            while (i < currentSummary.size && (currentSummary[i].qualityName ?: "-") == quality) {
+                val r = currentSummary[i]
+                val mcNo = r.mechPostingCode?.toString()
+                    ?: r.mcCode?.takeIf { it.isNotBlank() } ?: "${r.mcId}"
+                ensureSpace()
+                canvas.drawText(sl.toString(), xSl, y, cell)
+                canvas.drawText(mcNo, xMc, y, cell)
+                canvas.drawText(r.empCode?.takeIf { it.isNotBlank() } ?: "-", xEb, y, cell)
+                canvas.drawText(r.empName?.takeIf { it.isNotBlank() } ?: "-", xName, y, cell)
+                canvas.drawText(quality, xQual, y, cell)
+                canvas.drawText(fmt(r.totalWt), xWt, y, cell)
+                canvas.drawText(r.noOfDoff.toString(), xDoff, y, cell)
+                y += rowH
+                qWt += r.totalWt; qDoff += r.noOfDoff
+                sl++; i++
+            }
+
+            // quality subtotal
+            ensureSpace()
+            canvas.drawLine(xQual, y - rowH + 4f, right, y - rowH + 4f, line)
+            canvas.drawText("Total — $quality", xQual, y, cellB)
+            canvas.drawText(fmt(qWt), xWt, y, cellB)
+            canvas.drawText(qDoff.toString(), xDoff, y, cellB)
+            y += rowH + 6f
+
+            gWt += qWt; gDoff += qDoff
+        }
+
+        // grand total
+        ensureSpace()
+        canvas.drawLine(left, y - rowH + 4f, right, y - rowH + 4f, line)
+        canvas.drawText("GRAND TOTAL", xName, y, cellB)
+        canvas.drawText(fmt(gWt), xWt, y, cellB)
+        canvas.drawText(gDoff.toString(), xDoff, y, cellB)
+        canvas.drawLine(left, y + 5f, right, y + 5f, line)
+
+        pdf.finishPage(page)
+
+        try {
+            val dir = java.io.File(cacheDir, "pdfs").apply { mkdirs() }
+            val fileName = "SPG1_Summary_${entryDate.replace("-", "_")}.pdf"
+            val file = java.io.File(dir, fileName)
+            file.outputStream().use { pdf.writeTo(it) }
+            pdf.close()
+
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                this, "$packageName.fileprovider", file)
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(android.content.Intent.createChooser(intent, "Open PDF"))
+        } catch (e: Exception) {
+            pdf.close()
+            ResultDialog.error(this, title = "PDF error", message = e.localizedMessage)
+        }
     }
 
     // ── Detail dialog on row click ────────────────────────────────────────────
@@ -640,10 +792,10 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                         adapter.update(reportData)
                         
                         // Update grand totals
-                        tvGrandTotalA.text = fmt(grandTotal?.shiftA ?: 0.0)
-                        tvGrandTotalB.text = fmt(grandTotal?.shiftB ?: 0.0)
-                        tvGrandTotalC.text = fmt(grandTotal?.shiftC ?: 0.0)
-                        tvGrandTotal.text = fmt(grandTotal?.total ?: 0.0)
+                        tvGrandTotalA.text = fmtReport(grandTotal?.shiftA ?: 0.0)
+                        tvGrandTotalB.text = fmtReport(grandTotal?.shiftB ?: 0.0)
+                        tvGrandTotalC.text = fmtReport(grandTotal?.shiftC ?: 0.0)
+                        tvGrandTotal.text = fmtReport(grandTotal?.total ?: 0.0)
                     }
                 } else {
                     tvReportEmpty.visibility = View.VISIBLE
@@ -677,10 +829,10 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
                 reportData.forEach { row ->
                     appendLine(String.format("%-20s %10s %10s %10s %10s",
                         row.qualityName ?: "Unknown",
-                        fmt(row.shiftA ?: 0.0),
-                        fmt(row.shiftB ?: 0.0),
-                        fmt(row.shiftC ?: 0.0),
-                        fmt(row.total ?: 0.0)
+                        fmtReport(row.shiftA ?: 0.0),
+                        fmtReport(row.shiftB ?: 0.0),
+                        fmtReport(row.shiftC ?: 0.0),
+                        fmtReport(row.total ?: 0.0)
                     ))
                 }
                 
@@ -732,10 +884,10 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             
             fun bind(row: QualityShiftReportRow) {
                 tvQuality.text = row.qualityName ?: "Unknown"
-                tvShiftA.text  = fmt(row.shiftA ?: 0.0)
-                tvShiftB.text  = fmt(row.shiftB ?: 0.0)
-                tvShiftC.text  = fmt(row.shiftC ?: 0.0)
-                tvTotal.text   = fmt(row.total ?: 0.0)
+                tvShiftA.text  = fmtReport(row.shiftA ?: 0.0)
+                tvShiftB.text  = fmtReport(row.shiftB ?: 0.0)
+                tvShiftC.text  = fmtReport(row.shiftC ?: 0.0)
+                tvTotal.text   = fmtReport(row.total ?: 0.0)
             }
         }
     }

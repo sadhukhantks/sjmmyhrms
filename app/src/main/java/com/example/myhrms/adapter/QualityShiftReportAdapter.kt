@@ -39,13 +39,13 @@ class QualityShiftReportAdapter : RecyclerView.Adapter<QualityShiftReportAdapter
 
         fun bind(row: QualityShiftReportRow) {
             tvQuality.text = row.qualityName ?: "-"
-            tvShiftA.text = row.shiftA?.let { fmt(it) } ?: "0.00"
-            tvShiftB.text = row.shiftB?.let { fmt(it) } ?: "0.00"
-            tvShiftC.text = row.shiftC?.let { fmt(it) } ?: "0.00"
-            tvTotal.text = row.total?.let { fmt(it) } ?: "0.00"
+            tvShiftA.text = row.shiftA?.let { fmt(it) } ?: "0"
+            tvShiftB.text = row.shiftB?.let { fmt(it) } ?: "0"
+            tvShiftC.text = row.shiftC?.let { fmt(it) } ?: "0"
+            tvTotal.text = row.total?.let { fmt(it) } ?: "0"
         }
 
-        private fun fmt(v: Double) = String.format(Locale.getDefault(), "%.2f", v)
+        private fun fmt(v: Double) = String.format(Locale.getDefault(), "%.0f", v)
     }
 }
 

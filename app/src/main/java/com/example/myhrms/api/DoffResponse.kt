@@ -276,6 +276,42 @@ data class WindingEntrySaveResponse(
     @SerializedName("id")      val id: Int?
 )
 
+// ── Continuous Winding Entry (tbl_cont_widning_entry) ────────────────────────
+// Simple date + winding-quality + production-kgs entry. No spell / branch.
+
+data class ContWindingEntry(
+    @SerializedName("id")           val id: Int?,
+    @SerializedName("tran_date")    val tranDate: String?,
+    @SerializedName("quality_id")   val qualityId: Int?,
+    @SerializedName("quality_name") val qualityName: String?,
+    @SerializedName("prod_kgs")     val prodKgs: Int?
+)
+
+data class ContWindingEntriesResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("entries") val entries: List<ContWindingEntry>?
+)
+
+data class ContWindingSaveRequest(
+    @SerializedName("date")       val date: String,
+    @SerializedName("quality_id") val qualityId: Int,
+    @SerializedName("prod_kgs")   val prodKgs: Int,
+    @SerializedName("user_id")    val userId: Int
+)
+
+data class ContWindingUpdateRequest(
+    @SerializedName("quality_id") val qualityId: Int?,
+    @SerializedName("prod_kgs")   val prodKgs: Int?,
+    @SerializedName("user_id")    val userId: Int?
+)
+
+data class ContWindingSaveResponse(
+    @SerializedName("status")  val status: String?,
+    @SerializedName("message") val message: String?,
+    @SerializedName("id")      val id: Int?
+)
+
 // ── Spg Doff Entry (1) – mech posting codes ──────────────────────────────────
 
 data class Spg1MechCode(
@@ -300,6 +336,7 @@ data class Spg1SummaryRow(
     @SerializedName("mech_posting_code") val mechPostingCode: Int?,
     @SerializedName("emp_code")          val empCode: String?,
     @SerializedName("emp_name")          val empName: String?,
+    @SerializedName("quality_name")      val qualityName: String?,
     @SerializedName("weights")           val weights: List<Double>?,
     @SerializedName("no_of_doff")        val noOfDoff: Int,
     @SerializedName("total_wt")          val totalWt: Double
@@ -393,6 +430,7 @@ data class We2SaveRequest(
     @SerializedName("branch_id")    val branchId: Int,
     @SerializedName("eb_id")        val ebId: Long,            // first selected (back-compat)
     @SerializedName("eb_ids")       val ebIds: List<Long>,     // all selected; weight split equally
+    @SerializedName("eb_spools")    val ebSpools: List<Int>? = null, // per-employee spool count, aligned to eb_ids
     @SerializedName("sc_type")      val scType: String,
     @SerializedName("trolly_id")    val trollyId: Int?,
     @SerializedName("quality_id")   val qualityId: Int?,
@@ -417,6 +455,7 @@ data class We2GroupedRow(
     @SerializedName("emp_name")     val empName: String?,
     @SerializedName("quality_name") val qualityName: String?,
     @SerializedName("weights")      val weights: List<Double>?,
+    @SerializedName("no_of_spools") val noOfSpools: Int = 0,
     @SerializedName("no_of_doff")   val noOfDoff: Int,
     @SerializedName("total_wt")     val totalWt: Double
 )

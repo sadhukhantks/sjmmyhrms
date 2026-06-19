@@ -58,6 +58,8 @@ data class DrawingSummaryItem(
     @SerializedName("mc_id") val mcId: Int?,
     @SerializedName("short_name") val mcShortName: String?,
     @SerializedName("unit") val unit: Double?,
+    @SerializedName("running_hours") val runningHours: Double?,
+    @SerializedName("const_meter") val constMeter: Double?,
     @SerializedName("eff") val eff: Double?
 )
 

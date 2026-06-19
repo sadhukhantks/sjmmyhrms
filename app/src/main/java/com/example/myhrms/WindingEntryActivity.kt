@@ -40,16 +40,17 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var cardSummary  : androidx.cardview.widget.CardView
     private lateinit var tvEntryDate  : TextView
     private lateinit var spEntrySpell : Spinner
-    private lateinit var llEmpButtons : LinearLayout
+    private lateinit var llEmpButtons : FlowLayout
     private lateinit var tvEmpStatus  : TextView
-    private lateinit var llQualityButtons : LinearLayout
+    private lateinit var llEmpSpools  : LinearLayout
+    private lateinit var llQualityButtons : FlowLayout
     private lateinit var tvQualityStatus  : TextView
     private lateinit var btnTypeS     : Button
     private lateinit var btnTypeC     : Button
     private lateinit var etTrollyNo   : EditText
     private lateinit var etNoOfSpools : EditText
     private lateinit var tvTrollyInfo : TextView
-    private lateinit var llSpoolButtons : LinearLayout
+    private lateinit var llSpoolButtons : FlowLayout
     private lateinit var tvSpoolStatus  : TextView
     private lateinit var etGrossWt    : EditText
     private lateinit var etTareWt     : EditText
@@ -59,13 +60,23 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var tvSummaryEmpty : TextView
     private lateinit var pbSummary    : ProgressBar
     private lateinit var ivQualityShiftReport : ImageView
+    private lateinit var ivPrintSummary : ImageView
     private lateinit var btnSpinning : Button
 
     private val spellList = mutableListOf<Spell>()
     private lateinit var summaryAdapter: We2SummaryAdapter
 
+    // Latest summary rows (quality-wise ordered) — used for printing.
+    private val currentSummary = mutableListOf<We2GroupedRow>()
+
     // Selected employees (multi-select). Net weight is split equally across these on save.
     private val selectedEbIds = linkedSetOf<Long>()
+
+    // Per-employee spool count (eb_id -> no of spools). Each selected employee
+    // gets an editable spool input below the employee buttons; their sum is
+    // shown in "No of Spools" and each value is saved on its own row.
+    private val empSpoolCounts = linkedMapOf<Long, Int>()
+    private val defaultSpoolsPerEmp = 8
 
     // S or C toggle — driven automatically by the selected qualities' spool_cop.
     private var selectedType: String = "S"
@@ -110,6 +121,7 @@ class WindingEntryActivity : AppCompatActivity() {
         spEntrySpell   = findViewById(R.id.spEntrySpell)
         llEmpButtons   = findViewById(R.id.llEmpButtons)
         tvEmpStatus    = findViewById(R.id.tvEmpStatus)
+        llEmpSpools    = findViewById(R.id.llEmpSpools)
         llQualityButtons = findViewById(R.id.llQualityButtons)
         tvQualityStatus  = findViewById(R.id.tvQualityStatus)
         btnTypeS       = findViewById(R.id.btnTypeS)
@@ -127,6 +139,7 @@ class WindingEntryActivity : AppCompatActivity() {
         tvSummaryEmpty = findViewById(R.id.tvSummaryEmpty)
         pbSummary      = findViewById(R.id.pbSummary)
         ivQualityShiftReport = findViewById(R.id.ivQualityShiftReport)
+        ivPrintSummary       = findViewById(R.id.ivPrintSummary)
         btnSpinning          = findViewById(R.id.btnSpinning)
 
         summaryAdapter = We2SummaryAdapter { row -> showDetailDialog(row) }
@@ -203,6 +216,8 @@ class WindingEntryActivity : AppCompatActivity() {
         btnSave.setOnClickListener { saveEntry() }
 
         ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+
+        ivPrintSummary.setOnClickListener { printSummaryPdf() }
 
         btnSpinning.setOnClickListener {
             val intent = android.content.Intent(this, SpgDoffEntry1Activity::class.java)
@@ -358,7 +373,7 @@ class WindingEntryActivity : AppCompatActivity() {
                 val on = emp.ebId != null && selectedEbIds.contains(emp.ebId)
                 btn.setBackgroundColor(Color.parseColor(if (on) "#2E7D32" else "#1565C0"))
                 val lp = LinearLayout.LayoutParams((52 * dp).toInt(), (36 * dp).toInt())
-                lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                lp.setMargins(0, 0, (6 * dp).toInt(), (6 * dp).toInt())
                 btn.layoutParams = lp
                 btn.setPadding(0, 0, 0, 0)
                 btn.tag = emp
@@ -375,20 +390,83 @@ class WindingEntryActivity : AppCompatActivity() {
         // Toggle this employee; multiple can be selected at once
         if (selectedEbIds.contains(ebId)) {
             selectedEbIds.remove(ebId)
+            empSpoolCounts.remove(ebId)
             btn.setBackgroundColor(Color.parseColor("#1565C0"))
         } else {
             selectedEbIds.add(ebId)
+            empSpoolCounts.getOrPut(ebId) { defaultSpoolsPerEmp }
             btn.setBackgroundColor(Color.parseColor("#2E7D32"))
         }
-        // Employee selection drives spool count (S only) and the tare
+        // Employee selection drives the per-employee spool inputs and the tare
         recalcSpools()
     }
 
-    // Both (S) and (C): No of Spools auto-tracks selected employees × 8.
-    // The spools watcher then drives recalcTare (and, for (C), the gross weight).
+    // Rebuild the per-employee spool inputs from the current selection, then
+    // push their sum into "No of Spools" (which drives recalcTare and, for (C),
+    // the gross weight).
     private fun recalcSpools() {
-        etNoOfSpools.setText((selectedEbIds.size * 8).toString())
+        rebuildEmpSpoolInputs()
+        etNoOfSpools.setText(currentSpoolSum().toString())
         recalcTare()
+    }
+
+    private fun currentSpoolSum(): Int =
+        selectedEbIds.sumOf { empSpoolCounts[it] ?: defaultSpoolsPerEmp }
+
+    /** Build one labelled spool input per selected employee. Editing a value
+     *  updates that employee's count and re-sums "No of Spools". */
+    private fun rebuildEmpSpoolInputs() {
+        // Drop any stored counts for employees no longer selected
+        empSpoolCounts.keys.retainAll(selectedEbIds)
+
+        llEmpSpools.removeAllViews()
+        if (selectedEbIds.isEmpty()) return
+
+        val dp = resources.displayMetrics.density
+        for (ebId in selectedEbIds) {
+            val emp   = allEmployees.firstOrNull { it.ebId == ebId }
+            val label = (emp?.empName ?: emp?.empCode ?: ebId.toString())
+            val count = empSpoolCounts.getOrPut(ebId) { defaultSpoolsPerEmp }
+
+            val row = LinearLayout(this)
+            row.orientation = LinearLayout.HORIZONTAL
+            row.gravity     = android.view.Gravity.CENTER_VERTICAL
+            val rowLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            rowLp.setMargins(0, 0, 0, (4 * dp).toInt())
+            row.layoutParams = rowLp
+
+            val tv = TextView(this)
+            tv.text       = label
+            tv.textSize   = 12f
+            tv.setTextColor(Color.parseColor("#000000"))
+            val tvLp = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+            tv.layoutParams = tvLp
+
+            val et = EditText(this)
+            et.setText(count.toString())
+            et.textSize  = 14f
+            et.setTextColor(Color.parseColor("#1E1E1E"))
+            et.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            et.setBackgroundResource(R.drawable.bg_input_rounded_light)
+            et.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
+            val etLp = LinearLayout.LayoutParams((80 * dp).toInt(), (40 * dp).toInt())
+            et.layoutParams = etLp
+            et.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    empSpoolCounts[ebId] = s?.toString()?.trim()?.toIntOrNull() ?: 0
+                    etNoOfSpools.setText(currentSpoolSum().toString())
+                }
+                override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            })
+
+            row.addView(tv)
+            row.addView(et)
+            llEmpSpools.addView(row)
+        }
     }
 
     // ── Quality buttons (distinct winding qualities from the frame entry) ────
@@ -430,7 +508,7 @@ class WindingEntryActivity : AppCompatActivity() {
                             LinearLayout.LayoutParams.WRAP_CONTENT,
                             (36 * dp).toInt()
                         )
-                        lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                        lp.setMargins(0, 0, (6 * dp).toInt(), (6 * dp).toInt())
                         btn.layoutParams = lp
                         btn.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
                         btn.tag = q
@@ -485,10 +563,10 @@ class WindingEntryActivity : AppCompatActivity() {
     // ── S/C toggle (auto-driven by quality spool_cop) ────────────────────────
     private fun selectType(type: String, focusTrolly: Boolean = true) {
         selectedType = type
-        // Spools are seeded from employees × 8 but remain editable for both types
-        etNoOfSpools.isEnabled = true
-        etNoOfSpools.isFocusable = true
-        etNoOfSpools.isFocusableInTouchMode = true
+        // No of Spools is the sum of the per-employee spool inputs → read-only.
+        etNoOfSpools.isFocusable = false
+        etNoOfSpools.isFocusableInTouchMode = false
+        etNoOfSpools.isClickable = false
         if (type == "S") {
             btnTypeS.setBackgroundColor(Color.parseColor("#2E7D32"))
             btnTypeC.setBackgroundColor(Color.parseColor("#1565C0"))
@@ -547,7 +625,7 @@ class WindingEntryActivity : AppCompatActivity() {
                                 LinearLayout.LayoutParams.WRAP_CONTENT,
                                 (36 * dp).toInt()
                             )
-                            lp.setMargins(0, 0, (6 * dp).toInt(), 0)
+                            lp.setMargins(0, 0, (6 * dp).toInt(), (6 * dp).toInt())
                             btn.layoutParams = lp
                             btn.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
                             btn.tag = sp
@@ -700,13 +778,16 @@ class WindingEntryActivity : AppCompatActivity() {
             Toast.makeText(this, "Net Weight must be positive", Toast.LENGTH_LONG).show(); return
         }
 
-        val ebIdList = selectedEbIds.toList()
+        val ebIdList   = selectedEbIds.toList()
+        // Per-employee spool counts, aligned to ebIdList; saved one per row.
+        val spoolList  = ebIdList.map { empSpoolCounts[it] ?: defaultSpoolsPerEmp }
         val req = We2SaveRequest(
             date        = entryDate,
             spellId     = spellId,
             branchId    = branchId,
             ebId        = ebIdList.first(),
             ebIds       = ebIdList,
+            ebSpools    = spoolList,
             scType      = selectedType,
             trollyId    = validatedTrollyId,
             // Store the quality only when one is selected; with several picked,
@@ -715,7 +796,7 @@ class WindingEntryActivity : AppCompatActivity() {
             grossWeight = gross,
             tareWeight  = tare,
             netWeight   = net,
-            noOfSpools  = etNoOfSpools.text.toString().trim().toIntOrNull(),
+            noOfSpools  = spoolList.sum(),
             noOfSpindle = if (selectedType == "S") selectedEbIds.size * 8 else null,
             userId      = userId
         )
@@ -752,6 +833,8 @@ class WindingEntryActivity : AppCompatActivity() {
 
     private fun clearForm() {
         selectedEbIds.clear()
+        empSpoolCounts.clear()
+        llEmpSpools.removeAllViews()
         etGrossWt.setText("")
         etTareWt.setText("")
         etNetWt.setText("")
@@ -794,7 +877,13 @@ class WindingEntryActivity : AppCompatActivity() {
         ).enqueue(object : Callback<We2GroupedResponse> {
             override fun onResponse(call: Call<We2GroupedResponse>, response: Response<We2GroupedResponse>) {
                 pbSummary.visibility = View.GONE
-                val list = response.body()?.summary.orEmpty()
+                // Order the summary quality-wise (then by employee within a quality).
+                val list = response.body()?.summary.orEmpty().sortedWith(
+                    compareBy({ it.qualityName?.lowercase(Locale.getDefault()) ?: "" },
+                              { (it.empName ?: it.empCode ?: "").lowercase(Locale.getDefault()) })
+                )
+                currentSummary.clear()
+                currentSummary.addAll(list)
                 if (list.isEmpty()) {
                     tvSummaryEmpty.visibility = View.VISIBLE
                 } else {
@@ -806,8 +895,145 @@ class WindingEntryActivity : AppCompatActivity() {
                 pbSummary.visibility      = View.GONE
                 tvSummaryEmpty.visibility = View.VISIBLE
                 tvSummaryEmpty.text       = "Failed to load summary"
+                currentSummary.clear()
             }
         })
+    }
+
+    // ── Print summary to PDF ─────────────────────────────────────────────────
+    // Rows are already quality-wise ordered (see loadSummary). A subtotal row is
+    // printed after each quality block, and a grand total at the very end.
+    private fun printSummaryPdf() {
+        if (currentSummary.isEmpty()) {
+            ResultDialog.error(this, title = "Nothing to print", message = "No summary available")
+            return
+        }
+
+        val spellName = (spEntrySpell.selectedItem as? Spell)?.spellName ?: ""
+
+        // Page geometry (A4 @ 72dpi ≈ 595 x 842)
+        val pageW = 595; val pageH = 842
+        val left = 30f; val right = pageW - 30f
+        val rowH = 20f
+
+        // Columns: Sl | Emp Name | EB No | Quality | Weight | Spools | Doffs
+        val xSl    = left
+        val xName  = left + 35f
+        val xEb     = left + 175f
+        val xQual  = left + 250f
+        val xWt    = left + 370f
+        val xSpool = left + 455f
+        val xDoff  = left + 510f
+
+        val pdf = android.graphics.pdf.PdfDocument()
+        val title  = android.graphics.Paint().apply { textSize = 14f; isFakeBoldText = true }
+        val head   = android.graphics.Paint().apply { textSize = 10f; isFakeBoldText = true }
+        val cell   = android.graphics.Paint().apply { textSize = 10f }
+        val cellB  = android.graphics.Paint().apply { textSize = 10f; isFakeBoldText = true }
+        val line   = android.graphics.Paint().apply { strokeWidth = 0.6f; color = Color.DKGRAY }
+
+        var page = pdf.startPage(
+            android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, 1).create())
+        var canvas = page.canvas
+        var y = 40f
+        var pageNo = 1
+
+        fun fmt(v: Double) = String.format(Locale.getDefault(), "%.0f", v)
+
+        fun drawHeaderBlock() {
+            canvas.drawText("Winding Entry — Summary", left, y, title); y += 18f
+            canvas.drawText("Date: ${tvEntryDate.text}    Spell: $spellName", left, y, cell); y += 16f
+            // column headers
+            canvas.drawText("Sl", xSl, y, head)
+            canvas.drawText("Emp Name", xName, y, head)
+            canvas.drawText("EB No", xEb, y, head)
+            canvas.drawText("Quality", xQual, y, head)
+            canvas.drawText("Weight", xWt, y, head)
+            canvas.drawText("Spls", xSpool, y, head)
+            canvas.drawText("Doff", xDoff, y, head)
+            y += 6f
+            canvas.drawLine(left, y, right, y, line); y += 14f
+        }
+
+        fun newPage() {
+            pdf.finishPage(page)
+            pageNo += 1
+            page = pdf.startPage(
+                android.graphics.pdf.PdfDocument.PageInfo.Builder(pageW, pageH, pageNo).create())
+            canvas = page.canvas
+            y = 40f
+            drawHeaderBlock()
+        }
+
+        fun ensureSpace() { if (y > pageH - 60f) newPage() }
+
+        drawHeaderBlock()
+
+        var sl = 1
+        var gWt = 0.0; var gSpools = 0; var gDoff = 0
+        var i = 0
+        while (i < currentSummary.size) {
+            val quality = currentSummary[i].qualityName ?: "-"
+            var qWt = 0.0; var qSpools = 0; var qDoff = 0
+
+            // rows for this quality block
+            while (i < currentSummary.size && (currentSummary[i].qualityName ?: "-") == quality) {
+                val r = currentSummary[i]
+                ensureSpace()
+                canvas.drawText(sl.toString(), xSl, y, cell)
+                canvas.drawText(r.empName?.takeIf { it.isNotBlank() } ?: r.empCode ?: "-", xName, y, cell)
+                canvas.drawText(r.empCode ?: "-", xEb, y, cell)
+                canvas.drawText(quality, xQual, y, cell)
+                canvas.drawText(fmt(r.totalWt), xWt, y, cell)
+                canvas.drawText(r.noOfSpools.toString(), xSpool, y, cell)
+                canvas.drawText(r.noOfDoff.toString(), xDoff, y, cell)
+                y += rowH
+                qWt += r.totalWt; qSpools += r.noOfSpools; qDoff += r.noOfDoff
+                sl++; i++
+            }
+
+            // quality subtotal
+            ensureSpace()
+            canvas.drawLine(xQual, y - rowH + 4f, right, y - rowH + 4f, line)
+            canvas.drawText("Total — $quality", xQual, y, cellB)
+            canvas.drawText(fmt(qWt), xWt, y, cellB)
+            canvas.drawText(qSpools.toString(), xSpool, y, cellB)
+            canvas.drawText(qDoff.toString(), xDoff, y, cellB)
+            y += rowH + 6f
+
+            gWt += qWt; gSpools += qSpools; gDoff += qDoff
+        }
+
+        // grand total
+        ensureSpace()
+        canvas.drawLine(left, y - rowH + 4f, right, y - rowH + 4f, line)
+        canvas.drawText("GRAND TOTAL", xName, y, cellB)
+        canvas.drawText(fmt(gWt), xWt, y, cellB)
+        canvas.drawText(gSpools.toString(), xSpool, y, cellB)
+        canvas.drawText(gDoff.toString(), xDoff, y, cellB)
+        canvas.drawLine(left, y + 5f, right, y + 5f, line)
+
+        pdf.finishPage(page)
+
+        try {
+            val dir = java.io.File(cacheDir, "pdfs").apply { mkdirs() }
+            val fileName = "Winding_Summary_${entryDate.replace("-", "_")}.pdf"
+            val file = java.io.File(dir, fileName)
+            file.outputStream().use { pdf.writeTo(it) }
+            pdf.close()
+
+            val uri = androidx.core.content.FileProvider.getUriForFile(
+                this, "$packageName.fileprovider", file)
+            val intent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "application/pdf")
+                addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            startActivity(android.content.Intent.createChooser(intent, "Open PDF"))
+        } catch (e: Exception) {
+            pdf.close()
+            ResultDialog.error(this, title = "PDF error", message = e.localizedMessage)
+        }
     }
 
     // ── Detail dialog (on row click) ─────────────────────────────────────────
@@ -922,10 +1148,10 @@ class WindingEntryActivity : AppCompatActivity() {
                     
                     // Update grand total
                     val grandTotal = body?.grandTotal
-                    tvGrandTotalA.text = grandTotal?.shiftA?.let { String.format(Locale.getDefault(), "%.2f", it) } ?: "0.00"
-                    tvGrandTotalB.text = grandTotal?.shiftB?.let { String.format(Locale.getDefault(), "%.2f", it) } ?: "0.00"
-                    tvGrandTotalC.text = grandTotal?.shiftC?.let { String.format(Locale.getDefault(), "%.2f", it) } ?: "0.00"
-                    tvGrandTotal.text = grandTotal?.total?.let { String.format(Locale.getDefault(), "%.2f", it) } ?: "0.00"
+                    tvGrandTotalA.text = grandTotal?.shiftA?.let { String.format(Locale.getDefault(), "%.0f", it) } ?: "0"
+                    tvGrandTotalB.text = grandTotal?.shiftB?.let { String.format(Locale.getDefault(), "%.0f", it) } ?: "0"
+                    tvGrandTotalC.text = grandTotal?.shiftC?.let { String.format(Locale.getDefault(), "%.0f", it) } ?: "0"
+                    tvGrandTotal.text = grandTotal?.total?.let { String.format(Locale.getDefault(), "%.0f", it) } ?: "0"
                 }
             }
             override fun onFailure(call: Call<QualityShiftReportResponse>, t: Throwable) {
