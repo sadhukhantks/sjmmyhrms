@@ -70,6 +70,7 @@ object ApiRoutes {
     const val DOFF_SPG1_MECH_CODES = "doff/spg1-mech-codes"
     const val DOFF_SPG1_SUMMARY    = "doff/spg1-summary"
     const val DOFF_SPG1_QUALITY_SHIFT_REPORT = "doff/spg1-quality-shift-report"
+    const val DOFF_SPG1_QUALITY_SHIFT_REPORT_XLSX = "doff/spg1-quality-shift-report.xlsx"
 
     // ── Winding Entry (2) — S/C + trolly + weight ────────────────────────────
     const val DOFF_WE2_EMP_LOOKUP = "doff/winding-entry-2-emp-lookup"
@@ -79,6 +80,7 @@ object ApiRoutes {
     const val DOFF_WE2            = "doff/winding-entry-2"
     const val DOFF_WE2_TROLLY     = "doff/winding-entry-2-trolly"
     const val DOFF_WE2_QUALITY_SHIFT_REPORT = "doff/winding-entry-2-quality-shift-report"
+    const val DOFF_WE2_QUALITY_SHIFT_REPORT_XLSX = "doff/winding-entry-2-quality-shift-report.xlsx"
     const val DOFF_WE2_DETAIL_BY_EMP = "doff/winding-entry-2-detail"
     const val DOFF_WE2_SUMMARY    = "doff/winding-entry-2-summary"
     const val DOFF_WE2_DETAIL     = "doff/winding-entry-2/{id}"
@@ -126,6 +128,7 @@ object ApiRoutes {
     const val ASSORTING_ENTRY           = "assorting/entry"
     const val ASSORTING_ENTRY_ID        = "assorting/entry/{id}"
     const val ASSORTING_REPORT          = "assorting/report"
+    const val ASSORTING_REPORT_XLSX     = "assorting/report.xlsx"
 
     // ── Jute Received (src/jute_received blueprint) ──────────────────────────
     const val JUTE_RECEIVED_QUALITIES = "jute-received/qualities"
@@ -146,6 +149,9 @@ object ApiRoutes {
     const val MACHINE_SUMMARY_ID  = "otherentries/machine-summary/{id}"
     const val MACHINE_DEPARTMENTS = "otherentries/machine-departments"
     const val HANDS_REPORT        = "otherentries/hands-report"
+    const val HANDS_REPORT_XLSX   = "otherentries/hands-report.xlsx"
+    const val HANDS_STD_REPORT      = "otherentries/hands-std-report"
+    const val HANDS_STD_REPORT_XLSX = "otherentries/hands-std-report.xlsx"
 
     // ── Drawing Meter Entry ──────────────────────────────────────────────────
     const val DRAWING_SHEDS          = "drawing/sheds"

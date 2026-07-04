@@ -34,5 +34,8 @@ data class FaceRecognitionRequest(
     val machineIds: List<Int>? = null,
 
     @SerializedName("branch_id")
-    val branchId: Int? = null
+    val branchId: Int? = null,
+
+    @SerializedName("shed_type")
+    val shedType: String? = null  // "Old" or "New"
 )

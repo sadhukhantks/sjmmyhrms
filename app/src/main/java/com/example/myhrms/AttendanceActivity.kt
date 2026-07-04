@@ -773,6 +773,9 @@ class AttendanceActivity : AppCompatActivity() {
         }
     }
 
+    private fun selectedShedType() =
+        if (binding.toggleShed.checkedButtonId == R.id.btnShedNew) "New Shed" else "Old Shed"
+
     // ── Mark Attendance via /attendance (called on Submit) ───────
 
     private fun markAttendance(
@@ -794,7 +797,8 @@ class AttendanceActivity : AppCompatActivity() {
             workingHours = workingHours,
             idleHours = idleHours,
             machineIds = if (selectedMachineIds.isNotEmpty()) selectedMachineIds.toList() else null,
-            branchId = if (selectedBranchId > 0) selectedBranchId else null
+            branchId = if (selectedBranchId > 0) selectedBranchId else null,
+            shedType = selectedShedType()
         )
 
         RetrofitClient.getApiService(this).recognizeFace(request)
@@ -995,7 +999,8 @@ class AttendanceActivity : AppCompatActivity() {
             workingHours = workingHours,
             idleHours = idleHours,
             machineIds = if (selectedMachineIds.isNotEmpty()) selectedMachineIds.toList() else null,
-            branchId = if (selectedBranchId > 0) selectedBranchId else null
+            branchId = if (selectedBranchId > 0) selectedBranchId else null,
+            shedType = selectedShedType()
         )
 
         RetrofitClient.getApiService(this).markAttendanceManual(request)

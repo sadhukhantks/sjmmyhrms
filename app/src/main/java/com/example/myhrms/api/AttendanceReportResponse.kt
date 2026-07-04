@@ -52,7 +52,10 @@ data class AttendanceRecord(
     val photoAtt: String?,
 
     @SerializedName("machine_nos")
-    val machineNos: String?
+    val machineNos: String?,
+
+    @SerializedName("shed_type")
+    val shedType: String?  // "Old" or "New"
 )
 
 data class AttendanceReportResponse(

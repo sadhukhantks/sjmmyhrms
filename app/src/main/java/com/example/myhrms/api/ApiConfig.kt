@@ -7,7 +7,7 @@ object ApiConfig {
 
     private const val PREF_NAME = "api_config"
     private const val KEY_BASE_URL = "base_url"
-    private const val DEFAULT_URL = "http://192.168.0.223:5051/"
+    private const val DEFAULT_URL = "http://192.168.0.133:5051/"
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

@@ -117,7 +117,14 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
         rvSummary.isNestedScrollingEnabled = false
 
         // Report icon click listener
-        ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+        ivQualityShiftReport.setOnClickListener {
+            startActivity(android.content.Intent(this, HandsReportActivity::class.java).apply {
+                putExtra("BRANCH_ID", branchId)
+                putExtra("DATE", entryDate)
+                putExtra("DATE_DISP", tvEntryDate.text.toString())
+                putExtra("REPORT_TYPE", "spg1")
+            })
+        }
 
         ivPrintSummary.setOnClickListener { printSummaryPdf() }
 
@@ -127,8 +134,10 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Init date
+        // Init date — 00:00–05:59 belongs to the previous day's shift → current date − 1
+        // (applyDefaultSpell() refines this once spells load; this is the fallback.)
         val cal = Calendar.getInstance()
+        if (cal.get(Calendar.HOUR_OF_DAY) < 6) cal.add(Calendar.DAY_OF_MONTH, -1)
         entryDate = apiDate.format(cal.time)
         tvEntryDate.text = dispDate.format(cal.time)
 

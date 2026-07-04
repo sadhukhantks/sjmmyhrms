@@ -98,6 +98,8 @@ class NewDoffEntryActivity : AppCompatActivity() {
         tvEmpty        = findViewById(R.id.tvEmpty)
 
         val cal = Calendar.getInstance()
+        // 00:00–05:59 belongs to the previous day's shift → default to current date − 1
+        if (cal.get(Calendar.HOUR_OF_DAY) < 6) cal.add(Calendar.DAY_OF_MONTH, -1)
         entryDate = apiDate.format(cal.time)
         tvEntryDate.text = dispDate.format(cal.time)
 

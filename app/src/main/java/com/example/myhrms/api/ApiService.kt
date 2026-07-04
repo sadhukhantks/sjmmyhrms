@@ -1,6 +1,7 @@
 package com.example.myhrms.api
 
 import com.example.myhrms.permissions.MenuPermissionResponse
+import okhttp3.ResponseBody
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -9,6 +10,7 @@ import retrofit2.http.POST
 import retrofit2.http.PUT
 import retrofit2.http.Path
 import retrofit2.http.Query
+import retrofit2.http.Streaming
 
 interface ApiService {
 
@@ -412,6 +414,13 @@ interface ApiService {
         @Query("branch_id") branchId: Int
     ): Call<QualityShiftReportResponse>
 
+    @Streaming
+    @GET(ApiRoutes.DOFF_SPG1_QUALITY_SHIFT_REPORT_XLSX)
+    fun downloadSpg1QualityShiftXlsx(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<ResponseBody>
+
     // ── Winding Entry (2) ──────────────────────────────────────────────────
     @GET(ApiRoutes.DOFF_WE2_EMP_LOOKUP)
     fun we2EmpLookup(
@@ -472,6 +481,13 @@ interface ApiService {
         @Query("date")      date: String,
         @Query("branch_id") branchId: Int
     ): Call<QualityShiftReportResponse>
+
+    @Streaming
+    @GET(ApiRoutes.DOFF_WE2_QUALITY_SHIFT_REPORT_XLSX)
+    fun downloadWe2QualityShiftXlsx(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<ResponseBody>
 
     // ── Drawing Meter Entry ────────────────────────────────────────
     @GET(ApiRoutes.DRAWING_SHEDS)
@@ -624,6 +640,13 @@ interface ApiService {
         @Query("branch_id") branchId: Int
     ): Call<AssortingReportResponse>
 
+    @Streaming
+    @GET(ApiRoutes.ASSORTING_REPORT_XLSX)
+    fun downloadAssortingReportXlsx(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int
+    ): Call<ResponseBody>
+
     // ── Jute Received ─────────────────────────────────────────────────────────
     @GET(ApiRoutes.JUTE_RECEIVED_QUALITIES)
     fun getJuteReceivedQualities(
@@ -713,12 +736,35 @@ interface ApiService {
         @Query("branch_id") branchId: Int
     ): Call<DepartmentResponse>
 
-    // Hands Report (vw_man_machine) for a date + branch.
+    // Hands Report (vw_hands_report) for a date + branch.
     @GET(ApiRoutes.HANDS_REPORT)
     fun getHandsReport(
         @Query("date")      date: String,
         @Query("branch_id") branchId: Int? = null
     ): Call<HandsReportResponse>
+
+    // Hands Report as a downloadable .xlsx (same layout as the ERP export).
+    @Streaming
+    @GET(ApiRoutes.HANDS_REPORT_XLSX)
+    fun downloadHandsReportXlsx(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<ResponseBody>
+
+    // Actual-vs-Std Hands report (vw_hands_std_report) for a date + branch.
+    @GET(ApiRoutes.HANDS_STD_REPORT)
+    fun getHandsStdReport(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<HandsStdReportResponse>
+
+    // Actual-vs-Std Hands report as a downloadable .xlsx (ERP export layout).
+    @Streaming
+    @GET(ApiRoutes.HANDS_STD_REPORT_XLSX)
+    fun downloadHandsStdReportXlsx(
+        @Query("date")      date: String,
+        @Query("branch_id") branchId: Int? = null
+    ): Call<ResponseBody>
 
     // ── Bales Production → Roll Stock ─────────────────────────────────────────
     @GET(ApiRoutes.BALESPROD_MC_CODES)

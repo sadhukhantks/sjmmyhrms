@@ -93,6 +93,8 @@ class SpinningDoffActivity : AppCompatActivity() {
         spFilterSpell   = findViewById(R.id.spFilterSpell)
 
         val cal = Calendar.getInstance()
+        // 00:00–05:59 belongs to the previous day's shift → default to current date − 1
+        if (cal.get(Calendar.HOUR_OF_DAY) < 6) cal.add(Calendar.DAY_OF_MONTH, -1)
         filterDate        = apiDate.format(cal.time)
         entryDate         = filterDate
         tvFilterDate.text = dispDate.format(cal.time)

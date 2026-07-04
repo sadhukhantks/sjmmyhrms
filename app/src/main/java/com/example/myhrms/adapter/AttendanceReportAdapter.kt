@@ -68,6 +68,7 @@ class AttendanceReportAdapter(
         var hours: Double = 0.0,
         var attType: String = "R",
         var attSource: String = "Manual",
+        var shedType: String = "Old",
         var designations: MutableList<Designation> = mutableListOf(),
         var machines: MutableList<Machine> = mutableListOf(),
         var selectedMachineIds: MutableSet<Int> = mutableSetOf(),
@@ -88,6 +89,7 @@ class AttendanceReportAdapter(
         val tvSpell: TextView = view.findViewById(R.id.tvSpell)
         val tvInTime: TextView = view.findViewById(R.id.tvInTime)
         val tvExitTime: TextView = view.findViewById(R.id.tvExitTime)
+        val btnShed: android.widget.Button = view.findViewById(R.id.btnShed)
         val tvAttSource: TextView = view.findViewById(R.id.tvAttSource)
         val tvAttType: TextView = view.findViewById(R.id.tvAttType)
     }
@@ -190,6 +192,13 @@ class AttendanceReportAdapter(
         holder.tvInTime.text = if (record.attendanceTime.isBlank()) "-" else record.attendanceTime
         holder.tvExitTime.text = if (record.exitTime.isNullOrBlank()) "-" else record.exitTime
 
+        // ── Row 4: Shed (EDITABLE — tap to flip Old/New, saved on row Save) ──
+        holder.btnShed.text = state.shedType
+        holder.btnShed.setOnClickListener {
+            state.shedType = if (state.shedType == "New") "Old" else "New"
+            holder.btnShed.text = state.shedType
+        }
+
         // ── Row 4: Att Source (READ-ONLY, colored) ──
         val source = record.status ?: "-"
         holder.tvAttSource.text = source
@@ -228,6 +237,8 @@ class AttendanceReportAdapter(
         s.hours = record.workingHours ?: 0.0
         s.attType = record.attType ?: "R"
         s.attSource = record.status ?: "Manual"
+        // API stores "Old Shed"/"New Shed"; button shows just "Old"/"New"
+        s.shedType = if (record.shedType?.startsWith("New") == true) "New" else "Old"
         s.departmentId = departments.firstOrNull { it.name == record.departmentName }?.id
         s.designationName = record.designationName
         s.shiftId = shifts.firstOrNull { it.name.equals(record.shiftName, true) }?.id
@@ -389,7 +400,8 @@ class AttendanceReportAdapter(
             idleHours = record.idleHours,
             machineIds = state.selectedMachineIds.toList(),
             userId = ctx.getSharedPreferences("LoginPrefs", Context.MODE_PRIVATE)
-                .getInt("user_id", 0).takeIf { it > 0 }
+                .getInt("user_id", 0).takeIf { it > 0 },
+            shedType = "${state.shedType} Shed"
         )
         RetrofitClient.getApiService(ctx).updateAttendance(record.id, request)
             .enqueue(object : Callback<UpdateAttendanceResponse> {

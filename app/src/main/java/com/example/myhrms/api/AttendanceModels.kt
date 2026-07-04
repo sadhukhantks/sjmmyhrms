@@ -95,7 +95,10 @@ data class UpdateAttendanceRequest(
     val machineIds: List<Int>? = null,
 
     @SerializedName("user_id")
-    val userId: Int? = null
+    val userId: Int? = null,
+
+    @SerializedName("shed_type")
+    val shedType: String? = null  // "Old" or "New"; null keeps existing value
 )
 
 data class UpdateAttendanceResponse(

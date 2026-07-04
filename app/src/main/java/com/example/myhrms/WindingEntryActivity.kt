@@ -215,7 +215,14 @@ class WindingEntryActivity : AppCompatActivity() {
 
         btnSave.setOnClickListener { saveEntry() }
 
-        ivQualityShiftReport.setOnClickListener { showQualityShiftReport() }
+        ivQualityShiftReport.setOnClickListener {
+            startActivity(android.content.Intent(this, HandsReportActivity::class.java).apply {
+                putExtra("BRANCH_ID", branchId)
+                putExtra("DATE", entryDate)
+                putExtra("DATE_DISP", tvEntryDate.text.toString())
+                putExtra("REPORT_TYPE", "we2")
+            })
+        }
 
         ivPrintSummary.setOnClickListener { printSummaryPdf() }
 
