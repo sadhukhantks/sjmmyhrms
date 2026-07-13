@@ -18,6 +18,7 @@ data class EmpAttRow(
     @SerializedName("dept")          val dept: String?,
     @SerializedName("designation")   val designation: String?,
     @SerializedName("attendance")    val attendance: Map<String, Any>?,  // value: hours (Double) or "" empty
+    @SerializedName("shed")          val shed: String?,  // e.g. "Old Shed" / "New Shed" / both comma-joined
     @SerializedName("total_hours")   val totalHours: Double,
     @SerializedName("total_present") val totalPresent: Int,
     @SerializedName("total_absent")  val totalAbsent: Int

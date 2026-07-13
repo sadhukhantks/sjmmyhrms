@@ -16,6 +16,7 @@ class EmpAttFixedAdapter(private var rows: List<EmpAttRow>) :
         val tvCode: TextView = itemView.findViewById(R.id.tvCode)
         val tvName: TextView = itemView.findViewById(R.id.tvName)
         val tvDept: TextView = itemView.findViewById(R.id.tvDept)
+        val tvShed: TextView = itemView.findViewById(R.id.tvShed)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int) = VH(parent)
@@ -27,6 +28,8 @@ class EmpAttFixedAdapter(private var rows: List<EmpAttRow>) :
         holder.tvCode.text = r.empCode
         holder.tvName.text = r.empName
         holder.tvDept.text = r.dept ?: ""
+        // "Old Shed, New Shed" → "Old, New" to fit the narrow cell
+        holder.tvShed.text = r.shed?.replace(" Shed", "") ?: ""
         // Alternate row color
         val bg = if (position % 2 == 0) 0xFFFFFFFF.toInt() else 0xFFF5F5F5.toInt()
         holder.itemView.setBackgroundColor(bg)
