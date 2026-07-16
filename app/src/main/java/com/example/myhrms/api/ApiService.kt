@@ -473,6 +473,9 @@ interface ApiService {
     @POST(ApiRoutes.DOFF_WE2)
     fun saveWe2(@Body req: We2SaveRequest): Call<We2SaveResponse>
 
+    @PUT(ApiRoutes.DOFF_WE2_DETAIL)
+    fun updateWe2(@Path("id") id: Int, @Body req: We2UpdateRequest): Call<We2SaveResponse>
+
     @DELETE(ApiRoutes.DOFF_WE2_DETAIL)
     fun deleteWe2(@Path("id") id: Int): Call<We2SaveResponse>
 

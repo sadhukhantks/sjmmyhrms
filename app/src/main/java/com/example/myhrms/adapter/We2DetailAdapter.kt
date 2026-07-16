@@ -9,7 +9,10 @@ import com.example.myhrms.R
 import com.example.myhrms.api.We2SummaryRow
 import java.util.Locale
 
-class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
+class We2DetailAdapter(
+    private val onEdit: (We2SummaryRow) -> Unit,
+    private val onDelete: (We2SummaryRow) -> Unit
+) : RecyclerView.Adapter<We2DetailAdapter.VH>() {
 
     private val items = mutableListOf<We2SummaryRow>()
 
@@ -28,7 +31,7 @@ class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
     override fun getItemCount() = items.size
 
     override fun onBindViewHolder(holder: VH, position: Int) =
-        holder.bind(position + 1, items[position])
+        holder.bind(position + 1, items[position], onEdit, onDelete)
 
     class VH(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val tvSeq     : TextView = itemView.findViewById(R.id.tvSeq)
@@ -39,8 +42,13 @@ class We2DetailAdapter : RecyclerView.Adapter<We2DetailAdapter.VH>() {
         private val tvTareWt  : TextView = itemView.findViewById(R.id.tvTareWt)
         private val tvNoOfSpools : TextView = itemView.findViewById(R.id.tvNoOfSpools)
         private val tvNetWt   : TextView = itemView.findViewById(R.id.tvNetWt)
+        private val tvEdit    : TextView = itemView.findViewById(R.id.tvEdit)
+        private val tvDelete  : TextView = itemView.findViewById(R.id.tvDelete)
 
-        fun bind(seq: Int, row: We2SummaryRow) {
+        fun bind(seq: Int, row: We2SummaryRow,
+                 onEdit: (We2SummaryRow) -> Unit, onDelete: (We2SummaryRow) -> Unit) {
+            tvEdit.setOnClickListener { onEdit(row) }
+            tvDelete.setOnClickListener { onDelete(row) }
             tvSeq.text      = seq.toString()
             tvScType.text   = row.scType ?: "-"
             tvQuality.text  = row.qualityName?.takeIf { it.isNotBlank() } ?: "-"

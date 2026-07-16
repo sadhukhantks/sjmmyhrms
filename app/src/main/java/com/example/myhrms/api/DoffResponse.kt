@@ -411,6 +411,8 @@ data class We2SummaryRow(
     @SerializedName("sc_type")      val scType: String?,
     @SerializedName("trolly_id")    val trollyId: Int?,
     @SerializedName("trolly_name")  val trollyName: String?,
+    @SerializedName("trolly_weight") val trollyWeight: Double? = null,
+    @SerializedName("bucket_weight") val bucketWeight: Double? = null,
     @SerializedName("quality_name") val qualityName: String?,
     @SerializedName("gross_weight") val grossWeight: Double?,
     @SerializedName("tare_weight")  val tareWeight: Double?,
@@ -440,6 +442,15 @@ data class We2SaveRequest(
     @SerializedName("no_of_spools") val noOfSpools: Int?,
     @SerializedName("no_of_spindle") val noOfSpindle: Int?,
     @SerializedName("user_id")      val userId: Int
+)
+
+/** Update one row's weights (and optionally trolly); net recomputed server side.
+ *  Null tare/trolly are omitted from the JSON → backend keeps stored values. */
+data class We2UpdateRequest(
+    @SerializedName("gross_weight") val grossWeight: Double,
+    @SerializedName("user_id")      val userId: Int,
+    @SerializedName("tare_weight")  val tareWeight: Double? = null,
+    @SerializedName("trolly_id")    val trollyId: Int? = null
 )
 
 data class We2SaveResponse(

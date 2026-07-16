@@ -85,11 +85,12 @@ class LoginActivity : AppCompatActivity() {
             .setView(input)
             .setPositiveButton("Save") { _, _ ->
                 val url = input.text.toString().trim()
-                if (url.isNotEmpty()) {
-                    ApiConfig.saveBaseUrl(this, url)
+                if (url.isEmpty()) {
+                    Toast.makeText(this, "URL cannot be empty", Toast.LENGTH_SHORT).show()
+                } else if (ApiConfig.saveBaseUrl(this, url)) {
                     Toast.makeText(this, "API URL saved!", Toast.LENGTH_SHORT).show()
                 } else {
-                    Toast.makeText(this, "URL cannot be empty", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Invalid URL — check for spaces/typos", Toast.LENGTH_LONG).show()
                 }
             }
             .setNegativeButton("Cancel", null)

@@ -1056,31 +1056,186 @@ class WindingEntryActivity : AppCompatActivity() {
             String.format(Locale.getDefault(), "%.3f", row.totalWt)
         } kg"
 
-        val detailAdapter = We2DetailAdapter()
+        lateinit var reload: () -> Unit
+
+        val detailAdapter = We2DetailAdapter(
+            onEdit   = { r -> showEditWtDialog(r) { reload(); loadSummary() } },
+            onDelete = { r -> confirmDelete(r)    { reload(); loadSummary() } }
+        )
         rv.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         rv.adapter       = detailAdapter
         rv.isNestedScrollingEnabled = false
 
-        val dialog = AlertDialog.Builder(this)
+        reload = {
+            RetrofitClient.getApiService(this).getWe2Details(
+                date     = entryDate,
+                spellId  = spellId,
+                branchId = branchId,
+                ebId     = ebId
+            ).enqueue(object : Callback<We2SummaryResponse> {
+                override fun onResponse(call: Call<We2SummaryResponse>, response: Response<We2SummaryResponse>) {
+                    detailAdapter.update(response.body()?.summary.orEmpty())
+                }
+                override fun onFailure(call: Call<We2SummaryResponse>, t: Throwable) {}
+            })
+        }
+
+        AlertDialog.Builder(this)
             .setView(dialogView)
             .setNegativeButton("Close", null)
             .create()
-        dialog.show()
-
-        RetrofitClient.getApiService(this).getWe2Details(
-            date     = entryDate,
-            spellId  = spellId,
-            branchId = branchId,
-            ebId     = ebId
-        ).enqueue(object : Callback<We2SummaryResponse> {
-            override fun onResponse(call: Call<We2SummaryResponse>, response: Response<We2SummaryResponse>) {
-                detailAdapter.update(response.body()?.summary.orEmpty())
-            }
-            override fun onFailure(call: Call<We2SummaryResponse>, t: Throwable) {}
-        })
+            .show()
+        reload()
     }
 
-    private fun confirmDelete(row: We2SummaryRow) {
+    /** Edit Trolly No + Gross Wt of a saved row. Like the entry screen,
+     *  tare = trolly tare + spool part (kept from the stored tare) and
+     *  net = round(gross − tare) recalc automatically. Rows saved without a
+     *  trolly (e.g. type C) edit gross only. */
+    private fun showEditWtDialog(row: We2SummaryRow, onSaved: () -> Unit) {
+        val recId     = row.id ?: return
+        val dp        = resources.displayMetrics.density
+        val hasTrolly = row.trollyId != null
+
+        // spool component of the stored tare; the trolly part is replaced
+        // whenever a different trolly is validated.
+        val storedTrollyTare   = (row.trollyWeight ?: 0.0) + (row.bucketWeight ?: 0.0)
+        val spoolPart          = (row.tareWeight ?: 0.0) - storedTrollyTare
+        var trollyId: Int?     = row.trollyId
+        var trollyTare: Double = storedTrollyTare
+
+        val etTrolly = EditText(this).apply {
+            hint = "Trolly No"
+            setBackgroundResource(R.drawable.bg_input_rounded_light)
+        }
+        val tvTrollyLine = TextView(this).apply { textSize = 12f }
+        val etGross = EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or
+                        android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            hint = "Gross Wt"
+            setText(row.grossWeight?.let {
+                if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+            } ?: "")
+        }
+        val tvCalc = TextView(this).apply { textSize = 13f }
+
+        fun tare() = trollyTare + spoolPart
+        fun recalc() {
+            val g   = etGross.text.toString().toDoubleOrNull() ?: 0.0
+            val net = kotlin.math.round(g - tare())
+            tvCalc.text = "Tare: ${fmt(tare())}    Net: ${String.format(Locale.getDefault(), "%.0f", net)}"
+            tvCalc.setTextColor(if (net <= 0.0) Color.parseColor("#C62828") else Color.parseColor("#1E1E1E"))
+        }
+
+        // Trolly No: debounced lookup, same as the entry screen (type W)
+        var debounce: Runnable? = null
+        fun lookup(v: String) {
+            RetrofitClient.getApiService(this).validateDoffTrollyWinding(
+                trollyNo = v, branchId = branchId.takeIf { it > 0 }
+            ).enqueue(object : Callback<DoffTrollyValidateResponse> {
+                override fun onResponse(call: Call<DoffTrollyValidateResponse>, response: Response<DoffTrollyValidateResponse>) {
+                    val body = response.body()
+                    if (response.isSuccessful && body?.status == "success" && body.trollyId != null) {
+                        trollyId   = body.trollyId
+                        trollyTare = (body.trollyWeight ?: 0.0) + (body.bucketWeight ?: 0.0)
+                        etTrolly.setBackgroundResource(R.drawable.bg_input_valid)
+                        tvTrollyLine.text = (body.trollyName ?: "Valid") +
+                            if (trollyTare > 0) "  (Tare: ${fmt(trollyTare)})" else ""
+                        tvTrollyLine.setTextColor(Color.parseColor("#2E7D32"))
+                    } else {
+                        etTrolly.setBackgroundResource(R.drawable.bg_input_invalid)
+                        tvTrollyLine.text = body?.message ?: "Trolly not found"
+                        tvTrollyLine.setTextColor(Color.parseColor("#C62828"))
+                    }
+                    recalc()
+                }
+                override fun onFailure(call: Call<DoffTrollyValidateResponse>, t: Throwable) {
+                    etTrolly.setBackgroundResource(R.drawable.bg_input_invalid)
+                    tvTrollyLine.text = "Lookup failed"
+                    tvTrollyLine.setTextColor(Color.parseColor("#C62828"))
+                }
+            })
+        }
+        etTrolly.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                trollyId = null
+                debounce?.let { mainHandler.removeCallbacks(it) }
+                val v = s?.toString()?.trim().orEmpty()
+                if (v.isEmpty()) return
+                val r = Runnable { lookup(v) }
+                debounce = r
+                mainHandler.postDelayed(r, 500)
+            }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+        etGross.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { recalc() }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+        if (hasTrolly) etTrolly.setText(row.trollyName ?: "")   // triggers lookup → re-validates
+        recalc()
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((20 * dp).toInt(), (10 * dp).toInt(), (20 * dp).toInt(), 0)
+            if (hasTrolly) {
+                addView(etTrolly)
+                addView(tvTrollyLine)
+            }
+            addView(etGross)
+            addView(tvCalc)
+        }
+
+        val dlg = AlertDialog.Builder(this)
+            .setTitle("Edit Entry — ${row.empName ?: row.empCode ?: ""}")
+            .setView(container)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Update", null)
+            .create()
+        dlg.show()
+        // Manual click handler so failed validation keeps the dialog open
+        dlg.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            if (hasTrolly && trollyId == null) {
+                Toast.makeText(this, "Please enter a valid Trolly No", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val gross = etGross.text.toString().toDoubleOrNull()
+            if (gross == null || gross <= 0.0) {
+                Toast.makeText(this, "Please enter Gross Weight", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (kotlin.math.round(gross - tare()) <= 0.0) {
+                Toast.makeText(this, "Net Weight must be positive. Cannot update.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            dlg.dismiss()
+            val req = We2UpdateRequest(
+                grossWeight = gross, userId = userId,
+                tareWeight  = tare(),
+                trollyId    = if (hasTrolly) trollyId else null
+            )
+            RetrofitClient.getApiService(this).updateWe2(recId, req)
+                .enqueue(object : Callback<We2SaveResponse> {
+                    override fun onResponse(call: Call<We2SaveResponse>, response: Response<We2SaveResponse>) {
+                        if (response.isSuccessful && response.body()?.status == "success") {
+                            ResultDialog.success(this@WindingEntryActivity, message = "Updated")
+                            onSaved()
+                        } else {
+                            ResultDialog.error(this@WindingEntryActivity, title = "Update Failed",
+                                message = response.body()?.message ?: "Update failed")
+                        }
+                    }
+                    override fun onFailure(call: Call<We2SaveResponse>, t: Throwable) {
+                        ResultDialog.error(this@WindingEntryActivity, title = "Error",
+                            message = t.localizedMessage ?: "Network error")
+                    }
+                })
+        }
+    }
+
+    private fun confirmDelete(row: We2SummaryRow, onDeleted: () -> Unit) {
         val id = row.id ?: return
         AlertDialog.Builder(this)
             .setTitle("Delete entry?")
@@ -1089,13 +1244,17 @@ class WindingEntryActivity : AppCompatActivity() {
                 RetrofitClient.getApiService(this).deleteWe2(id)
                     .enqueue(object : Callback<We2SaveResponse> {
                         override fun onResponse(call: Call<We2SaveResponse>, response: Response<We2SaveResponse>) {
-                            Toast.makeText(this@WindingEntryActivity,
-                                response.body()?.message ?: "Deleted", Toast.LENGTH_SHORT).show()
-                            loadSummary()
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                ResultDialog.success(this@WindingEntryActivity, message = "Deleted")
+                                onDeleted()
+                            } else {
+                                ResultDialog.error(this@WindingEntryActivity, title = "Delete Failed",
+                                    message = response.body()?.message ?: "Delete failed")
+                            }
                         }
                         override fun onFailure(call: Call<We2SaveResponse>, t: Throwable) {
-                            Toast.makeText(this@WindingEntryActivity,
-                                "Error: ${t.localizedMessage}", Toast.LENGTH_SHORT).show()
+                            ResultDialog.error(this@WindingEntryActivity, title = "Error",
+                                message = t.localizedMessage ?: "Network error")
                         }
                     })
             }

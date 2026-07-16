@@ -687,35 +687,221 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             ?: "${row.mcId}"
         tvTitle.text = "Machine $mcLabel — Details"
 
-        val detailAdapter = DetailRowAdapter()
+        lateinit var reload: () -> Unit
+
+        val detailAdapter = DetailRowAdapter(
+            onEdit   = { t -> showEditWtDialog(t) { reload(); loadSummary() } },
+            onDelete = { t -> confirmDelete(t)    { reload(); loadSummary() } }
+        )
         rvDetail.layoutManager = LinearLayoutManager(this)
         rvDetail.adapter = detailAdapter
 
-        val dialog = AlertDialog.Builder(this)
+        // Fetch transactions for this mc_id / date / spell
+        reload = {
+            RetrofitClient.getApiService(this).getDoffTransactions(
+                date     = entryDate,
+                spellId  = spellId,
+                branchId = branchId.takeIf { it > 0 },
+                mcId     = row.mcId
+            ).enqueue(object : Callback<DoffListResponse> {
+                override fun onResponse(call: Call<DoffListResponse>, response: Response<DoffListResponse>) {
+                    val list = response.body()?.transactions
+                        ?.filter { it.weightType == "SPG1" }
+                        .orEmpty()
+                    detailAdapter.update(list)
+                }
+                override fun onFailure(call: Call<DoffListResponse>, t: Throwable) {}
+            })
+        }
+
+        AlertDialog.Builder(this)
             .setView(dialogView)
             .setPositiveButton("Close", null)
             .create()
-        dialog.show()
+            .show()
+        reload()
+    }
 
-        // Fetch transactions for this mc_id / date / spell
-        RetrofitClient.getApiService(this).getDoffTransactions(
-            date     = entryDate,
-            spellId  = spellId,
-            branchId = branchId.takeIf { it > 0 },
-            mcId     = row.mcId
-        ).enqueue(object : Callback<DoffListResponse> {
-            override fun onResponse(call: Call<DoffListResponse>, response: Response<DoffListResponse>) {
-                val list = response.body()?.transactions
-                    ?.filter { it.weightType == "SPG1" }
-                    .orEmpty()
-                detailAdapter.update(list)
+    /** Edit Trolly No + Gross Wt of a saved transaction. Like the entry screen,
+     *  tare = trolly tare + spool part and net = round(gross − tare) recalc
+     *  automatically; the spool part is kept from the stored tare. */
+    private fun showEditWtDialog(t: DoffTransaction, onSaved: () -> Unit) {
+        val recId  = t.id ?: return
+        val mcId   = t.mcId ?: return
+        val spell  = t.spellId ?: selectedSpellId() ?: return
+        val dp     = resources.displayMetrics.density
+
+        // spool_wt/1000 component of the stored tare; the trolly part is
+        // replaced whenever a different trolly is validated.
+        val spoolPart = (t.tareWeight ?: 0.0) -
+            ((t.trollyWeight ?: 0.0) + (t.bucketWeight ?: 0.0))
+        var trollyId: Int?     = t.trollyId
+        var trollyTare: Double = (t.trollyWeight ?: 0.0) + (t.bucketWeight ?: 0.0)
+
+        val etTrolly = EditText(this).apply {
+            hint = "Trolly No"
+            setBackgroundResource(R.drawable.bg_input_rounded_light)
+        }
+        val tvTrollyInfo = TextView(this).apply { textSize = 12f }
+        val etGross = EditText(this).apply {
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or
+                        android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            hint = "Gross Wt"
+            setText(t.grossWeight?.let {
+                if (it % 1.0 == 0.0) it.toLong().toString() else it.toString()
+            } ?: "")
+        }
+        val tvCalc = TextView(this).apply { textSize = 13f }
+
+        fun tare() = trollyTare + spoolPart
+        fun recalc() {
+            val g   = etGross.text.toString().toDoubleOrNull() ?: 0.0
+            val net = kotlin.math.round(g - tare())
+            tvCalc.text = "Tare: ${fmt(tare())}    Net: ${String.format(Locale.getDefault(), "%.0f", net)}"
+            tvCalc.setTextColor(if (net < 0.0) Color.parseColor("#C62828") else Color.parseColor("#1E1E1E"))
+        }
+
+        // Trolly No: debounced lookup, same as the entry screen
+        var debounce: Runnable? = null
+        fun lookup(v: String) {
+            RetrofitClient.getApiService(this).validateDoffTrolly(
+                trollyNo = v, branchId = branchId.takeIf { it > 0 }
+            ).enqueue(object : Callback<DoffTrollyValidateResponse> {
+                override fun onResponse(call: Call<DoffTrollyValidateResponse>, response: Response<DoffTrollyValidateResponse>) {
+                    val body = response.body()
+                    if (response.isSuccessful && body?.status == "success" && body.trollyId != null) {
+                        trollyId   = body.trollyId
+                        trollyTare = (body.trollyWeight ?: 0.0) + (body.bucketWeight ?: 0.0)
+                        etTrolly.setBackgroundResource(R.drawable.bg_input_valid)
+                        tvTrollyInfo.text = (body.trollyName ?: "Valid") +
+                            if (trollyTare > 0) "  (Tare: ${fmt(trollyTare)})" else ""
+                        tvTrollyInfo.setTextColor(Color.parseColor("#2E7D32"))
+                    } else {
+                        etTrolly.setBackgroundResource(R.drawable.bg_input_invalid)
+                        tvTrollyInfo.text = body?.message ?: "Trolly not found"
+                        tvTrollyInfo.setTextColor(Color.parseColor("#C62828"))
+                    }
+                    recalc()
+                }
+                override fun onFailure(call: Call<DoffTrollyValidateResponse>, t2: Throwable) {
+                    etTrolly.setBackgroundResource(R.drawable.bg_input_invalid)
+                    tvTrollyInfo.text = "Lookup failed"
+                    tvTrollyInfo.setTextColor(Color.parseColor("#C62828"))
+                }
+            })
+        }
+        etTrolly.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                trollyId = null
+                debounce?.let { mainHandler.removeCallbacks(it) }
+                val v = s?.toString()?.trim().orEmpty()
+                if (v.isEmpty()) return
+                val r = Runnable { lookup(v) }
+                debounce = r
+                mainHandler.postDelayed(r, 500)
             }
-            override fun onFailure(call: Call<DoffListResponse>, t: Throwable) {}
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
         })
+        etGross.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) { recalc() }
+            override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+        })
+        etTrolly.setText(t.trollyName ?: "")   // triggers lookup → re-validates
+        recalc()
+
+        val container = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding((20 * dp).toInt(), (10 * dp).toInt(), (20 * dp).toInt(), 0)
+            addView(etTrolly)
+            addView(tvTrollyInfo)
+            addView(etGross)
+            addView(tvCalc)
+        }
+
+        val dlg = AlertDialog.Builder(this)
+            .setTitle("Edit Entry — MC ${t.mcCode?.takeIf { it.isNotBlank() } ?: mcId}")
+            .setView(container)
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Update", null)
+            .create()
+        dlg.show()
+        // Manual click handler so failed validation keeps the dialog open
+        dlg.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+            val tid = trollyId
+            if (tid == null) {
+                Toast.makeText(this, "Please enter a valid Trolly No", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val gross = etGross.text.toString().toDoubleOrNull()
+            if (gross == null || gross <= 0.0) {
+                Toast.makeText(this, "Please enter Gross Weight", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val net = kotlin.math.round(gross - tare())
+            if (net < 0.0) {
+                Toast.makeText(this, "Net Weight is negative. Cannot update.", Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+            dlg.dismiss()
+            val req = DoffSaveRequest(
+                id = recId, doffDate = t.doffDate ?: entryDate, spellId = spell, mcId = mcId,
+                qualityId = t.qualityId, trollyId = tid, ebId = t.ebId ?: 0,
+                grossWeight = gross, tareWeight = tare(), netWeight = net,
+                weightType = "SPG1", branchId = branchId.takeIf { it > 0 }, userId = userId
+            )
+            RetrofitClient.getApiService(this).saveDoffTransaction(req)
+                .enqueue(object : Callback<DoffSaveResponse> {
+                    override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
+                        if (response.isSuccessful && response.body()?.status == "success") {
+                            ResultDialog.success(this@SpgDoffEntry1Activity, message = "Updated")
+                            onSaved()
+                        } else {
+                            ResultDialog.error(this@SpgDoffEntry1Activity, title = "Update Failed",
+                                message = response.body()?.message ?: "Update failed")
+                        }
+                    }
+                    override fun onFailure(call: Call<DoffSaveResponse>, t2: Throwable) {
+                        ResultDialog.error(this@SpgDoffEntry1Activity, title = "Error",
+                            message = t2.localizedMessage ?: "Network error")
+                    }
+                })
+        }
+    }
+
+    private fun confirmDelete(t: DoffTransaction, onDeleted: () -> Unit) {
+        val recId = t.id ?: return
+        AlertDialog.Builder(this)
+            .setTitle("Delete Entry")
+            .setMessage("Delete trolly ${t.trollyName ?: ""} (Net: ${t.netWeight?.let { Math.round(it) } ?: "-"})?")
+            .setNegativeButton("Cancel", null)
+            .setPositiveButton("Delete") { _, _ ->
+                RetrofitClient.getApiService(this).deleteDoffTransaction(recId)
+                    .enqueue(object : Callback<DoffSaveResponse> {
+                        override fun onResponse(call: Call<DoffSaveResponse>, response: Response<DoffSaveResponse>) {
+                            if (response.isSuccessful && response.body()?.status == "success") {
+                                ResultDialog.success(this@SpgDoffEntry1Activity, message = "Deleted")
+                                onDeleted()
+                            } else {
+                                ResultDialog.error(this@SpgDoffEntry1Activity, title = "Delete Failed",
+                                    message = response.body()?.message ?: "Delete failed")
+                            }
+                        }
+                        override fun onFailure(call: Call<DoffSaveResponse>, t2: Throwable) {
+                            ResultDialog.error(this@SpgDoffEntry1Activity, title = "Error",
+                                message = t2.localizedMessage ?: "Network error")
+                        }
+                    })
+            }
+            .show()
     }
 
     // ── Inner adapter for detail dialog ───────────────────────────────────────
-    inner class DetailRowAdapter : RecyclerView.Adapter<DetailRowAdapter.DVH>() {
+    inner class DetailRowAdapter(
+        private val onEdit: (DoffTransaction) -> Unit,
+        private val onDelete: (DoffTransaction) -> Unit
+    ) : RecyclerView.Adapter<DetailRowAdapter.DVH>() {
         private val items = mutableListOf<DoffTransaction>()
         fun update(list: List<DoffTransaction>) { items.clear(); items.addAll(list); notifyDataSetChanged() }
         override fun getItemCount() = items.size
@@ -730,7 +916,11 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
             private val tvTare    = v.findViewById<TextView>(R.id.tvTareWt)
             private val tvNet     = v.findViewById<TextView>(R.id.tvNetWt)
             private val tvDoffTime = v.findViewById<TextView>(R.id.tvDoffTime)
+            private val tvEdit    = v.findViewById<TextView>(R.id.tvEdit)
+            private val tvDelete  = v.findViewById<TextView>(R.id.tvDelete)
             fun bind(seq: Int, t: DoffTransaction) {
+                tvEdit.setOnClickListener { onEdit(t) }
+                tvDelete.setOnClickListener { onDelete(t) }
                 tvSeq.text    = seq.toString()
                 tvTrolly.text = t.trollyName ?: "-"
                 tvGross.text  = t.grossWeight?.let { fmt(it) } ?: "-"

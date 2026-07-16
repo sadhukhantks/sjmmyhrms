@@ -34,11 +34,20 @@ object RetrofitClient {
         val savedUrl = ApiConfig.getBaseUrl(context)
         if (retrofit == null || currentBaseUrl != savedUrl) {
             currentBaseUrl = savedUrl
-            retrofit = Retrofit.Builder()
-                .baseUrl(savedUrl)
-                .client(okHttpClient)
-                .addConverterFactory(GsonConverterFactory.create(gson))  // Use configured Gson
-                .build()
+            retrofit = try {
+                Retrofit.Builder()
+                    .baseUrl(savedUrl)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create(gson))  // Use configured Gson
+                    .build()
+            } catch (e: IllegalArgumentException) {
+                // a bad URL saved by an older app version must not crash-loop the app
+                Retrofit.Builder()
+                    .baseUrl(ApiConfig.DEFAULT_URL)
+                    .client(okHttpClient)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .build()
+            }
         }
         return retrofit!!.create(ApiService::class.java)
     }
