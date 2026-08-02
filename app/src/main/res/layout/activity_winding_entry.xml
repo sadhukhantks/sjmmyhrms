@@ -324,6 +324,14 @@
                         android:layout_marginBottom="10dp"
                         android:visibility="gone"/>
 
+                    <!-- Per-spool-type counts (shown when 2+ spool types selected) -->
+                    <LinearLayout
+                        android:id="@+id/llSpoolCounts"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="10dp"/>
+
                     <!-- ROW 4: Gross | Tare | Net | Save -->
                     <LinearLayout
                         android:layout_width="match_parent"

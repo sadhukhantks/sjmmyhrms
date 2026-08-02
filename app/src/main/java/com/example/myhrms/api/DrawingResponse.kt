@@ -14,7 +14,8 @@ data class DrawingShedsResponse(
 data class DrawingMachine(
     @SerializedName("mc_id") val mcId: Int,
     @SerializedName("short_name") val mcShortName: String?,
-    @SerializedName("const_meter") val contMeter: Double?
+    @SerializedName("const_meter") val contMeter: Double?,
+    @SerializedName("meter_type") val meterType: Int?
 )
 
 data class DrawingMachinesResponse(
@@ -39,6 +40,7 @@ data class DrawingEntrySaveRequest(
     @SerializedName("opening_meter") val openingMeter: Double,
     @SerializedName("closing_meter") val closingMeter: Double,
     @SerializedName("hours") val hours: Double,
+    @SerializedName("meter_units") val meterUnits: Double,
     @SerializedName("const_value") val constValue: Double,
     @SerializedName("branch_id") val branchId: Int?,
     @SerializedName("user_id") val userId: Int
@@ -60,6 +62,8 @@ data class DrawingSummaryItem(
     @SerializedName("unit") val unit: Double?,
     @SerializedName("running_hours") val runningHours: Double?,
     @SerializedName("const_meter") val constMeter: Double?,
+    @SerializedName("meter_hours") val meterHours: Double?,
+    @SerializedName("meter_eff") val meterEff: Double?,
     @SerializedName("eff") val eff: Double?
 )
 

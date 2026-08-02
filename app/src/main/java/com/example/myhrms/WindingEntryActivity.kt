@@ -52,6 +52,7 @@ class WindingEntryActivity : AppCompatActivity() {
     private lateinit var tvTrollyInfo : TextView
     private lateinit var llSpoolButtons : FlowLayout
     private lateinit var tvSpoolStatus  : TextView
+    private lateinit var llSpoolCounts  : LinearLayout
     private lateinit var etGrossWt    : EditText
     private lateinit var etTareWt     : EditText
     private lateinit var etNetWt      : EditText
@@ -93,10 +94,13 @@ class WindingEntryActivity : AppCompatActivity() {
     private var validatedTrollyId: Int?    = null
     private var validatedTareWt  : Double  = 0.0
 
-    // Selected spool types (multi-select): trollyId -> per-spool weight.
+    // Selected spool types (multi-select): trollyId -> spool type.
     // Single selection → tare = trolly + spools × weight (tare read-only).
-    // Multiple selection → tare = trolly weight only and the tare field is editable.
-    private val selectedSpools = linkedMapOf<Int, Double>()
+    // Multiple selection → one count input per type; tare = trolly + Σ(count × weight).
+    private val selectedSpools = linkedMapOf<Int, We2SpoolType>()
+
+    // Per-spool-type count (trollyId -> no of spools), used when 2+ types selected.
+    private val spoolTypeCounts = linkedMapOf<Int, Int>()
 
     private val mainHandler  = Handler(Looper.getMainLooper())
     private var trollyDebounce: Runnable? = null
@@ -131,6 +135,7 @@ class WindingEntryActivity : AppCompatActivity() {
         tvTrollyInfo   = findViewById(R.id.tvTrollyInfo)
         llSpoolButtons = findViewById(R.id.llSpoolButtons)
         tvSpoolStatus  = findViewById(R.id.tvSpoolStatus)
+        llSpoolCounts  = findViewById(R.id.llSpoolCounts)
         etGrossWt      = findViewById(R.id.etGrossWt)
         etTareWt       = findViewById(R.id.etTareWt)
         etNetWt        = findViewById(R.id.etNetWt)
@@ -607,6 +612,8 @@ class WindingEntryActivity : AppCompatActivity() {
         if (branchId <= 0) return
         llSpoolButtons.removeAllViews()
         selectedSpools.clear()
+        spoolTypeCounts.clear()
+        llSpoolCounts.removeAllViews()
         tvSpoolStatus.visibility = View.VISIBLE
         tvSpoolStatus.text       = "Loading…"
 
@@ -651,8 +658,13 @@ class WindingEntryActivity : AppCompatActivity() {
     private fun onSpoolSelected(sp: We2SpoolType) {
         val id = sp.trollyId ?: return
         // Multi-select toggle: tapping an active one clears it
-        if (selectedSpools.containsKey(id)) selectedSpools.remove(id)
-        else selectedSpools[id] = sp.spoolWeight ?: 0.0
+        if (selectedSpools.containsKey(id)) {
+            selectedSpools.remove(id)
+            spoolTypeCounts.remove(id)
+        } else {
+            selectedSpools[id] = sp
+            spoolTypeCounts.getOrPut(id) { 0 }
+        }
         val selectedTypes = mutableListOf<We2SpoolType>()
         for (i in 0 until llSpoolButtons.childCount) {
             val b = llSpoolButtons.getChildAt(i) as? Button ?: continue
@@ -674,12 +686,61 @@ class WindingEntryActivity : AppCompatActivity() {
             tvSpoolStatus.visibility = View.VISIBLE
         }
 
-        recalcTare(seedMultiTare = true)
+        rebuildSpoolCountInputs()
+        recalcTare()
+    }
+
+    /** One labelled count input per selected spool type — shown only when 2+
+     *  types are selected. Editing a count recalculates the tare. */
+    private fun rebuildSpoolCountInputs() {
+        llSpoolCounts.removeAllViews()
+        if (selectedSpools.size < 2) return
+
+        val dp = resources.displayMetrics.density
+        for ((id, sp) in selectedSpools) {
+            val row = LinearLayout(this)
+            row.orientation = LinearLayout.HORIZONTAL
+            row.gravity     = android.view.Gravity.CENTER_VERTICAL
+            val rowLp = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            rowLp.setMargins(0, 0, 0, (4 * dp).toInt())
+            row.layoutParams = rowLp
+
+            val tv = TextView(this)
+            tv.text     = "${sp.trollyName ?: "Spool"}  (Wt: ${fmt(sp.spoolWeight ?: 0.0)})"
+            tv.textSize = 12f
+            tv.setTextColor(Color.parseColor("#000000"))
+            tv.layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+
+            val et = EditText(this)
+            et.hint      = "Spools"
+            et.textSize  = 14f
+            et.setTextColor(Color.parseColor("#1E1E1E"))
+            et.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            et.setBackgroundResource(R.drawable.bg_input_rounded_light)
+            et.setPadding((10 * dp).toInt(), 0, (10 * dp).toInt(), 0)
+            et.layoutParams = LinearLayout.LayoutParams((80 * dp).toInt(), (40 * dp).toInt())
+            (spoolTypeCounts[id] ?: 0).takeIf { it > 0 }?.let { et.setText(it.toString()) }
+            et.addTextChangedListener(object : TextWatcher {
+                override fun afterTextChanged(s: Editable?) {
+                    spoolTypeCounts[id] = s?.toString()?.trim()?.toIntOrNull() ?: 0
+                    recalcTare()
+                }
+                override fun beforeTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+                override fun onTextChanged(s: CharSequence?, a: Int, b: Int, c: Int) {}
+            })
+
+            row.addView(tv)
+            row.addView(et)
+            llSpoolCounts.addView(row)
+        }
     }
 
     // Single spool → tare = validated trolly tare + (no of spools × spool weight), read-only.
-    // Multiple spools → tare = trolly weight only and the field is editable for manual entry.
-    private fun recalcTare(seedMultiTare: Boolean = false) {
+    // Multiple spools → tare = trolly tare + Σ(per-type count × weight), read-only.
+    private fun recalcTare() {
         if (selectedType == "C") {
             // (C): No of Spools = employees × 8, Gross = spools × 16, Tare always 0.
             setTareEditable(false)
@@ -689,17 +750,18 @@ class WindingEntryActivity : AppCompatActivity() {
             recalcNet()
             return
         }
+        setTareEditable(false)
         if (selectedSpools.size >= 2) {
-            setTareEditable(true)
-            if (seedMultiTare) etTareWt.setText(fmt(validatedTareWt))
-            recalcNet()
+            val spoolPart = selectedSpools.entries.sumOf { (id, sp) ->
+                (spoolTypeCounts[id] ?: 0) * (sp.spoolWeight ?: 0.0)
+            }
+            etTareWt.setText(fmt(validatedTareWt + spoolPart))
         } else {
-            setTareEditable(false)
             val spools = etNoOfSpools.text.toString().trim().toIntOrNull() ?: 0
-            val weight = selectedSpools.values.firstOrNull() ?: 0.0
+            val weight = selectedSpools.values.firstOrNull()?.spoolWeight ?: 0.0
             etTareWt.setText(fmt(validatedTareWt + (spools * weight)))
-            recalcNet()
         }
+        recalcNet()
     }
 
     private fun setTareEditable(editable: Boolean) {
@@ -846,9 +908,11 @@ class WindingEntryActivity : AppCompatActivity() {
         etTareWt.setText("")
         etNetWt.setText("")
         etGrossWt.setBackgroundResource(R.drawable.bg_input_rounded_light)
-        // Clear spool selection + count
+        // Clear spool selection + counts
         etNoOfSpools.setText("")
         selectedSpools.clear()
+        spoolTypeCounts.clear()
+        llSpoolCounts.removeAllViews()
         setTareEditable(false)
         for (i in 0 until llSpoolButtons.childCount) {
             (llSpoolButtons.getChildAt(i) as? Button)

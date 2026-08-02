@@ -26,7 +26,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class SpgDoffEntry1Activity : AppCompatActivity() {
+open class SpgDoffEntry1Activity : AppCompatActivity() {
 
     private val apiDate  = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
     private val dispDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -46,7 +46,7 @@ class SpgDoffEntry1Activity : AppCompatActivity() {
     private lateinit var tvTrollyInfo: TextView
     private lateinit var etNoOfSpindle: EditText
     private lateinit var etSpoolWt: EditText
-    private lateinit var etGrossWt: EditText
+    protected lateinit var etGrossWt: EditText
     private lateinit var etTareWt: EditText
     private lateinit var etNetWt: EditText
     /** bobbin_weight for the selected machine; spool_wt = no_of_spindle * bobbin_weight. */

@@ -42,6 +42,10 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
     private lateinit var tvUnit            : TextView
     private lateinit var etHours           : EditText
     private lateinit var tvEff             : TextView
+    private lateinit var llMeterUnits      : LinearLayout
+    private lateinit var etMeterUnits      : EditText
+    private lateinit var tvCalcMeter       : TextView
+    private lateinit var tvMeterEff        : TextView
     private lateinit var btnSave           : Button
     private lateinit var rvSummary         : RecyclerView
     private lateinit var tvSummaryEmpty    : TextView
@@ -82,6 +86,10 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         tvUnit           = findViewById(R.id.tvUnit)
         etHours          = findViewById(R.id.etHours)
         tvEff            = findViewById(R.id.tvEff)
+        llMeterUnits     = findViewById(R.id.llMeterUnits)
+        etMeterUnits     = findViewById(R.id.etMeterUnits)
+        tvCalcMeter      = findViewById(R.id.tvCalcMeter)
+        tvMeterEff       = findViewById(R.id.tvMeterEff)
         btnSave          = findViewById(R.id.btnSave)
         rvSummary        = findViewById(R.id.rvSummary)
         tvSummaryEmpty   = findViewById(R.id.tvSummaryEmpty)
@@ -141,6 +149,16 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         etHours.addTextChangedListener(object : TextWatcher {
             override fun afterTextChanged(s: Editable?) {
                 calculateUnitAndEff()
+                calculateMeterUnits()
+            }
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        })
+
+        // Meter units watcher - recalc per meter_type of selected machine
+        etMeterUnits.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                calculateMeterUnits()
             }
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -300,6 +318,12 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         // Update meter display (integer)
         tvMeter.text = (mc.contMeter?.toInt() ?: 0).toString()
 
+        // Show/hide meter-units boxes per meter_type (0 = hidden)
+        llMeterUnits.visibility = if ((mc.meterType ?: 1) == 0) View.GONE else View.VISIBLE
+        etMeterUnits.setText("")
+        tvCalcMeter.text = "0"
+        tvMeterEff.text = "0.0"
+
         // Fetch opening meter
         loadOpeningMeter(mc.mcId)
     }
@@ -332,6 +356,21 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
             0.0
         }
         tvEff.text = String.format(Locale.getDefault(), "%.2f", eff)
+    }
+
+    private fun calculateMeterUnits() {
+        val input = etMeterUnits.text.toString()
+        val units = input.toDoubleOrNull() ?: 0.0
+        val type  = selectedMachine?.meterType ?: 1
+        val calcHours = if (type == 2) Math.round(units / 3600.0 * 100) / 100.0 else units
+        tvCalcMeter.text = if (type == 2)
+            String.format(Locale.getDefault(), "%.2f", calcHours)
+        else
+            input.ifEmpty { "0" }  // meter_type 1: as-is
+
+        val hours = etHours.text.toString().toDoubleOrNull() ?: 0.0
+        val eff = if (hours > 0) calcHours / hours * 100 else 0.0
+        tvMeterEff.text = String.format(Locale.getDefault(), "%.2f", eff)
     }
 
     private fun saveEntry() {
@@ -369,6 +408,7 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
             openingMeter = opening.toDouble(),
             closingMeter = closing.toDouble(),
             hours = hours,
+            meterUnits = etMeterUnits.text.toString().toDoubleOrNull() ?: 0.0,
             constValue = constValue,
             branchId = branchId,
             userId = userId
@@ -443,6 +483,10 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         // Don't clear hours - keep value from selected spell
         tvUnit.text = "0"
         tvEff.text = "0.0"
+        llMeterUnits.visibility = View.GONE
+        etMeterUnits.setText("")
+        tvCalcMeter.text = "0"
+        tvMeterEff.text = "0.0"
     }
 
     /**
@@ -464,6 +508,10 @@ class DrawingMeterEntryActivity : AppCompatActivity() {
         etClosing.setText("")
         tvUnit.text = "0"
         tvEff.text = "0.0"
+        llMeterUnits.visibility = View.GONE
+        etMeterUnits.setText("")
+        tvCalcMeter.text = "0"
+        tvMeterEff.text = "0.0"
         // selectedShed, shed button colors, machine buttons and etHours are kept as-is.
     }
 

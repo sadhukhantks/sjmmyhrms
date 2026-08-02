@@ -379,6 +379,100 @@
                         </LinearLayout>
                     </LinearLayout>
 
+                    <!-- ROW 5: Meter Units | Calc Value (shown per meter_type) -->
+                    <LinearLayout
+                        android:id="@+id/llMeterUnits"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:baselineAligned="false"
+                        android:layout_marginBottom="8dp"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginEnd="5dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Meter Units"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="3dp"/>
+                            <EditText
+                                android:id="@+id/etMeterUnits"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_input_rounded_light"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:inputType="numberDecimal"
+                                android:textColor="#000000"
+                                android:textSize="14sp"
+                                android:hint="0"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="5dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Calc Hours"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="3dp"/>
+                            <TextView
+                                android:id="@+id/tvCalcMeter"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_input_rounded_light"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:gravity="center_vertical"
+                                android:text="0"
+                                android:textColor="#1565C0"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical"
+                            android:layout_marginStart="5dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Eff%"
+                                android:textColor="#000000"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:layout_marginBottom="3dp"/>
+                            <TextView
+                                android:id="@+id/tvMeterEff"
+                                android:layout_width="match_parent"
+                                android:layout_height="44dp"
+                                android:background="@drawable/bg_input_rounded_light"
+                                android:paddingStart="10dp"
+                                android:paddingEnd="10dp"
+                                android:gravity="center_vertical"
+                                android:text="0.0"
+                                android:textColor="#2E7D32"
+                                android:textSize="14sp"
+                                android:textStyle="bold"/>
+                        </LinearLayout>
+                    </LinearLayout>
+
                     <!-- Save Button -->
                     <Button
                         android:id="@+id/btnSave"
@@ -464,6 +558,30 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="Unit"
+                            android:textColor="#1565C0"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="end"
+                            android:paddingEnd="6dp"
+                            android:paddingStart="4dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.2"
+                            android:text="MtrHrs"
+                            android:textColor="#1565C0"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:gravity="end"
+                            android:paddingEnd="6dp"
+                            android:paddingStart="4dp" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1.2"
+                            android:text="MtrEff%"
                             android:textColor="#1565C0"
                             android:textSize="12sp"
                             android:textStyle="bold"

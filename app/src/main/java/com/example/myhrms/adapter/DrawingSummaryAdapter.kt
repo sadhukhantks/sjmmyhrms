@@ -36,6 +36,8 @@ class DrawingSummaryAdapter : RecyclerView.Adapter<DrawingSummaryAdapter.ViewHol
         private val tvHours: TextView = view.findViewById(R.id.tvHours)
         private val tvConst: TextView = view.findViewById(R.id.tvConst)
         private val tvUnit: TextView = view.findViewById(R.id.tvUnit)
+        private val tvMtrHrs: TextView = view.findViewById(R.id.tvMtrHrs)
+        private val tvMtrEff: TextView = view.findViewById(R.id.tvMtrEff)
         private val tvEff: TextView = view.findViewById(R.id.tvEff)
 
         fun bind(item: DrawingSummaryItem) {
@@ -43,6 +45,8 @@ class DrawingSummaryAdapter : RecyclerView.Adapter<DrawingSummaryAdapter.ViewHol
             tvHours.text = fmtNum(item.runningHours)
             tvConst.text = (item.constMeter?.toInt() ?: 0).toString()
             tvUnit.text = (item.unit?.toInt() ?: 0).toString()  // Show as integer
+            tvMtrHrs.text = fmtNum(item.meterHours)
+            tvMtrEff.text = String.format(Locale.getDefault(), "%.2f%%", item.meterEff ?: 0.0)
             tvEff.text = String.format(Locale.getDefault(), "%.2f%%", item.eff ?: 0.0)
         }
 

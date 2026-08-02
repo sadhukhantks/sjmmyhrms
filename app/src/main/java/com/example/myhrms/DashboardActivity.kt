@@ -941,6 +941,12 @@ class DashboardActivity : AppCompatActivity() {
             i.putExtra("BRANCH_ID", selectedBranchId)
             startActivity(i)
         }
+        binding.menuSpgDoffpic.setOnClickListener {
+            val i = Intent(this, SpgDoffpicActivity::class.java)
+            i.putExtra("CO_ID", selectedCompanyId)
+            i.putExtra("BRANCH_ID", selectedBranchId)
+            startActivity(i)
+        }
         binding.menuSpgRunningHours.setOnClickListener {
             val i = Intent(this, SpgRunningHoursActivity::class.java)
             i.putExtra("CO_ID", selectedCompanyId)
@@ -1093,6 +1099,7 @@ class DashboardActivity : AppCompatActivity() {
             "menu_spellwise_frame_entry"  to binding.menuSpellWiseFrameEntry,
             "menu_spg_doff_entry"         to binding.menuSpgDoffEntry,
             "menu_spg_doff_entry1"        to binding.menuSpgDoffEntry1,
+            "menu_spg_doff_pic"           to binding.menuSpgDoffpic,
             "menu_spg_running_hours"      to binding.menuSpgRunningHours,
             "menu_winding_entry"          to binding.menuWindingEntry,
             "menu_cont_winding_entry"     to binding.menuContWindingEntry,

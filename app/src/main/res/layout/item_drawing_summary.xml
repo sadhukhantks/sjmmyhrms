@@ -54,6 +54,30 @@
         android:paddingStart="4dp" />
 
     <TextView
+        android:id="@+id/tvMtrHrs"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:text="0"
+        android:textColor="#000000"
+        android:textSize="14sp"
+        android:gravity="end"
+        android:paddingEnd="6dp"
+        android:paddingStart="4dp" />
+
+    <TextView
+        android:id="@+id/tvMtrEff"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1.2"
+        android:text="0"
+        android:textColor="#2E7D32"
+        android:textSize="14sp"
+        android:gravity="end"
+        android:paddingEnd="6dp"
+        android:paddingStart="4dp" />
+
+    <TextView
         android:id="@+id/tvEff"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
