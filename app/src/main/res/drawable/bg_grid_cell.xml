@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Flat spreadsheet body cell: white fill with a 1dp gridline on the right and
+     bottom edges. Internal grid lines come from every cell drawing right+bottom;
+     the outer left/top edges are closed by bg_grid_outer on the wrapper. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <color android:color="#D0D0D0" />
+    </item>
+    <item android:right="1dp" android:bottom="1dp">
+        <color android:color="#FFFFFF" />
+    </item>
+</layer-list>

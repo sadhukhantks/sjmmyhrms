@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:background="#FFFFFF">
+
+    <TextView
+        android:id="@+id/tvMachine"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="1.5"
+        android:background="@drawable/bg_grid_cell_blue"
+        android:textColor="#FFFFFF"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"/>
+
+    <EditText
+        android:id="@+id/etRunHrs"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="2"
+        android:background="@drawable/bg_grid_cell"
+        android:hint="0"
+        android:inputType="numberDecimal"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#1E1E1E"
+        android:imeOptions="actionNext"/>
+
+    <EditText
+        android:id="@+id/etStopM"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="2"
+        android:background="@drawable/bg_grid_cell"
+        android:hint="0"
+        android:inputType="numberDecimal"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#1E1E1E"
+        android:imeOptions="actionNext"/>
+
+    <EditText
+        android:id="@+id/etStopE"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="2"
+        android:background="@drawable/bg_grid_cell"
+        android:hint="0"
+        android:inputType="numberDecimal"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#1E1E1E"
+        android:imeOptions="actionNext"/>
+
+    <EditText
+        android:id="@+id/etStopO"
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="2"
+        android:background="@drawable/bg_grid_cell"
+        android:hint="0"
+        android:inputType="numberDecimal"
+        android:gravity="center"
+        android:textSize="12sp"
+        android:textColor="#1E1E1E"
+        android:imeOptions="actionDone"/>
+
+    <FrameLayout
+        android:layout_width="0dp"
+        android:layout_height="42dp"
+        android:layout_weight="1.4"
+        android:background="@drawable/bg_grid_cell">
+
+        <ImageView
+            android:id="@+id/ivSave"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_save"
+            android:scaleType="centerInside"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="Save"
+            app:tint="#1565C0"/>
+    </FrameLayout>
+
+</LinearLayout>
